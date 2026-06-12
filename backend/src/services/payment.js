@@ -4,17 +4,17 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
-const { run, get } = require('../db/init');
+const { run, get, transaction } = require('../db/init');
 const config = require('../config');
 
-// Aliyun SDK re-export for sms service access
 const XMLParser = require('fast-xml-parser').XMLParser;
 const XMLBuilder = require('fast-xml-parser').XMLBuilder;
 
 // ── Utilities ──────────────────────────────────────────────────────
 
 function generateOrderId() {
-  return 'W' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  // Cryptographically secure order ID (was Math.random(), predictable)
+  return 'W' + Date.now().toString(36) + crypto.randomBytes(6).toString('hex');
 }
 
 function generateNonce(len = 32) {
@@ -25,12 +25,24 @@ function md5(str) {
   return crypto.createHash('md5').update(str, 'utf8').digest('hex').toUpperCase();
 }
 
-function sha256(str) {
-  return crypto.createHash('sha256').update(str, 'utf8').digest('hex').toUpperCase();
-}
+// ── XML Parser with size limit (prevents XML bomb attacks) ────────
 
-function hmacSha256(str, key) {
-  return crypto.createHmac('sha256', key).update(str, 'utf8').digest('hex').toUpperCase();
+const XML_MAX_SIZE = 128 * 1024; // 128 KB max XML payload
+const XML_OPTIONS = { ignoreAttributes: false };
+
+function safeParseXML(xmlStr) {
+  if (!xmlStr || typeof xmlStr !== 'string') return null;
+  if (Buffer.byteLength(xmlStr, 'utf8') > XML_MAX_SIZE) {
+    console.error('[PAY XML] Payload exceeds size limit, rejected');
+    return null;
+  }
+  try {
+    const parser = new XMLParser(XML_OPTIONS);
+    return parser.parse(xmlStr);
+  } catch (e) {
+    console.error('[PAY XML] Parse error:', e.message);
+    return null;
+  }
 }
 
 // WeChat: sort params alphabetically, join with &, append &key=xxx, MD5
@@ -66,6 +78,12 @@ function alipayVerify(params, signature, publicKeyPem) {
   return verify.verify(publicKeyPem, signature, 'base64');
 }
 
+// ── Production Guard ───────────────────────────────────────────────
+
+function isProduction() {
+  return process.env.NODE_ENV === 'production';
+}
+
 // ── WeChat H5 ──────────────────────────────────────────────────────
 
 function isWechatConfigured() {
@@ -74,7 +92,7 @@ function isWechatConfigured() {
 
 async function wechatCreateOrder(amount, orderId, subject, ip) {
   if (!isWechatConfigured()) {
-    if (process.env.NODE_ENV !== 'production') console.log(`[PAY DEV] WeChat not configured, order=${orderId}`);
+    if (!isProduction()) console.log(`[PAY DEV] WeChat not configured, order=${orderId}`);
     return { devMode: true, paymentUrl: `dev://wechat?orderId=${orderId}&amount=${amount}` };
   }
 
@@ -100,8 +118,10 @@ async function wechatCreateOrder(amount, orderId, subject, ip) {
     timeout: 10000,
   });
 
-  const parser = new XMLParser({ ignoreAttributes: false });
-  const result = parser.parse(res.data).xml;
+  const parsed = safeParseXML(res.data);
+  if (!parsed || !parsed.xml) throw new Error('Invalid WeChat response');
+
+  const result = parsed.xml;
 
   if (result.return_code !== 'SUCCESS' || result.result_code !== 'SUCCESS') {
     throw new Error(result.err_code_des || result.return_msg || 'WeChat order failed');
@@ -111,8 +131,12 @@ async function wechatCreateOrder(amount, orderId, subject, ip) {
 }
 
 function wechatVerifyCallback(xmlBody) {
-  const parser = new XMLParser({ ignoreAttributes: false });
-  const data = parser.parse(xmlBody).xml;
+  const parsed = safeParseXML(xmlBody);
+  if (!parsed || !parsed.xml) {
+    console.error('[WECHAT CB] XML parse failed or oversized');
+    return null;
+  }
+  const data = parsed.xml;
 
   // Re-compute sign and compare
   const receivedSign = data.sign;
@@ -127,7 +151,7 @@ function wechatVerifyCallback(xmlBody) {
   return {
     outTradeNo: data.out_trade_no,
     transactionId: data.transaction_id,
-    totalFee: parseInt(data.total_fee) / 100,
+    totalFee: parseInt(data.total_fee) / 100, // fen → yuan
     raw: data,
   };
 }
@@ -140,7 +164,7 @@ function isAlipayConfigured() {
 
 async function alipayCreateOrder(amount, orderId, subject) {
   if (!isAlipayConfigured()) {
-    if (process.env.NODE_ENV !== 'production') console.log(`[PAY DEV] Alipay not configured, order=${orderId}`);
+    if (!isProduction()) console.log(`[PAY DEV] Alipay not configured, order=${orderId}`);
     return { devMode: true, paymentUrl: `dev://alipay?orderId=${orderId}&amount=${amount}` };
   }
 
@@ -194,12 +218,16 @@ function alipayVerifyCallback(params, signature) {
 
 // ── Unified Service Interface ──────────────────────────────────────
 
+// Maximum single payment amount (yuan) — prevents overflow and fraud
+const MAX_PAYMENT_AMOUNT = 500000; // 500K yuan per transaction
+
 /**
  * Create a payment order and get H5 payment URL.
- * @returns {{ success: boolean, orderId?: string, paymentUrl?: string, error?: string }}
+ * @returns {{ success: boolean, orderId?: string, paymentUrl?: string, devPaid?: boolean, error?: string }}
  */
 async function createPaymentOrder(userId, amount, channel, ip, subject) {
   if (!amount || amount <= 0) return { success: false, error: 'Invalid amount' };
+  if (amount > MAX_PAYMENT_AMOUNT) return { success: false, error: `单笔支付上限 ¥${MAX_PAYMENT_AMOUNT.toLocaleString()}` };
   if (!['wechat_h5', 'alipay_h5'].includes(channel)) return { success: false, error: 'Invalid channel' };
 
   const orderId = generateOrderId();
@@ -222,20 +250,22 @@ async function createPaymentOrder(userId, amount, channel, ip, subject) {
     }
 
     if (result.devMode) {
-      // Dev mode: ONLY auto-fund if explicit env var is set, otherwise just record pending order
-      if (process.env.PAYMENT_DEV_AUTO_FUND === 'true') {
+      // Dev mode: ONLY auto-fund if explicit env var is set AND not in production
+      if (process.env.PAYMENT_DEV_AUTO_FUND === 'true' && !isProduction()) {
         const u = get('SELECT balance FROM users WHERE id = ?', [userId]);
-        run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [amount, now, userId]);
-        run(
-          'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-          [uuidv4(), userId, 'recharge', amount, u ? u.balance : 0, (u ? u.balance : 0) + amount, channel, 'completed', 'order', orderId, now]
-        );
-        run('UPDATE payment_orders SET status = ?, paid_at = ?, out_trade_no = ? WHERE id = ?',
-          ['paid', now, 'dev_' + orderId, orderId]);
+        transaction(() => {
+          run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [amount, now, userId]);
+          run(
+            'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+            [uuidv4(), userId, 'recharge', amount, u ? u.balance : 0, (u ? u.balance : 0) + amount, channel, 'completed', 'order', orderId, now]
+          );
+          run('UPDATE payment_orders SET status = ?, paid_at = ?, out_trade_no = ? WHERE id = ?',
+            ['paid', now, 'dev_' + orderId, orderId]);
+        });
         return { success: true, orderId, paymentUrl: result.paymentUrl, devPaid: true };
       }
       // Safe default: create pending order, user must manually approve or configure real payment
-      console.log(`[PAY DEV] Payment not configured. Order ${orderId} created as pending. Set PAYMENT_DEV_AUTO_FUND=true to auto-fund.`);
+      if (!isProduction()) console.log(`[PAY DEV] Payment not configured. Order ${orderId} created as pending. Set PAYMENT_DEV_AUTO_FUND=true to auto-fund.`);
       return { success: true, orderId, paymentUrl: result.paymentUrl, devPaid: false };
     }
 
@@ -252,6 +282,7 @@ async function createPaymentOrder(userId, amount, channel, ip, subject) {
 
 /**
  * Process a payment gateway callback.
+ * Verifies: signature, order existence, amount match, idempotency.
  * @returns {{ success: boolean, message?: string }}
  */
 function processPaymentCallback(channel, rawData) {
@@ -278,31 +309,45 @@ function processPaymentCallback(channel, rawData) {
     return { success: false, message: 'Order not found' };
   }
 
-  // Idempotency
+  // Verify callback amount matches order amount (prevents amount tampering)
+  if (Math.abs(verified.totalFee - order.amount) > 0.01) {
+    console.error(`[PAY CB] Amount mismatch: callback=${verified.totalFee} order=${order.amount}`);
+    return { success: false, message: 'Amount mismatch' };
+  }
+
+  // Idempotency — prevent double-spend
   if (order.status === 'paid') {
     return { success: true, message: 'Already paid' };
   }
 
   const now = new Date().toISOString();
 
-  // Update order
-  run(
-    'UPDATE payment_orders SET status = ?, paid_at = ?, callback_data = ? WHERE id = ?',
-    ['paid', now, JSON.stringify(verified.raw), order.id]
-  );
+  // Use transaction for atomic balance update
+  try {
+    transaction(() => {
+      // Update order
+      run(
+        'UPDATE payment_orders SET status = ?, paid_at = ?, callback_data = ? WHERE id = ?',
+        ['paid', now, JSON.stringify(verified.raw), order.id]
+      );
 
-  // Update user balance
-  const u = get('SELECT balance FROM users WHERE id = ?', [order.user_id]);
-  if (u) {
-    run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [order.amount, now, order.user_id]);
-    run(
-      'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-      [uuidv4(), order.user_id, 'recharge', order.amount, u.balance, u.balance + order.amount, order.channel, 'completed', 'order', order.id, now]
-    );
+      // Update user balance atomically
+      const u = get('SELECT balance FROM users WHERE id = ?', [order.user_id]);
+      if (u) {
+        run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [order.amount, now, order.user_id]);
+        run(
+          'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+          [uuidv4(), order.user_id, 'recharge', order.amount, u.balance, u.balance + order.amount, order.channel, 'completed', 'order', order.id, now]
+        );
+      }
+    });
+
+    if (!isProduction()) console.log(`[PAY CB] Order ${order.id} paid via ${channel}, ¥${order.amount}`);
+    return { success: true, message: 'OK' };
+  } catch (e) {
+    console.error('[PAY CB] Transaction failed:', e.message);
+    return { success: false, message: 'Transaction failed' };
   }
-
-  if (process.env.NODE_ENV !== 'production') console.log(`[PAY CB] Order ${order.id} paid via ${channel}`);
-  return { success: true, message: 'OK' };
 }
 
 module.exports = { createPaymentOrder, processPaymentCallback };

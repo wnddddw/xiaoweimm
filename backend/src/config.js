@@ -62,4 +62,12 @@ module.exports = {
   alipayPublicKey: process.env.ALIPAY_PUBLIC_KEY || '',
   alipayNotifyUrl: process.env.ALIPAY_NOTIFY_URL || 'https://api.example.com/api/payments/callback/alipay',
   alipayReturnUrl: process.env.ALIPAY_RETURN_URL || 'https://example.com/payment-result',
+
+  // WeChat OAuth (Open Platform — login/registration)
+  wechatOAuthAppId: process.env.WECHAT_OAUTH_APP_ID || '',
+  wechatOAuthSecret: process.env.WECHAT_OAUTH_SECRET || '',
+
+  // Alipay OAuth (Open Platform — login/registration)
+  alipayOAuthAppId: process.env.ALIPAY_OAUTH_APP_ID || '',
+  alipayOAuthPrivateKey: process.env.ALIPAY_OAUTH_PRIVATE_KEY || '',
 };

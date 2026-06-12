@@ -1,11 +1,23 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { run, get, all } = require('../db/init');
+const { run, get, all, transaction } = require('../db/init');
 const { auth } = require('../middleware/auth');
+const { adminAuth } = require('../middleware/adminAuth');
+const { createRateLimit } = require('../middleware/rateLimit');
 const paymentService = require('../services/payment');
 const router = express.Router();
 
-// ── Balance & History (existing) ─────────────────────────────────────
+const MAX_RECHARGE_AMOUNT = 500000; // ¥500,000 max per recharge
+const isProduction = () => process.env.NODE_ENV === 'production';
+
+// Rate limiter for recharge — 5 per hour per user
+const rechargeLimiter = createRateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyBy: 'ip',
+});
+
+// ── Balance & History ──────────────────────────────────────────────
 
 router.get('/balance', auth, (req, res) => {
   res.json({ success: true, data: { balance: get('SELECT balance FROM users WHERE id=?', [req.user.id]).balance } });
@@ -19,12 +31,13 @@ router.get('/bills', auth, (req, res) => {
   res.json({ success: true, data: all('SELECT * FROM bills WHERE user_id=? ORDER BY created_at DESC', [req.user.id]) });
 });
 
-// ── Payment Order (new) ──────────────────────────────────────────────
+// ── Payment Order ──────────────────────────────────────────────────
 
 // POST /payments/order — Create a payment order (WeChat H5 / Alipay H5)
 router.post('/order', auth, async (req, res) => {
   const { amount, channel, subject } = req.body;
   if (!amount || amount <= 0) return res.json({ success: false, error: 'Invalid amount' });
+  if (amount > MAX_RECHARGE_AMOUNT) return res.json({ success: false, error: `单笔上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
   if (!['wechat_h5', 'alipay_h5'].includes(channel))
     return res.json({ success: false, error: 'Invalid channel' });
 
@@ -51,7 +64,7 @@ router.get('/order/:id', auth, (req, res) => {
   res.json({ success: true, data: order });
 });
 
-// ── Payment Callbacks (public — no auth) ─────────────────────────────
+// ── Payment Callbacks (public — no auth, called by gateways) ───────
 
 // WeChat async notify — receives raw XML body
 router.post('/callback/wechat', (req, res) => {
@@ -61,10 +74,17 @@ router.post('/callback/wechat', (req, res) => {
   } else {
     rawBody = req.body;
   }
+
+  // Basic size check for raw XML body
+  if (Buffer.byteLength(rawBody || '', 'utf8') > 128 * 1024) {
+    console.error('[WECHAT CB] Payload too large, rejected');
+    res.set('Content-Type', 'text/xml');
+    return res.send('<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[Payload too large]]></return_msg></xml>');
+  }
+
   console.log('[WECHAT CB]', rawBody);
   const result = paymentService.processPaymentCallback('wechat_h5', rawBody);
 
-  // WeChat expects XML response
   const resp = result.success
     ? '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>'
     : '<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[' + result.message + ']]></return_msg></xml>';
@@ -76,7 +96,6 @@ router.post('/callback/wechat', (req, res) => {
 router.post('/callback/alipay', (req, res) => {
   console.log('[ALIPAY CB]', req.body);
   const result = paymentService.processPaymentCallback('alipay_h5', req.body);
-  // Alipay expects literal 'success' or 'fail'
   res.send(result.success ? 'success' : 'fail');
 });
 
@@ -92,16 +111,39 @@ router.get('/callback/alipay', (req, res) => {
   res.redirect(`/payment-result.html?order_id=${out_trade_no || ''}&channel=alipay`);
 });
 
-// ── Direct recharge (dev fallback) ───────────────────────────────────
-router.post('/recharge', auth, (req, res) => {
+// ── Recharge (DEV ONLY — requires admin in production) ─────────────
+
+// POST /payments/recharge — manual balance recharge
+// In production: admin-only. In dev: any authenticated user (for testing).
+router.post('/recharge', auth, rechargeLimiter, (req, res) => {
+  // Production guard: admin-only recharge
+  if (isProduction()) {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Only admins can manually recharge in production' });
+    }
+  }
+
   const { amount, pay_method } = req.body;
   if (!amount || amount <= 0) return res.json({ success: false, error: 'Invalid amount' });
-  const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]),
-    now = new Date().toISOString();
-  run('UPDATE users SET balance=balance+?,updated_at=? WHERE id=?', [amount, now, req.user.id]);
-  run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',
-    [uuidv4(), req.user.id, 'recharge', amount, u.balance, u.balance + amount, pay_method || 'WeChat', now]);
-  res.json({ success: true, data: { balance: u.balance + amount } });
+  if (amount > MAX_RECHARGE_AMOUNT) return res.json({ success: false, error: `单笔充值上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
+
+  const now = new Date().toISOString();
+
+  try {
+    transaction(() => {
+      const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
+      if (!u) return res.json({ success: false, error: '用户不存在' });
+
+      run('UPDATE users SET balance=balance+?,updated_at=? WHERE id=?', [amount, now, req.user.id]);
+      run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',
+        [uuidv4(), req.user.id, 'recharge', amount, u.balance, u.balance + amount, pay_method || 'Admin', now]);
+    });
+
+    if (!isProduction()) console.log(`[DEV RECHARGE] User ${req.user.phone?.slice(-4)} +¥${amount}`);
+    res.json({ success: true, data: { balance: get('SELECT balance FROM users WHERE id=?', [req.user.id]).balance } });
+  } catch (e) {
+    res.status(500).json({ success: false, error: '充值失败，请重试' });
+  }
 });
 
 module.exports = router;

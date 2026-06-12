@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>xiaoweimm · 中国中小企业 M&amp;A 一站式平台 · 2026 招商季</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700;9..144,900&family=Noto+Serif+SC:wght@300;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a1730;        /* deep navy */
+    --ink-2:#122547;      /* paper-ish */
+    --paper:#f3ecd8;      /* warm off-white */
+    --paper-2:#e8dec0;
+    --gold:#c8a253;       /* warm metallic */
+    --gold-2:#8a6a2c;
+    --rule:rgba(243,236,216,.22);
+    --hairline:rgba(243,236,216,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0a1730;color:var(--paper);font-family:"Noto Sans SC","DM Sans",sans-serif;-webkit-font-smoothing:antialiased}
+  .poster{
+    position:relative;
+    width:1200px;height:1800px;
+    margin:0 auto;
+    background:
+      radial-gradient(1200px 700px at 80% 10%, rgba(200,162,83,.10), transparent 60%),
+      radial-gradient(900px 600px at 0% 100%, rgba(200,162,83,.06), transparent 60%),
+      var(--ink);
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+  }
+  /* paper grain */
+  .poster::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.85  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity:.55;mix-blend-mode:overlay;
+  }
+  /* frame */
+  .frame{
+    position:absolute;inset:48px;
+    border:1px solid var(--rule);
+    outline:1px solid var(--rule);
+    outline-offset:8px;
+    pointer-events:none;
+  }
+  .frame::before,.frame::after{
+    content:"";position:absolute;width:34px;height:34px;border:1px solid var(--gold);
+  }
+  .frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
+  .frame::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
+
+  /* layout */
+  .pad{padding:0 110px}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:96px 110px 0;position:relative;z-index:2}
+  .brand{display:flex;align-items:baseline;gap:18px}
+  .brand .dot{width:10px;height:10px;background:var(--gold);border-radius:50%;display:inline-block;transform:translateY(-3px)}
+  .brand .name{font-family:"Fraunces",serif;font-weight:700;font-size:24px;letter-spacing:.04em;color:var(--paper)}
+  .brand .name em{font-style:normal;color:var(--gold);font-weight:500}
+  .brand .cn{font-family:"Noto Serif SC",serif;font-weight:500;font-size:18px;letter-spacing:.4em;color:var(--paper-2);padding-left:14px;border-left:1px solid var(--hairline)}
+  .edition{font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.32em;color:var(--paper-2);text-transform:uppercase}
+  .edition b{color:var(--gold);font-weight:500}
+
+  /* ribbon */
+  .ribbon{
+    margin:42px 110px 0;display:flex;align-items:center;gap:18px;
+    border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);
+    padding:14px 0;position:relative;z-index:2;
+  }
+  .ribbon .tag{
+    font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.32em;
+    color:var(--ink);background:var(--gold);padding:6px 12px;
+  }
+  .ribbon .label{font-family:"Noto Serif SC",serif;font-weight:500;font-size:18px;letter-spacing:.3em;color:var(--paper)}
+  .ribbon .label em{font-style:normal;color:var(--gold)}
+  .ribbon .meta{margin-left:auto;font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.18em;color:var(--paper-2)}
+
+  /* hero */
+  .hero{position:relative;z-index:2;padding:80px 110px 0}
+  .hero .eyebrow{
+    font-family:"DM Mono",monospace;font-size:13px;letter-spacing:.5em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:30px;
+  }
+  .hero .eyebrow::before{content:"";display:inline-block;width:48px;height:1px;background:var(--gold);vertical-align:middle;margin-right:18px}
+  .hero h1{
+    font-family:"Noto Serif SC",serif;font-weight:900;
+    font-size:172px;line-height:.96;letter-spacing:-.02em;color:var(--paper);
+  }
+  .hero h1 .row{display:block}
+  .hero h1 .row.alt{color:var(--paper-2);font-weight:300}
+  .hero h1 .accent{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:500;
+    color:var(--gold);font-size:130px;letter-spacing:-.01em;
+    margin-left:.15em;
+  }
+  .hero .sub{
+    margin-top:46px;max-width:780px;
+    font-family:"Noto Serif SC",serif;font-weight:300;font-size:26px;line-height:1.55;
+    color:var(--paper-2);letter-spacing:.04em;
+  }
+  .hero .sub b{font-weight:500;color:var(--paper)}
+  .hero .sub .punc{color:var(--gold);font-weight:500}
+
+  /* quote */
+  .quote{
+    position:relative;z-index:2;margin:60px 110px 0;padding:30px 0 0;
+    border-top:1px dashed var(--hairline);
+    display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:start;
+  }
+  .quote .mark{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:300;
+    font-size:120px;line-height:.7;color:var(--gold);
+  }
+  .quote .text{
+    font-family:"Noto Serif SC",serif;font-weight:300;font-size:24px;line-height:1.55;
+    color:var(--paper);letter-spacing:.04em;
+  }
+  .quote .src{margin-top:14px;font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.3em;color:var(--paper-2);text-transform:uppercase}
+
+  /* pillars */
+  .pillars{
+    position:relative;z-index:2;margin:64px 110px 0;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    border:1px solid var(--hairline);
+  }
+  .pillar{padding:32px 24px 28px;border-right:1px solid var(--hairline);position:relative}
+  .pillar:last-child{border-right:none}
+  .pillar .num{font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.32em;color:var(--gold);margin-bottom:18px}
+  .pillar h3{font-family:"Noto Serif SC",serif;font-weight:700;font-size:24px;color:var(--paper);margin-bottom:6px;letter-spacing:.06em}
+  .pillar .en{font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:var(--paper-2);letter-spacing:.06em;margin-bottom:18px}
+  .pillar .desc{font-family:"Noto Sans SC",sans-serif;font-weight:300;font-size:13px;line-height:1.6;color:var(--paper-2);letter-spacing:.04em}
+  .pillar svg{display:block;margin-bottom:18px;color:var(--gold)}
+
+  /* stats */
+  .stats{
+    position:relative;z-index:2;margin:54px 110px 0;
+    display:grid;grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);
+  }
+  .stat{padding:26px 0;text-align:left;border-right:1px solid var(--hairline);padding-right:18px}
+  .stat:last-child{border-right:none}
+  .stat .v{font-family:"Fraunces",serif;font-weight:700;font-size:54px;color:var(--paper);letter-spacing:-.02em;line-height:1}
+  .stat .v sup{font-size:24px;color:var(--gold);font-weight:500;margin-left:2px;top:-1.1em}
+  .stat .u{font-family:"Noto Sans SC",sans-serif;font-weight:400;font-size:13px;color:var(--paper-2);letter-spacing:.2em;margin-top:8px}
+  .stat .k{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.3em;color:var(--gold);margin-top:6px;text-transform:uppercase}
+
+  /* journey */
+  .journey{
+    position:relative;z-index:2;margin:54px 110px 0;
+    display:grid;grid-template-columns:160px 1fr;gap:30px;align-items:start;
+  }
+  .journey .lab{font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;padding-top:6px}
+  .journey .track{
+    position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:0;
+    border-top:1px solid var(--hairline);padding-top:18px;
+  }
+  .journey .track::before{
+    content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--hairline);
+  }
+  .stage{position:relative;padding-right:14px}
+  .stage::before{
+    content:"";position:absolute;left:0;top:-24px;width:9px;height:9px;background:var(--gold);border-radius:50%;
+  }
+  .stage .n{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.3em;color:var(--paper-2)}
+  .stage .t{font-family:"Noto Serif SC",serif;font-weight:500;font-size:15px;color:var(--paper);margin-top:6px;letter-spacing:.06em}
+  .stage .e{font-family:"Fraunces",serif;font-style:italic;font-size:11px;color:var(--paper-2);margin-top:2px}
+
+  /* footer */
+  .footer{
+    position:absolute;left:0;right:0;bottom:0;z-index:2;
+    padding:0 110px 72px;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end;
+  }
+  .cta{
+    border-top:1px solid var(--hairline);
+    padding-top:22px;
+  }
+  .cta .lbl{font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+  .cta .ttl{font-family:"Noto Serif SC",serif;font-weight:700;font-size:38px;color:var(--paper);letter-spacing:.04em;line-height:1.2}
+  .cta .ttl em{font-style:normal;color:var(--gold);font-weight:500}
+  .cta .small{font-family:"Noto Sans SC",sans-serif;font-weight:300;font-size:14px;color:var(--paper-2);margin-top:8px;letter-spacing:.06em}
+  .stamp{
+    text-align:right;
+    border:1px solid var(--hairline);
+    padding:14px 18px;
+    background:rgba(243,236,216,.03);
+  }
+  .stamp .a{font-family:"Fraunces",serif;font-weight:700;font-size:30px;color:var(--gold);letter-spacing:.04em;line-height:1}
+  .stamp .b{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.32em;color:var(--paper-2);margin-top:6px;text-transform:uppercase}
+  .stamp .c{font-family:"Noto Serif SC",serif;font-size:11px;color:var(--paper-2);margin-top:8px;letter-spacing:.18em}
+
+  /* corner meta */
+  .corners{position:absolute;inset:0;pointer-events:none;z-index:2}
+  .corners span{position:absolute;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.32em;color:var(--paper-2);text-transform:uppercase}
+  .corners .tl{top:24px;left:24px}
+  .corners .tr{top:24px;right:24px;color:var(--gold)}
+  .corners .bl{bottom:24px;left:24px}
+  .corners .br{bottom:24px;right:24px;color:var(--gold)}
+</style>
+</head>
+<body>
+<main class="poster" role="img" aria-label="xiaoweimm 中国中小企业 M&A 一站式平台 2026 招商季海报">
+
+  <div class="corners">
+    <span class="tl">No. 026 / 2026 — M&amp;A Quarterly</span>
+    <span class="tr">EST. 2026 · SHANGHAI</span>
+    <span class="bl">xiaoweimm.com</span>
+    <span class="br">招商季 · LIMITED</span>
+  </div>
+
+  <div class="frame"></div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="dot"></span>
+      <span class="name">xiaoweimm <em>·</em> 小微买卖</span>
+      <span class="cn">并 购 撮 合 一 站 式</span>
+    </div>
+    <div class="edition">VOLUME <b>2026</b> &nbsp;/&nbsp; ISSUE 06</div>
+  </header>
+
+  <div class="ribbon">
+    <span class="tag">招商季</span>
+    <span class="label">中 国 中 小 企 业 &nbsp;·&nbsp; 资 源 对 接 &nbsp;·&nbsp; 全 程 陪 跑</span>
+    <span class="meta">2026.06.10 → 09.30</span>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow">M&amp;A · MATCHING · ESCROW</div>
+    <h1>
+      <span class="row">把生意</span>
+      <span class="row">交给对的人<span class="accent">.</span></span>
+    </h1>
+    <p class="sub">
+      一端是年营业额 <b>5000 万</b> 上下、想要 <span class="punc">转身</span> 的中小老板；
+      一端是手握资金、寻找 <span class="punc">标的</span> 的产业方与投资机构。
+      <b>xiaoweimm</b> 用 AI 把两端拼成一张 <span class="punc">成交图</span>。
+    </p>
+  </section>
+
+  <section class="quote">
+    <div class="mark">&ldquo;</div>
+    <div>
+      <p class="text">
+        我们不只做撮合。从挂牌、实名、意向、保密协议，到尽调、合同、托管、过户——
+        七道工序，全程有人陪。
+      </p>
+      <p class="src">— A Quiet Promise, Xiaoweimm Editorial</p>
+    </div>
+  </section>
+
+  <section class="pillars" aria-label="四大能力">
+    <div class="pillar">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.4">
+        <circle cx="9" cy="9" r="3"/><circle cx="27" cy="9" r="3"/><circle cx="18" cy="27" r="3"/>
+        <path d="M9 12 L18 24 M27 12 L18 24 M12 9 L24 9"/>
+      </svg>
+      <div class="num">01 / 配对</div>
+      <h3>双向挂牌</h3>
+      <div class="en">Sourcing</div>
+      <p class="desc">卖方填报经营、利润、痛点；买方勾选行业、预算、并购目的。结构化字段，秒级入库。</p>
+    </div>
+    <div class="pillar">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M18 4 L20 14 L30 16 L20 18 L18 28 L16 18 L6 16 L16 14 Z"/>
+      </svg>
+      <div class="num">02 / 智能</div>
+      <h3>AI 撮合</h3>
+      <div class="en">AI Matching</div>
+      <p class="desc">按行业、地域、规模、并购目的四维度打分，匹配度 0–100，给理由、给标签、给风险。</p>
+    </div>
+    <div class="pillar">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M18 4 L30 8 V18 C30 25 24 30 18 32 C12 30 6 25 6 18 V8 Z"/>
+        <path d="M12 18 L16 22 L24 14"/>
+      </svg>
+      <div class="num">03 / 风控</div>
+      <h3>合同保密</h3>
+      <div class="en">Contract &amp; NDA</div>
+      <p class="desc">平台标准合同模板 + 在线签章，机密信息按权限解锁，会计师、律师、税务师可一键接入。</p>
+    </div>
+    <div class="pillar">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M4 18 H28 M22 12 L28 18 L22 24"/>
+        <circle cx="30" cy="18" r="2.5" fill="currentColor"/>
+      </svg>
+      <div class="num">04 / 陪跑</div>
+      <h3>成交过户</h3>
+      <div class="en">Escrow &amp; Handover</div>
+      <p class="desc">资金分批托管、里程碑释放、并后整合：工商、税务、印章、客户名录，一条龙交付。</p>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="平台数据">
+    <div class="stat"><div class="v">2.3<sup>+</sup></div><div class="u">万 在 线 项 目</div><div class="k">Live Projects</div></div>
+    <div class="stat"><div class="v">65<sup>%</sup></div><div class="u">会 员 续 费 率</div><div class="k">Renewal</div></div>
+    <div class="stat"><div class="v">85<sup>+</sup></div><div class="u">合 作 专 家</div><div class="k">Partners</div></div>
+    <div class="stat"><div class="v">25<sup>%</sup></div><div class="u">线 下 转 化</div><div class="k">Offline → Online</div></div>
+  </section>
+
+  <section class="journey" aria-label="成交七步">
+    <div class="lab">流程 / 7 STAGES</div>
+    <div class="track">
+      <div class="stage"><div class="n">S.01</div><div class="t">挂 牌</div><div class="e">Listing</div></div>
+      <div class="stage"><div class="n">S.02</div><div class="t">实 名</div><div class="e">KYC</div></div>
+      <div class="stage"><div class="n">S.03</div><div class="t">意 向</div><div class="e">Interest</div></div>
+      <div class="stage"><div class="n">S.04</div><div class="t">保 密</div><div class="e">NDA</div></div>
+      <div class="stage"><div class="n">S.05</div><div class="t">尽 调</div><div class="e">DD</div></div>
+      <div class="stage"><div class="n">S.06</div><div class="t">签 约</div><div class="e">SPA</div></div>
+      <div class="stage"><div class="n">S.07</div><div class="t">过 户</div><div class="e">Handover</div></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="cta">
+      <div class="lbl">招商进行中 · 限时免入驻</div>
+      <div class="ttl">先把 <em>生意</em> 挂上来，<br>再谈 <em>并购</em> 的事。</div>
+      <div class="small">扫码或访问 xiaoweimm.com · 招商热线 400-000-0000</div>
+    </div>
+    <div class="stamp">
+      <div class="a">¥0</div>
+      <div class="b">FREE ONBOARDING</div>
+      <div class="c">限 时 至 09.30</div>
+    </div>
+  </footer>
+
+</main>
+</body>
+</html>

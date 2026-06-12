@@ -1,0 +1,201 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.wnddd"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="36" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:2:5-66
+11-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:2:22-64
+12
+13    <queries>
+13-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:5-17:15
+14        <intent>
+14-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:8:9-10:18
+15            <action android:name="org.chromium.intent.action.PAY" />
+15-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:9:13-69
+15-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:9:21-66
+16        </intent>
+17        <intent>
+17-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:11:9-13:18
+18            <action android:name="org.chromium.intent.action.IS_READY_TO_PAY" />
+18-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:12:13-81
+18-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:12:21-78
+19        </intent>
+20        <intent>
+20-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:14:9-16:18
+21            <action android:name="org.chromium.intent.action.UPDATE_PAYMENT_DETAILS" />
+21-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:15:13-88
+21-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:15:21-85
+22        </intent>
+23    </queries>
+24
+25    <permission
+25-->[androidx.core:core:1.13.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\3ab175ce4c32f2aa2c0a91524e5ea923\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+26        android:name="com.wnddd.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+26-->[androidx.core:core:1.13.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\3ab175ce4c32f2aa2c0a91524e5ea923\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+27        android:protectionLevel="signature" />
+27-->[androidx.core:core:1.13.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\3ab175ce4c32f2aa2c0a91524e5ea923\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+28
+29    <uses-permission android:name="com.wnddd.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+29-->[androidx.core:core:1.13.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\3ab175ce4c32f2aa2c0a91524e5ea923\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+29-->[androidx.core:core:1.13.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\3ab175ce4c32f2aa2c0a91524e5ea923\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+30
+31    <application
+31-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:3:5-23:19
+32        android:name="com.wnddd.MainApplication"
+32-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:4:9-40
+33        android:allowBackup="false"
+33-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:8:1-28
+34        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+34-->[androidx.core:core:1.13.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\3ab175ce4c32f2aa2c0a91524e5ea923\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+35        android:extractNativeLibs="false"
+36        android:icon="@mipmap/ic_launcher"
+36-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:6:9-43
+37        android:label="小微买卖"
+37-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:5:9-29
+38        android:roundIcon="@mipmap/ic_launcher_round"
+38-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:7:9-54
+39        android:theme="@style/AppTheme"
+39-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:9:9-40
+40        android:usesCleartextTraffic="true" >
+40-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:10:9-44
+41        <activity
+41-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:11:9-22:20
+42            android:name="com.wnddd.MainActivity"
+42-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:12:13-41
+43            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+43-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:14:13-122
+44            android:exported="true"
+44-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:17:13-36
+45            android:label="小微买卖"
+45-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:13:13-33
+46            android:launchMode="singleTask"
+46-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:15:13-44
+47            android:windowSoftInputMode="adjustResize" >
+47-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:16:13-55
+48            <intent-filter>
+48-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:18:13-21:29
+49                <action android:name="android.intent.action.MAIN" />
+49-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:19:17-68
+49-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:19:25-66
+50
+51                <category android:name="android.intent.category.LAUNCHER" />
+51-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:20:17-76
+51-->D:\xin\mobile\android\app\src\main\AndroidManifest.xml:20:27-74
+52            </intent-filter>
+53        </activity>
+54
+55        <provider
+55-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:20:9-28:20
+56            android:name="com.reactnativecommunity.webview.RNCWebViewFileProvider"
+56-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:21:13-83
+57            android:authorities="com.wnddd.fileprovider"
+57-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:22:13-64
+58            android:exported="false"
+58-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:23:13-37
+59            android:grantUriPermissions="true" >
+59-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:24:13-47
+60            <meta-data
+60-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:25:13-27:63
+61                android:name="android.support.FILE_PROVIDER_PATHS"
+61-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:26:17-67
+62                android:resource="@xml/file_provider_paths" />
+62-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:27:17-60
+63        </provider>
+64        <provider
+64-->[:react-native-image-picker] D:\xin\mobile\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:8:9-16:20
+65            android:name="com.imagepicker.ImagePickerProvider"
+65-->[:react-native-image-picker] D:\xin\mobile\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:9:13-63
+66            android:authorities="com.wnddd.imagepickerprovider"
+66-->[:react-native-image-picker] D:\xin\mobile\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:13-71
+67            android:exported="false"
+67-->[:react-native-image-picker] D:\xin\mobile\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:11:13-37
+68            android:grantUriPermissions="true" >
+68-->[:react-native-image-picker] D:\xin\mobile\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:12:13-47
+69            <meta-data
+69-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:25:13-27:63
+70                android:name="android.support.FILE_PROVIDER_PATHS"
+70-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:26:17-67
+71                android:resource="@xml/imagepicker_provider_paths" />
+71-->[:react-native-webview] D:\xin\mobile\node_modules\react-native-webview\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:27:17-60
+72        </provider>
+73        <provider
+73-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+74            android:name="androidx.startup.InitializationProvider"
+74-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
+75            android:authorities="com.wnddd.androidx-startup"
+75-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
+76            android:exported="false" >
+76-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
+77            <meta-data
+77-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+78                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+78-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
+79                android:value="androidx.startup" />
+79-->[androidx.emoji2:emoji2:1.2.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\21ad47093323eb5b467e1594b46564e0\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
+80            <meta-data
+80-->[androidx.lifecycle:lifecycle-process:2.6.2] E:\Users\Administrator\.gradle\caches\8.9\transforms\c49ac7053a2960962b8078f9d237de26\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
+81                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+81-->[androidx.lifecycle:lifecycle-process:2.6.2] E:\Users\Administrator\.gradle\caches\8.9\transforms\c49ac7053a2960962b8078f9d237de26\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
+82                android:value="androidx.startup" />
+82-->[androidx.lifecycle:lifecycle-process:2.6.2] E:\Users\Administrator\.gradle\caches\8.9\transforms\c49ac7053a2960962b8078f9d237de26\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
+83            <meta-data
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+84                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+84-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+85                android:value="androidx.startup" />
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+86        </provider>
+87
+88        <receiver
+88-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+89            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+89-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+90            android:directBootAware="false"
+90-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+91            android:enabled="true"
+91-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+92            android:exported="true"
+92-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+93            android:permission="android.permission.DUMP" >
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+94            <intent-filter>
+94-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+95                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+95-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+95-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+96            </intent-filter>
+97            <intent-filter>
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+98                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+99            </intent-filter>
+100            <intent-filter>
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+101                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+102            </intent-filter>
+103            <intent-filter>
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+104                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+104-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+104-->[androidx.profileinstaller:profileinstaller:1.3.0] E:\Users\Administrator\.gradle\caches\8.9\transforms\c4f26d94302760f17cf3e81829ff3ec7\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+105            </intent-filter>
+106        </receiver>
+107
+108        <meta-data
+108-->[com.facebook.soloader:soloader:0.12.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\0373f3c074589dbc374e0e9ab7d4d859\transformed\soloader-0.12.1\AndroidManifest.xml:12:9-14:37
+109            android:name="com.facebook.soloader.enabled"
+109-->[com.facebook.soloader:soloader:0.12.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\0373f3c074589dbc374e0e9ab7d4d859\transformed\soloader-0.12.1\AndroidManifest.xml:13:13-57
+110            android:value="false" />
+110-->[com.facebook.soloader:soloader:0.12.1] E:\Users\Administrator\.gradle\caches\8.9\transforms\0373f3c074589dbc374e0e9ab7d4d859\transformed\soloader-0.12.1\AndroidManifest.xml:14:13-34
+111    </application>
+112
+113</manifest>

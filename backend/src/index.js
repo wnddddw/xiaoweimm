@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const config = require('./config');
-const { getDb } = require('./db/init');
+const { getDb, run, get, all } = require('./db/init');
 
 const app = express();
 
@@ -41,6 +41,9 @@ app.use('/api/memberships', require('./routes/memberships'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/matching', require('./routes/matching'));
 app.use('/api/uploads', require('./routes/uploads'));
+app.use('/api/agreements', require('./routes/agreements'));
+app.use('/api/diagnostics', require('./routes/diagnostics'));
+app.use('/api/expert-services', require('./routes/expert-services'));
 app.use('/api/admin', require('./routes/admin/index'));
 
 // Serve uploaded files
@@ -67,9 +70,48 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ── Auto-Renewal Cron ─────────────────────────────────────────────────
+
+function runAutoRenewal() {
+  try {
+    const now = new Date().toISOString();
+    const expiredUsers = all(
+      "SELECT id, phone, member_level, balance, auto_renew, member_expire FROM users WHERE auto_renew=1 AND member_expire IS NOT NULL AND member_expire < ? AND member_level != 'free' AND status='active'",
+      [now]
+    );
+    const prices = { personal: 300, company: 600, vip: 1800 };
+    for (const u of expiredUsers) {
+      const amount = prices[u.member_level] || 0;
+      if (u.balance >= amount) {
+        // Renew: extend by 1 month
+        const expire = new Date();
+        expire.setMonth(expire.getMonth() + 1);
+        run('UPDATE users SET balance=balance-?, member_expire=?, updated_at=? WHERE id=?',
+          [amount, expire.toISOString(), now, u.id]);
+        run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',
+          [require('uuid').v4(), u.id, 'membership_renew', amount, u.balance, u.balance - amount, 'Auto', now]);
+        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} renewed ${u.member_level} for ¥${amount}`);
+      } else {
+        // Insufficient balance: downgrade to free
+        run("UPDATE users SET member_level='free', member_expire=NULL, auto_renew=0, updated_at=? WHERE id=?",
+          [now, u.id]);
+        run('INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)',
+          [require('uuid').v4(), u.id, 'system', '会员续费失败',
+           `余额不足（当前 ¥${u.balance.toFixed(2)}，需 ¥${amount}），会员已自动降级为免费。请充值后重新升级。`, now]);
+        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} downgraded to free (balance ¥${u.balance} < ¥${amount})`);
+      }
+    }
+  } catch (e) {
+    console.error('[AUTO-RENEW ERROR]', e.message);
+  }
+}
+
 // Initialize DB then start server
 getDb().then(() => {
   app.listen(config.port, () => {
     console.log(`xiaoweimm API Server running on http://localhost:${config.port}`);
+    // Run auto-renewal check on startup + every 24 hours
+    runAutoRenewal();
+    setInterval(runAutoRenewal, 24 * 60 * 60 * 1000);
   });
 });

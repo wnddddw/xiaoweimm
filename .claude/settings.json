@@ -1,0 +1,133 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(pnpm *)",
+      "Bash(yarn *)",
+      "Bash(python *)",
+      "Bash(pip *)",
+      "Bash(java *)",
+      "Bash(mvn *)",
+      "Bash(cargo *)",
+      "Bash(go *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/payment)",
+      "Bash(awk '{print $NF, $5}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/seller)",
+      "Bash(sed -i \"s/batonz_/wnddd_/g\" *.html)",
+      "Bash(sed -i \"s/\\\\badmin_verifications\\\\b/wnddd_verifications/g\" *.html)",
+      "Bash(sed -i \"s/\\\\badmin_projects\\\\b/wnddd_projects/g\" *.html)",
+      "Bash(sed -i \"s/\\\\badmin_users\\\\b/wnddd_users/g\" *.html)",
+      "Bash(sed -i \"s/\\\\badmin_config\\\\b/wnddd_config/g\" *.html)",
+      "Bash(grep -v \"function\\\\|//\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/buyer)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/messages)",
+      "Bash(sed -i 's/\\\\.badge-ok{background:#e8f8f0;color:var\\(--green\\)}/.badge-ok{background:#d5f5e3;color:#145a32}/g' admin.html buy.html case.html column.html company.html contact.html login.html member.html payment.html sell.html service.html verify.html)",
+      "Bash(sed -i 's/\\\\.badge-warn{background:#fef5e7;color:var\\(--orange\\)}/.badge-warn{background:#fdebd0;color:#7d6608}/g' admin.html buy.html case.html column.html company.html contact.html login.html member.html payment.html sell.html service.html verify.html)",
+      "Bash(sed -i 's/\\\\.badge-err{background:#fdedec;color:var\\(--red\\)}/.badge-err{background:#fadbd8;color:#78281f}/g' admin.html buy.html case.html column.html company.html contact.html login.html member.html payment.html sell.html service.html verify.html)",
+      "Bash(sed -i 's/\\\\.badge-info{background:#e8f0fe;color:var\\(--main\\)}/.badge-info{background:#d4e4fd;color:#1a44aa}/g' admin.html buy.html case.html column.html company.html contact.html login.html member.html payment.html sell.html service.html verify.html)",
+      "Bash(sed -i 's/\\\\.btn-gray{background:#eee;color:#666}/\\\\.btn-gray{background:#e5e7ea;color:#444}/g' admin.html buy.html case.html column.html company.html contact.html login.html member.html payment.html sell.html service.html verify.html)",
+      "Bash(sed -i 's/box-shadow:0 2px 8px rgba\\(0,0,0,0.05\\)/box-shadow:0 2px 8px rgba\\(0,0,0,0.07\\)/g' admin.html buy.html case.html column.html company.html contact.html member.html payment.html sell.html service.html)",
+      "Bash(sed -i 's/color:#666/color:#555/g' admin.html buy.html case.html column.html company.html contact.html login.html member.html payment.html sell.html service.html verify.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/buy)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/sell)",
+      "Bash(sed -i 's/border-bottom:2px solid #ddd;z-index:200/border-bottom:2px solid rgba\\(255,255,255,0.15\\);z-index:200/' buyer.html)",
+      "Bash(sed -i '/\\\\.topbar{border-bottom:2px solid rgba\\(255,255,255,0.15\\);}/d' buyer.html)",
+      "Bash(sed -i 's/<a href=\"buyer.html\">买家工作台<\\\\/a>/<a href=\"buyer.html\">买家工作台<\\\\/a>\\\\n            <a href=\"deal.html\">交易管理<\\\\/a>/' seller.html)",
+      "Bash(sed -i 's/<a href=\"buyer.html\" class=\"active\">买家工作台<\\\\/a>/<a href=\"buyer.html\" class=\"active\">买家工作台<\\\\/a>\\\\n            <a href=\"deal.html\">交易管理<\\\\/a>/' buyer.html)",
+      "Bash(sed -i 's/<a href=\"buyer.html\">买家工作台<\\\\/a>/<a href=\"buyer.html\">买家工作台<\\\\/a>\\\\n            <a href=\"deal.html\">交易管理<\\\\/a>/' messages.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/deal)",
+      "Bash(mkdir -p \"d:/gong_zuo/DS code-dm/xin/backend/src/db\" \"d:/gong_zuo/DS code-dm/xin/backend/src/middleware\" \"d:/gong_zuo/DS code-dm/xin/backend/src/routes/admin\" \"d:/gong_zuo/DS code-dm/xin/backend/src/services\" \"d:/gong_zuo/DS code-dm/xin/backend/src/utils\" \"d:/gong_zuo/DS code-dm/xin/backend/uploads\" \"d:/gong_zuo/DS code-dm/xin/backend/data\" \"d:/gong_zuo/DS code-dm/xin/HTML/js\" && echo \"directories created\")",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/register -H \"Content-Type: application/json\" -d '{\"phone\":\"13900000001\",\"code\":\"123456\",\"password\":\"123456\",\"name\":\"Test User\",\"role\":\"seller\"}')",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13800138001\",\"password\":\"123456\"}')",
+      "Bash(curl -s http://localhost:3001/api/projects)",
+      "Bash(pkill -f \"node src/index.js\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/register -H \"Content-Type: application/json\" -d '{\"phone\":\"13900000001\",\"code\":\"123456\",\"password\":\"123456\",\"name\":\"Test\",\"role\":\"seller\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('success:', d['success'], 'count:', len\\(d.get\\('data',[]\\)\\)\\)\")",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('messages:',len\\(d.get\\('data',[]\\)\\)\\)\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13800000000\",\"password\":\"123456\"}')",
+      "Bash(curl -s -o /dev/null -w \"backend:%{http_code} frontend:%{http_code}\\\\n\" http://localhost:3001/api/health http://localhost:3002/)",
+      "Bash(node src/index.js)",
+      "Bash(disown)",
+      "Bash(npx serve *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/api/health)",
+      "Bash(\"d:/gong_zuo/DS code-dm/xin/mobile/node_modules/.bin/tsc\" --noEmit)",
+      "Read(//c//**)",
+      "Read(//mnt/**)",
+      "Bash(echo \"=== Search D: for Android ===\" && ls -d \"D:/Android\"* 2>/dev/null && find \"D:/\" -name \"sdkmanager.bat\" -maxdepth 8 2>/dev/null | head -5 && find \"D:/\" -name \"java.exe\" -maxdepth 8 2>/dev/null | head -5)",
+      "Read(//d//**)",
+      "Bash(\"D:/Android Studio/jbr/bin/java\" -version)",
+      "Bash(\"D:/Android Studio/jbr/bin/java.exe\" -version)",
+      "Bash(\"/d/Android Studio/jbr/bin/java\" -version)",
+      "Bash(\"D:\\\\Android Studio\\\\jbr\\\\bin\\\\java.exe\" -version)",
+      "Bash(cmd.exe //c \"dir D:\\\\Android Studio\\\\jbr\\\\bin\\\\java.exe\")",
+      "Bash(\"/d/Android Studio 2025/jbr/bin/java\" -version)",
+      "Bash(echo \"ANDROID_HOME should be: D:\\\\\\\\Android Studio 2025\")",
+      "Bash(\"/d/Program Files/Android/Android Studio/jbr/bin/java\" -version)",
+      "Bash(curl -L -o \"d:/gong_zuo/DS code-dm/xin/mobile/android/gradle/wrapper/gradle-wrapper.jar\" \"https://github.com/gradle/gradle/raw/v8.10.2/gradle/wrapper/gradle-wrapper.jar\")",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(kill %1)",
+      "Bash(echo \"sdk.dir=D\\\\:\\\\\\\\\\\\\\\\Android Studio 2025\")",
+      "Bash(export JAVA_HOME=\"D:\\\\\\\\Program Files\\\\\\\\Android\\\\\\\\Android Studio\\\\\\\\jbr\")",
+      "Bash(export ANDROID_HOME=\"D:\\\\\\\\Android Studio 2025\")",
+      "Bash(\"./gradlew\" assembleDebug)",
+      "Bash(curl -s -o NUL -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(curl -L --connect-timeout 10 -o \"/tmp/gradle-8.10.2-all.zip\" \"https://mirrors.aliyun.com/gradle/gradle-8.10.2-all.zip\")",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(tail -15 \"E:\\\\\\\\Users\\\\\\\\Administrator\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\d--gong-zuo-DS-code-dm-xin\\\\\\\\41b86119-1a6d-4640-a139-0da9b556c729\\\\\\\\tasks\\\\\\\\bvlxemnei.output\")",
+      "Bash(wc -l \"E:\\\\\\\\Users\\\\\\\\Administrator\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\d--gong-zuo-DS-code-dm-xin\\\\\\\\41b86119-1a6d-4640-a139-0da9b556c729\\\\\\\\tasks\\\\\\\\bvlxemnei.output\")",
+      "Bash(tail -10 \"E:\\\\\\\\Users\\\\\\\\Administrator\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\d--gong-zuo-DS-code-dm-xin\\\\\\\\41b86119-1a6d-4640-a139-0da9b556c729\\\\\\\\tasks\\\\\\\\bvlxemnei.output\")",
+      "Bash(cmd.exe //c \"gradlew.bat assembleDebug\")",
+      "Bash(cmd.exe //c \"D:\\\\\\\\gong_zuo\\\\\\\\DS code-dm\\\\\\\\xin\\\\\\\\mobile\\\\\\\\build.bat\")",
+      "Bash(set NODE_ENV=production)",
+      "Bash(curl -s -o NUL -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o NUL -w \"login page: %{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s http://localhost:3000/api/auth/login -X POST -H \"Content-Type: application/json\" -d \"{\\\\\"username\\\\\":\\\\\"test\\\\\",\\\\\"password\\\\\":\\\\\"wrong\\\\\"}\")",
+      "Bash(curl -s -o NUL -w \"%{http_code}\" http://192.168.1.11:3000/)",
+      "Bash(cmd.exe //c \"dir /x D:\\\\\\\\gong_zuo\\\\\\\\\")",
+      "Bash(cmd.exe //c \"for %I in \\(\\\\\"D:\\\\gong_zuo\\\\DS code-dm\\\\xin\\\\mobile\\\\android\\\\build.gradle\\\\\"\\) do @echo %~sI\")",
+      "Bash(cmd.exe //c \"mklink /J D:\\\\\\\\xin D:\\\\\\\\gong_zuo\\\\\\\\DS code-dm\\\\\\\\xin\")"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(git push --force*)",
+      "Bash(chmod 777 *)",
+      "Bash(docker rm *)",
+      "Bash(dd *)"
+    ]
+    ,
+    "additionalDirectories": [
+      "d:\\gong_zuo\\DS code-dm\\xin\\backend\\src"
+    ]
+  },
+  "ui": {
+    "suppressPermissionPromptsForAllowedActions": true
+  }
+}
+{
+  "permissions": {
+    "allow": [
+      // 仅允许 localhost 端口的 curl 请求
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/sms-code *)"
+    ],
+    "deny": [
+      // 禁止所有其他 curl 请求（防止向外网发送数据）
+      "Bash(curl *)"
+    ]
+  }
+}

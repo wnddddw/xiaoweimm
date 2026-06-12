@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .calculator {
+            background: #1e1e2e;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            width: 340px;
+        }
+
+        .display {
+            background: #2a2a3e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: right;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            word-break: break-all;
+        }
+
+        .expression {
+            color: #8888aa;
+            font-size: 16px;
+            min-height: 24px;
+            margin-bottom: 8px;
+        }
+
+        .result {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-weight: 500;
+            user-select: none;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-number {
+            background: #2a2a3e;
+            color: #ffffff;
+        }
+
+        .btn-number:hover {
+            background: #3a3a5e;
+        }
+
+        .btn-operator {
+            background: #6c5ce7;
+            color: #ffffff;
+        }
+
+        .btn-operator:hover {
+            background: #7d6ff0;
+        }
+
+        .btn-operator.active {
+            background: #a29bfe;
+            box-shadow: 0 0 12px rgba(108, 92, 231, 0.5);
+        }
+
+        .btn-equals {
+            background: #00b894;
+            color: #ffffff;
+        }
+
+        .btn-equals:hover {
+            background: #00d2a0;
+        }
+
+        .btn-clear {
+            background: #d63031;
+            color: #ffffff;
+        }
+
+        .btn-clear:hover {
+            background: #e74c3c;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+        </div>
+        <div class="buttons">
+            <!-- 第一行 -->
+            <button class="btn-clear" onclick="clearAll()">C</button>
+            <button class="btn-clear" onclick="deleteLast()" style="background:#e17055">⌫</button>
+            <button class="btn-operator" onclick="inputOperator('/')">÷</button>
+            <button class="btn-operator" onclick="inputOperator('*')">×</button>
+
+            <!-- 数字行 -->
+            <button class="btn-number" onclick="inputNumber('7')">7</button>
+            <button class="btn-number" onclick="inputNumber('8')">8</button>
+            <button class="btn-number" onclick="inputNumber('9')">9</button>
+            <button class="btn-operator" onclick="inputOperator('-')">−</button>
+
+            <button class="btn-number" onclick="inputNumber('4')">4</button>
+            <button class="btn-number" onclick="inputNumber('5')">5</button>
+            <button class="btn-number" onclick="inputNumber('6')">6</button>
+            <button class="btn-operator" onclick="inputOperator('+')">+</button>
+
+            <button class="btn-number" onclick="inputNumber('1')">1</button>
+            <button class="btn-number" onclick="inputNumber('2')">2</button>
+            <button class="btn-number" onclick="inputNumber('3')">3</button>
+            <button class="btn-equals" onclick="calculate()" style="grid-row: span 2;">=</button>
+
+            <button class="btn-number btn-zero" onclick="inputNumber('0')">0</button>
+            <button class="btn-number" onclick="inputDecimal()">.</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let previousInput = '';
+        let operator = null;
+        let shouldResetInput = false;
+
+        function updateDisplay() {
+            document.getElementById('result').textContent = currentInput;
+
+            let expr = '';
+            if (previousInput !== '') {
+                expr = previousInput + ' ' + getOperatorSymbol(operator);
+            }
+            document.getElementById('expression').textContent = expr;
+
+            // 高亮当前运算符
+            document.querySelectorAll('.btn-operator').forEach(btn => btn.classList.remove('active'));
+            if (operator) {
+                const activeBtn = document.querySelector(`[data-op="${operator}"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+            }
+        }
+
+        function getOperatorSymbol(op) {
+            const symbols = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+            return symbols[op] || op;
+        }
+
+        function inputNumber(num) {
+            if (shouldResetInput) {
+                currentInput = '';
+                shouldResetInput = false;
+            }
+            if (currentInput === '0' && num !== '0') {
+                currentInput = num;
+            } else if (currentInput === '0' && num === '0') {
+                return;
+            } else {
+                // 限制输入长度
+                if (currentInput.replace(/[.-]/g, '').length >= 12) return;
+                currentInput += num;
+            }
+            updateDisplay();
+        }
+
+        function inputDecimal() {
+            if (shouldResetInput) {
+                currentInput = '0';
+                shouldResetInput = false;
+            }
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        }
+
+        function inputOperator(op) {
+            const num = parseFloat(currentInput);
+
+            if (operator && !shouldResetInput) {
+                // 连续运算
+                const result = compute(parseFloat(previousInput), num, operator);
+                currentInput = formatResult(result);
+                previousInput = currentInput;
+            } else {
+                previousInput = currentInput;
+            }
+
+            operator = op;
+            shouldResetInput = true;
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (operator === null || shouldResetInput) return;
+
+            const prev = parseFloat(previousInput);
+            const curr = parseFloat(currentInput);
+            const result = compute(prev, curr, operator);
+
+            document.getElementById('expression').textContent =
+                previousInput + ' ' + getOperatorSymbol(operator) + ' ' + currentInput + ' =';
+
+            currentInput = formatResult(result);
+            previousInput = '';
+            operator = null;
+            shouldResetInput = true;
+            updateDisplay();
+        }
+
+        function compute(a, b, op) {
+            switch (op) {
+                case '+': return a + b;
+                case '-': return a - b;
+                case '*': return a * b;
+                case '/':
+                    if (b === 0) return 'Error';
+                    return a / b;
+                default: return b;
+            }
+        }
+
+        function formatResult(num) {
+            if (num === 'Error') return 'Error';
+            // 处理浮点精度
+            const fixed = parseFloat(num.toPrecision(12));
+            // 如果结果超出显示范围
+            const str = String(fixed);
+            if (str.length > 14) {
+                return parseFloat(fixed).toExponential(6);
+            }
+            return str;
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operator = null;
+            shouldResetInput = false;
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            if (shouldResetInput) return;
+            if (currentInput.length === 1 || (currentInput.length === 2 && currentInput.startsWith('-'))) {
+                currentInput = '0';
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        // 键盘支持
+        document.addEventListener('keydown', function(e) {
+            if (e.key >= '0' && e.key <= '9') inputNumber(e.key);
+            else if (e.key === '.') inputDecimal();
+            else if (e.key === '+') inputOperator('+');
+            else if (e.key === '-') inputOperator('-');
+            else if (e.key === '*') inputOperator('*');
+            else if (e.key === '/') { e.preventDefault(); inputOperator('/'); }
+            else if (e.key === 'Enter' || e.key === '=') calculate();
+            else if (e.key === 'Escape') clearAll();
+            else if (e.key === 'Backspace') deleteLast();
+        });
+
+        // 给运算符按钮添加 data-op 属性，用于高亮
+        document.querySelectorAll('.btn-operator').forEach(btn => {
+            const op = btn.getAttribute('onclick').match(/['"]([+\-*/])['"]/)[1];
+            btn.setAttribute('data-op', op);
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>

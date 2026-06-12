@@ -8,6 +8,8 @@ screenshot_latest.jpg
 *.docx
 .DS_Store
 backend/.pid
+backend/.env
+backend/data/*.db
 backend/uploads/*
 !backend/uploads/.gitkeep
 
