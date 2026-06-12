@@ -1,0 +1,442 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交易管理｜xiaoweimm</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.7;background:#f4f6fa;display:flex;min-height:100vh;}
+        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;--green:#1e8449;--red:#c0392b;--orange:#d68910;}
+        a{text-decoration:none;color:inherit;}
+
+        .sidebar{width:220px;background:var(--dark);color:#ccc;display:flex;flex-direction:column;position:fixed;top:60px;left:0;bottom:0;z-index:100;}
+        .sidebar-header{padding:16px 20px;border-bottom:1px solid #2a3a4a;}
+        .sidebar-header .logo{font-size:20px;font-weight:700;color:#fff;}
+        .sidebar-header .sub{font-size:11px;color:var(--main);margin-top:2px;}
+        .sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;}
+        .sidebar-nav .nav-group{padding:0 20px;margin:12px 0 6px;font-size:11px;color:#556;letter-spacing:1px;}
+        .sidebar-nav a,.sidebar-nav .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:#aab;font-size:14px;transition:0.15s;cursor:pointer;border-left:3px solid transparent;}
+        .sidebar-nav a:hover,.sidebar-nav .nav-item:hover{background:rgba(26,68,170,0.15);color:#fff;border-left-color:var(--main);}
+        .sidebar-nav .nav-item.active{background:rgba(26,68,170,0.2);color:#fff;border-left-color:var(--main);font-weight:600;}
+        .sidebar-footer{padding:14px 20px;border-top:1px solid #2a3a4a;font-size:12px;}
+
+        .main{flex:1;margin-left:220px;padding-top:60px;min-height:100vh;background:#f4f6fa;}
+        .topbar{position:fixed;top:0;left:0;right:0;height:60px;background:var(--main);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,0.1);z-index:200;}
+        .topbar .page-title{font-size:18px;font-weight:700;color:#fff;}
+        .topbar .top-nav-links{display:flex;gap:24px;font-size:14px;}
+        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;}
+        .topbar .top-nav-links a:hover{color:#fff;}
+        .topbar .top-nav-links a.active{color:#fff;font-weight:600;}
+        .content{padding:24px 28px;}
+        .section{display:none;}
+        .section.active{display:block;}
+
+        .card{background:#fff;border-radius:10px;padding:24px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:20px;}
+        .card h3{font-size:17px;margin-bottom:16px;color:#111;padding-bottom:10px;border-bottom:2px solid #ddd;}
+        .card h4{font-size:15px;color:#444;margin:16px 0 10px;}
+
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+        .form-group{margin-bottom:12px;}
+        .form-group.full{grid-column:1/-1;}
+        .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#222;}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #bbb;border-radius:6px;font-size:14px;outline:none;font-family:inherit;color:#222;}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--main);}
+        .form-group textarea{resize:vertical;min-height:70px;}
+
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:9px 12px;text-align:left;font-size:13px;}
+        th{background:#eef0f3;color:#333;font-weight:600;border-bottom:2px solid #ccc;}
+        td{border-bottom:1px solid #e0e2e6;}
+        tr:hover td{background:#f4f6fa;}
+
+        .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;}
+        .badge-ok{background:#d5f5e3;color:#145a32;}
+        .badge-warn{background:#fdebd0;color:#7d6608;}
+        .badge-info{background:#d4e4fd;color:#1a44aa;}
+        .badge-err{background:#fadbd8;color:#78281f;}
+        .badge-gray{background:#e5e7ea;color:#555;}
+
+        .btn{padding:8px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:0.2s;display:inline-flex;align-items:center;gap:5px;}
+        .btn-main{background:var(--main);color:#fff;}
+        .btn-main:hover{opacity:0.85;}
+        .btn-outline{background:#fff;color:var(--main);border:1px solid var(--main);}
+        .btn-outline:hover{background:var(--main);color:#fff;}
+        .btn-green{background:var(--green);color:#fff;}
+        .btn-red{background:#fff;color:var(--red);border:1px solid var(--red);}
+        .btn-gray{background:#e5e7ea;color:#444;}
+        .btn-sm{padding:4px 10px;font-size:12px;}
+
+        .empty-state{text-align:center;padding:40px;color:var(--gray);}
+
+        /* Pipeline */
+        .pipeline{display:flex;gap:0;margin-bottom:24px;overflow-x:auto;padding:4px 0;}
+        .pipe-stage{flex:1;min-width:110px;text-align:center;padding:14px 8px;background:#fff;border:2px solid #e0e2e6;border-radius:8px;margin-right:12px;position:relative;transition:0.2s;}
+        .pipe-stage:last-child{margin-right:0;}
+        .pipe-stage.done{background:#d5f5e3;border-color:var(--green);}
+        .pipe-stage.current{background:#d4e4fd;border-color:var(--main);box-shadow:0 0 0 3px rgba(26,68,170,0.15);}
+        .pipe-stage .stage-icon{font-size:22px;margin-bottom:4px;}
+        .pipe-stage .stage-label{font-size:12px;font-weight:600;color:#555;}
+        .pipe-stage.done .stage-label{color:var(--green);}
+        .pipe-stage.current .stage-label{color:var(--main);}
+        .pipe-stage .stage-date{font-size:10px;color:#999;margin-top:2px;}
+        .pipe-arrow{display:flex;align-items:center;font-size:18px;color:#ccc;flex-shrink:0;}
+        .pipe-stage.done+.pipe-arrow{color:var(--green);}
+
+        /* Deal Detail */
+        .deal-meta{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+        .deal-meta .meta-item{background:#f4f6fa;padding:12px 16px;border-radius:8px;}
+        .deal-meta .meta-item .meta-label{font-size:11px;color:var(--gray);margin-bottom:2px;}
+        .deal-meta .meta-item .meta-value{font-size:15px;font-weight:600;color:#222;}
+
+        .timeline{position:relative;padding-left:24px;}
+        .timeline::before{content:"";position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:#ddd;}
+        .tl-item{position:relative;margin-bottom:16px;}
+        .tl-item::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--main);}
+        .tl-item .tl-time{font-size:11px;color:#999;}
+        .tl-item .tl-content{font-size:13px;color:#333;}
+
+        .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 24px;border-radius:6px;font-size:14px;z-index:9999;opacity:0;transform:translateX(20px);transition:0.3s;pointer-events:none;}
+        .toast.show{opacity:1;transform:translateX(0);}
+        .toast.success{background:var(--green);}
+
+        .file-upload{position:relative;display:inline-block;}
+        .file-upload input[type=file]{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+
+        
+        .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--main);color:#fff;border:none;width:36px;height:36px;border-radius:6px;font-size:18px;cursor:pointer;align-items:center;justify-content:center;}
+@media(max-width:768px){input,select,textarea,button{font-size:16px!important;}.sidebar{transform:translateX(-100%);transition:transform 0.3s;}.sidebar-toggle{display:flex;}.main{margin-left:0!important;}.stat-grid{grid-template-columns:repeat(2,1fr);}.form-grid{grid-template-columns:1fr;}}.sidebar{width:180px;}.main{margin-left:180px;}.pipeline{flex-wrap:wrap;}.form-grid,.deal-meta{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-header"><div class="logo">xiaoweimm</div><div class="sub">交易管理</div></div>
+    <nav class="sidebar-nav">
+        <div class="nav-group">交易跟踪</div>
+        <div class="nav-item active" data-page="list">📋 交易列表</div>
+        <div class="nav-item" data-page="new">➕ 新建交易</div>
+        <div class="nav-group">快捷入口</div>
+        <a href="seller.html">📝 卖家工作台</a>
+        <a href="buyer.html">🔍 买家工作台</a>
+        <a href="member.html">👤 会员中心</a>
+        <a href="index.html">🏠 返回首页</a>
+    </nav>
+</aside>
+
+<div class="topbar">
+            <button class="sidebar-toggle">&#9776;</button>
+    <span class="page-title" id="pageTitle">交易列表</span>
+    <div class="top-nav-links">
+        <a href="seller.html">卖家工作台</a>
+        <a href="buyer.html">买家工作台</a>
+        <a href="deal.html" class="active">交易管理</a>
+        <a href="messages.html">消息</a>
+        <a href="member.html">会员中心</a>
+        <a href="index.html">首页</a>
+    </div>
+</div>
+
+<div class="main"><div class="content">
+
+<!-- ===== List ===== -->
+<div class="section active" id="list">
+    <div class="card">
+        <h3>进行中的交易</h3>
+        <table><thead><tr><th>编号</th><th>项目</th><th>卖家</th><th>买家</th><th>当前阶段</th><th>成交顾问</th><th>更新</th><th>操作</th></tr></thead><tbody id="dealTable"></tbody></table>
+    </div>
+</div>
+
+<!-- ===== New Deal ===== -->
+<div class="section" id="new">
+    <div class="card"><h3>新建交易</h3>
+        <div class="form-grid">
+            <div class="form-group"><label><span class="req">*</span> 关联项目编号</label><input type="text" id="newProjectId" placeholder="如 P20260501001"></div>
+            <div class="form-group"><label><span class="req">*</span> 卖家名称</label><input type="text" id="newSeller" placeholder="卖方公司/个人名称"></div>
+            <div class="form-group"><label><span class="req">*</span> 买家名称</label><input type="text" id="newBuyer" placeholder="买方公司/个人名称"></div>
+            <div class="form-group"><label><span class="req">*</span> 意向成交价（万元）</label><input type="number" id="newPrice" placeholder="意向成交金额" min="0"></div>
+            <div class="form-group"><label>成交顾问</label><select id="newAdvisor"><option value="">自动分配</option><option value="王建国">王建国</option><option value="李雪梅">李雪梅</option><option value="陈志强">陈志强</option></select></div>
+            <div class="form-group"><label>备注</label><input type="text" id="newNote" placeholder="交易备注"></div>
+        </div>
+        <button class="btn btn-main" onclick="createDeal()">创建交易</button>
+    </div>
+</div>
+
+<!-- ===== Detail ===== -->
+<div class="section" id="detail">
+    <div style="margin-bottom:16px;"><button class="btn btn-outline btn-sm" onclick="switchPage('list')">← 返回列表</button></div>
+    <div class="card" id="detailHeader"></div>
+    <div class="card"><h3>交易进度</h3><div class="pipeline" id="pipeline"></div></div>
+    <div class="card" id="stageActions"></div>
+    <div class="card"><h3>操作记录</h3><div class="timeline" id="timeline"></div></div>
+</div>
+
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+
+
+<script src="/_cascade_data.js"></script><script>
+(function(){
+    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+    if(!users["13800000000"]){
+        users["13800000000"] = {phone:"13800000000",name:"管理员",role:"admin",time:"2026-05-01"};
+        users["13800138001"] = {phone:"13800138001",name:"张卖家",role:"seller",time:"2026-05-01"};
+        users["13800138002"] = {phone:"13800138002",name:"李买家",role:"buyer",time:"2026-05-02"};
+        localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
+    }
+})();
+function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
+var currentDevCode = "";
+function generateDevCode(){ currentDevCode = String(Math.floor(100000 + Math.random() * 900000)); return currentDevCode; }
+var overlay = document.getElementById("modalOverlay");
+var btnLogin = document.getElementById("btnLogin");
+var modalClose = document.getElementById("modalClose");
+if(btnLogin) btnLogin.addEventListener("click", function(){ if(overlay) overlay.classList.add("show"); });
+if(modalClose) modalClose.addEventListener("click", function(){ if(overlay) overlay.classList.remove("show"); });
+if(overlay) overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.classList.remove("show"); });
+var tabLogin = document.getElementById("tabLogin");
+var tabReg = document.getElementById("tabReg");
+var loginForm = document.getElementById("loginForm");
+var regForm = document.getElementById("regForm");
+function switchTab(toLoginTab){
+    if(!tabLogin) return;
+    if(toLoginTab){ tabLogin.classList.add("active"); if(tabReg) tabReg.classList.remove("active"); if(loginForm) loginForm.classList.add("active"); if(regForm) regForm.classList.remove("active"); }
+    else { if(tabReg) tabReg.classList.add("active"); tabLogin.classList.remove("active"); if(regForm) regForm.classList.add("active"); if(loginForm) loginForm.classList.remove("active"); }
+}
+if(tabLogin) tabLogin.addEventListener("click", function(){ switchTab(true); });
+if(tabReg) tabReg.addEventListener("click", function(){ switchTab(false); });
+var tR = document.getElementById("toRegister"); if(tR) tR.addEventListener("click", function(){ switchTab(false); });
+var tL = document.getElementById("toLogin"); if(tL) tL.addEventListener("click", function(){ switchTab(true); });
+function startCountdown(btn){
+    var sec = 60; btn.disabled = true; btn.textContent = sec + "秒后重发";
+    var timer = setInterval(function(){ sec--; btn.textContent = sec + "秒后重发";
+        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证码"; }
+    }, 1000);
+}
+var lSms = document.getElementById("loginSmsBtn");
+if(lSms) lSms.addEventListener("click", function(){
+    var phone = document.getElementById("loginPhone").value.trim();
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    startCountdown(lSms); generateDevCode();
+    alert("验证码已发送至 " + phone + "（开发模式验证码：" + currentDevCode + "）");
+});
+var rSms = document.getElementById("regSmsBtn");
+if(rSms) rSms.addEventListener("click", function(){
+    var phone = document.getElementById("regPhone").value.trim();
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    startCountdown(rSms); generateDevCode();
+    alert("验证码已发送至 " + phone + "（开发模式验证码：" + currentDevCode + "）");
+});
+function updateNavUser(phone){
+    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "none";
+    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "flex";
+    var ua = document.getElementById("userAvatar"); if(ua) ua.textContent = phone.slice(-2);
+    var up = document.getElementById("userPhone"); if(up) up.textContent = phone.slice(0,3) + "****" + phone.slice(-4);
+}
+var lSub = document.getElementById("loginSubmit");
+if(lSub) lSub.addEventListener("click", function(){
+    var phone = document.getElementById("loginPhone").value.trim();
+    var code = document.getElementById("loginCode").value.trim();
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误"); return; }
+    if(overlay) overlay.classList.remove("show");
+    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+    var saved = users[phone]; var role = saved ? saved.role : "";
+    sessionStorage.setItem("xiaoweimm_user", JSON.stringify({phone:phone, role:role, name:saved?saved.name:"", time:Date.now()}));
+    updateNavUser(phone);
+    var target = getTargetAfterAuth(); if(!target){ target = role === "admin" ? "admin.html" : role === "seller" ? "seller.html" : role === "buyer" ? "buyer.html" : "member.html"; }
+    setTimeout(function(){ window.location.href = target; }, 800);
+});
+var rSub = document.getElementById("regSubmit");
+if(rSub) rSub.addEventListener("click", function(){
+    var phone = document.getElementById("regPhone").value.trim();
+    var code = document.getElementById("regCode").value.trim();
+    var name = document.getElementById("regName").value.trim();
+    var role = document.getElementById("regRole").value;
+    var agree = document.getElementById("regAgree");
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    if(!code){ alert("请输入短信验证码"); return; }
+    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误"); return; }
+    if(agree && !agree.checked){ alert("请先同意服务协议和隐私政策"); return; }
+    if(overlay) overlay.classList.remove("show");
+    var user = {phone:phone, name:name, role:role, time:Date.now()};
+    sessionStorage.setItem("xiaoweimm_user", JSON.stringify(user));
+    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+    users[phone] = user; localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
+    updateNavUser(phone);
+    var target = getTargetAfterAuth(); if(!target){ target = role === "seller" ? "seller.html" : role === "buyer" ? "buyer.html" : "verify.html"; }
+    setTimeout(function(){ window.location.href = target; }, 800);
+});
+var bLg = document.getElementById("btnLogout");
+if(bLg) bLg.addEventListener("click", function(){
+    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "";
+    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "none";
+    sessionStorage.removeItem("xiaoweimm_user"); alert("已退出登录");
+});
+(function initAuth(){
+    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
+    if(user && user.phone){ updateNavUser(user.phone); }
+})();
+if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
+</script>
+<script>
+function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
+// ===== 鉴权检查 =====
+(function authCheck(){
+    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
+    if(!user || !user.phone){
+        sessionStorage.setItem("redirectAfterLogin", "deal.html");
+        alert("请先登录");
+        window.location.href = "index.html";
+        return;
+    }
+    var allowRoles = "seller,buyer,admin".split(",");
+    if(allowRoles.indexOf(user.role) < 0 && user.role !== "admin"){
+        alert("此页面仅 交易方 可访问");
+        var targets = {admin:"admin.html", seller:"seller.html", buyer:"buyer.html"};
+        window.location.href = targets[user.role] || "index.html";
+        return;
+    }
+    var su = document.getElementById("sidebarUser");
+    if(su){
+        var roleName = user.role === "admin" ? "管理员" : (user.role === "seller" ? "卖家" : "买家");
+        su.textContent = user.name ? (user.name + "（" + roleName + "）") : (user.phone.slice(0,3)+"****"+user.phone.slice(-4) + "（" + roleName + "）");
+    }
+})();
+
+// ===== 侧栏切换 =====
+function showSection(name){
+    document.querySelectorAll(".section").forEach(function(s){ s.classList.remove("active"); });
+    var sec = document.getElementById(name);
+    if(sec) sec.classList.add("active");
+    document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(n){ n.classList.remove("active"); });
+    var nav = document.querySelector(".sidebar-nav .nav-item[data-page='" + name + "']");
+    if(nav) nav.classList.add("active");
+    var title = document.getElementById("pageTitle");
+    if(title){
+        var titles = list:"交易列表",new:"新建交易";
+        title.textContent = titles[name] || name;
+    }
+    var sidebar = document.querySelector(".sidebar");
+    if(sidebar && window.innerWidth <= 768 && sidebar.style.transform === "translateX(0)"){
+        sidebar.style.transform = ""; sidebar.style.boxShadow = "";
+    }
+}
+document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(item){
+    item.addEventListener("click", function(){ showSection(this.getAttribute("data-page")); });
+});
+
+// ===== 移动端侧栏切换按钮 =====
+(function sidebarToggle(){
+    var btn = document.querySelector(".sidebar-toggle");
+    var sidebar = document.querySelector(".sidebar");
+    if(!btn || !sidebar) return;
+    var overlay = document.createElement("div");
+    overlay.style.cssText = "display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:99;";
+    document.body.appendChild(overlay);
+    var open = false;
+    function toggle(){
+        open = !open;
+        if(open){ sidebar.style.transform = "translateX(0)"; sidebar.style.boxShadow = "4px 0 20px rgba(0,0,0,0.3)"; overlay.style.display = "block"; btn.textContent = "✕"; }
+        else { sidebar.style.transform = ""; sidebar.style.boxShadow = ""; overlay.style.display = "none"; btn.textContent = "☰"; }
+    }
+    btn.addEventListener("click", toggle);
+    overlay.addEventListener("click", toggle);
+})();
+
+// ===== 行业/地区级联（如果存在） =====
+var industryData = {}; var regionData = {};
+function loadCascadeData(){
+    if(!document.getElementById("industryPicker") && !document.getElementById("regionPicker")) return;
+    Promise.all([
+        fetch("/api/constants/industry-data").then(function(r){ return r.json(); }),
+        fetch("/api/constants/region-data").then(function(r){ return r.json(); })
+    ]).then(function(results){
+        industryData = results[0].data || {};
+        regionData = results[1].data || {};
+        renderCascade("industry");
+        renderCascade("region");
+    }).catch(function(){
+        industryData = {"餐饮美食":["中式正餐","西餐"]};
+        regionData = {"北京":["朝阳区","海淀区"]};
+        renderCascade("industry");
+        renderCascade("region");
+    });
+}
+function renderCascade(type){
+    var data = type === "industry" ? industryData : regionData;
+    var left = document.getElementById(type + "Left");
+    var right = document.getElementById(type + "Right");
+    if(!left || !right) return;
+    left.innerHTML = Object.keys(data).map(function(k){
+        return '<div class="cascade-item" data-key="' + k + '">' + k + '</div>';
+    }).join("");
+    left.querySelectorAll(".cascade-item").forEach(function(it){
+        it.addEventListener("click", function(){
+            left.querySelectorAll(".cascade-item").forEach(function(x){ x.classList.remove("selected"); });
+            it.classList.add("selected");
+            var key = it.getAttribute("data-key");
+            var sub = data[key] || [];
+            right.innerHTML = sub.map(function(s){
+                return '<div class="cascade-item" data-value="' + key + '|' + s + '">' + s + '</div>';
+            }).join("");
+            right.querySelectorAll(".cascade-item").forEach(function(r){
+                r.addEventListener("click", function(){
+                    var v = r.getAttribute("data-value").split("|");
+                    var display = document.getElementById(type + "Display");
+                    if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">▼</span>";
+                    var p = document.getElementById(type + "Picker");
+                    if(p) p.classList.remove("open");
+                });
+            });
+        });
+    });
+}
+function togglePicker(id){
+    document.querySelectorAll(".cascade-picker").forEach(function(p){
+        if(p.id !== id) p.classList.remove("open");
+    });
+    var p = document.getElementById(id);
+    if(p) p.classList.toggle("open");
+}
+loadCascadeData();
+
+// ===== 资产行添加（设备/原料/库存） =====
+function addAssetRow(bodyId){
+    var body = document.getElementById(bodyId);
+    if(!body) return;
+    var idx = body.children.length + 1;
+    var tr = document.createElement("tr");
+    tr.innerHTML = '<td>' + idx + '</td><td><input type="text" placeholder="名称"></td><td><input type="text" placeholder="型号"></td><td><input type="number" min="1" value="1" style="width:50px;"></td><td><input type="text" placeholder="2023" style="width:60px;"></td><td><input type="number" min="0" placeholder="0" style="width:70px;"></td><td><button type="button" class="btn btn-sm btn-outline">上传</button></td><td><button type="button" class="btn btn-sm btn-red" onclick="this.parentElement.parentElement.remove()">删</button></td>';
+    body.appendChild(tr);
+}
+document.querySelectorAll("button[onclick]").forEach(function(btn){
+    var oc = btn.getAttribute("onclick") || "";
+    var m = oc.match(/addAssetRow\(['"]([^'"]+)['"]\)/);
+    if(m){
+        var bodyId = m[1] + "Body";
+        btn.removeAttribute("onclick");
+        btn.addEventListener("click", function(){ addAssetRow(bodyId); });
+    }
+});
+function uploadImg(btn){ alert("图片上传功能开发中。"); }
+
+// ===== 页面通用：表单提交（如果有） =====
+document.querySelectorAll("form[onsubmit]").forEach(function(f){
+    f.addEventListener("submit", function(e){
+        e.preventDefault();
+        var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
+        var action = f.getAttribute("data-action") || f.id;
+        alert("表单 '" + action + "' 提交功能开发中。当前仅做了客户端校验。");
+    });
+});
+
+// ===== 加载我的数据 =====
+(function loadPageData(){
+    // 子页面可重写此函数
+})();
+</script>
+</body>
+</html>

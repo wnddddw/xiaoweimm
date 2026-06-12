@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台｜xiaoweimm</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;background:#f0f2f5;display:flex;min-height:100vh;}
+        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;--green:#1e8449;--red:#c0392b;--orange:#d68910;}
+
+        /* Sidebar */
+        .sidebar{width:240px;background:var(--dark);color:#ccc;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+        .sidebar-header{padding:24px 20px;border-bottom:1px solid #2a3a4a;}
+        .sidebar-header .logo{font-size:22px;font-weight:700;color:#fff;}
+        .sidebar-header .tag{font-size:12px;color:var(--main);margin-top:2px;}
+        .sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
+        .sidebar-nav .nav-group{padding:0 20px;margin-bottom:8px;font-size:11px;text-transform:uppercase;color:#556;letter-spacing:1px;}
+        .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:12px 20px;color:#aab;font-size:14px;transition:0.2s;cursor:pointer;border-left:3px solid transparent;}
+        .sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(34,85,204,0.15);color:#fff;border-left-color:var(--main);}
+        .sidebar-nav a .icon{width:20px;text-align:center;font-size:15px;}
+        .sidebar-footer{padding:16px 20px;border-top:1px solid #2a3a4a;font-size:13px;}
+
+        /* Main */
+        .main{flex:1;margin-left:240px;padding:0;min-height:100vh;}
+        .topbar{background:#fff;padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8edf5;position:sticky;top:0;z-index:50;}
+        .topbar .page-title{font-size:18px;font-weight:600;}
+        .topbar .admin-info{display:flex;align-items:center;gap:12px;font-size:14px;}
+        .topbar .admin-avatar{width:34px;height:34px;border-radius:50%;background:var(--main);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;}
+
+        .content{padding:24px 28px;}
+        .section{display:none;}
+        .section.active{display:block;}
+
+        /* Stats */
+        .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px;}
+        .stat-card{background:#fff;padding:22px 24px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+        .stat-card .stat-label{font-size:13px;color:var(--gray);margin-bottom:8px;}
+        .stat-card .stat-num{font-size:30px;font-weight:700;color:#222;}
+        .stat-card .stat-change{font-size:12px;margin-top:6px;color:var(--green);}
+        .stat-card .stat-change.down{color:var(--red);}
+
+        /* Tables */
+        .card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:24px;}
+        .card-header{padding:18px 24px;border-bottom:2px solid #ddd;display:flex;justify-content:space-between;align-items:center;}
+        .card-header h3{font-size:16px;font-weight:600;}
+        .card-body{padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:14px 18px;text-align:left;font-size:14px;}
+        th{background:#eef0f3;color:#333;font-weight:600;font-size:13px;border-bottom:2px solid #ddd;white-space:nowrap;}
+        td{border-bottom:1px solid #e0e2e6;}
+        tr:hover td{background:#f4f6fa;}
+
+        /* Badges */
+        .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;}
+        .badge-warn{background:#fef5e7;color:var(--orange);}
+        .badge-ok{background:#e8f8f0;color:var(--green);}
+        .badge-err{background:#fdedec;color:var(--red);}
+        .badge-info{background:#e8f0fe;color:var(--main);}
+
+        /* Buttons */
+        .btn{padding:8px 18px;border:none;border-radius:4px;font-size:13px;cursor:pointer;transition:0.2s;display:inline-flex;align-items:center;gap:6px;}
+        .btn-sm{padding:5px 12px;font-size:12px;}
+        .btn-main{background:var(--main);color:#fff;}
+        .btn-main:hover{opacity:0.85;}
+        .btn-outline{background:#fff;color:var(--main);border:1px solid var(--main);}
+        .btn-outline:hover{background:var(--main);color:#fff;}
+        .btn-green{background:var(--green);color:#fff;}
+        .btn-green:hover{opacity:0.85;}
+        .btn-red{background:#fff;color:var(--red);border:1px solid var(--red);}
+        .btn-red:hover{background:var(--red);color:#fff;}
+        .btn-gray{background:#eee;color:#555;}
+        .btn-gray:hover{background:#ddd;}
+
+        /* Filters */
+        .filter-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+        .filter-row input,.filter-row select{padding:9px 14px;border:1px solid #bbb;border-radius:4px;font-size:14px;outline:none;}
+        .filter-row input:focus,.filter-row select:focus{border-color:var(--main);}
+
+        /* Charts placeholder */
+        .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+        .chart-box{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+        .chart-box h4{font-size:15px;margin-bottom:16px;color:#222;}
+        .bar-chart{display:flex;align-items:flex-end;gap:12px;height:180px;padding-top:10px;}
+        .bar-item{flex:1;text-align:center;}
+        .bar{background:var(--main);border-radius:4px 4px 0 0;margin:0 auto;transition:0.3s;min-width:20px;width:60%;}
+        .bar:hover{opacity:0.8;}
+        .bar-label{font-size:11px;color:var(--gray);margin-top:8px;}
+        .bar-val{font-size:12px;font-weight:600;margin-bottom:4px;}
+
+        /* Config form */
+        .config-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+        .config-item label{display:block;font-size:14px;font-weight:500;margin-bottom:6px;color:#333;}
+        .config-item input,.config-item select{width:100%;padding:10px 14px;border:1px solid #bbb;border-radius:4px;font-size:14px;outline:none;}
+        .config-item input:focus,.config-item select:focus{border-color:var(--main);}
+        .config-item .hint{font-size:12px;color:var(--gray);margin-top:4px;}
+
+        /* Toast */
+        .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 24px;border-radius:6px;font-size:14px;z-index:9999;opacity:0;transform:translateX(20px);transition:0.3s;pointer-events:none;}
+        .toast.show{opacity:1;transform:translateX(0);}
+        .toast.success{background:var(--green);}
+
+        /* Modal */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;}
+        .modal-overlay.show{display:flex;}
+        .modal-box{background:#fff;border-radius:10px;width:auto;max-width:95vw;padding:30px;position:relative;}
+        .modal-box h3{margin-bottom:20px;font-size:18px;}
+        .modal-close{position:absolute;top:12px;right:16px;font-size:22px;cursor:pointer;color:#999;background:none;border:none;}
+        .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+
+        
+        .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--main);color:#fff;border:none;width:36px;height:36px;border-radius:6px;font-size:18px;cursor:pointer;align-items:center;justify-content:center;}
+@media(max-width:768px){input,select,textarea,button{font-size:16px!important;}.sidebar{transform:translateX(-100%);transition:transform 0.3s;}.sidebar-toggle{display:flex;}.main{margin-left:0!important;}.stat-grid{grid-template-columns:repeat(2,1fr);}.chart-row{grid-template-columns:1fr;}.config-grid{grid-template-columns:1fr;}}
+            .sidebar{width:200px;}
+            .main{margin-left:200px;}
+            .stat-grid{grid-template-columns:repeat(2,1fr);}
+            .chart-row{grid-template-columns:1fr;}
+            .config-grid{grid-template-columns:1fr;}
+            .sidebar-nav a{font-size:13px;padding:10px 16px;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">xiaoweimm</div>
+        <div class="tag">管理后台</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-group">主菜单</div>
+        <a class="active" data-page="dashboard"><span class="icon">📊</span> 数据总览</a>
+        <a data-page="review"><span class="icon">📋</span> 项目审核</a>
+        <a data-page="verification"><span class="icon">🛡️</span> 实名认证</a>
+        <a data-page="users"><span class="icon">👥</span> 用户管理</a>
+        <a data-page="analytics"><span class="icon">📈</span> 数据分析</a>
+        <a data-page="config"><span class="icon">⚙</span> 系统配置</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="index.html" style="color:#aab;">← 返回前台</a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main">
+    <div class="topbar">
+            <button class="sidebar-toggle">&#9776;</button>
+        <div class="page-title" id="pageTitle">数据总览</div>
+        <div class="admin-info">
+            <span id="adminName">管理员</span>
+            <div class="admin-avatar" id="adminAvatar">管</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- ===== Dashboard ===== -->
+        <section class="section active" id="dashboard">
+            <div class="stat-grid">
+                <div class="stat-card"><div class="stat-label">累计项目数</div><div class="stat-num" id="statProjects">4,1252</div><div class="stat-change">↑ 12% 较上月</div></div>
+                <div class="stat-card"><div class="stat-label">注册用户</div><div class="stat-num" id="statUsers">30,856</div><div class="stat-change">↑ 8.5% 较上月</div></div>
+                <div class="stat-card"><div class="stat-label">本月成交额</div><div class="stat-num" id="statDeal">¥8.52亿</div><div class="stat-change down">↓ 3.2% 较上月</div></div>
+                <div class="stat-card"><div class="stat-label">待审核项目</div><div class="stat-num" id="statPending">47</div><div class="stat-change">需处理</div></div>
+                <div class="stat-card"><div class="stat-label">待审核认证</div><div class="stat-num" id="statVerifyPending">0</div><div class="stat-change">需处理</div></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>最近项目提交</h3><a href="javascript:void(0)" onclick="switchPage('review')" style="color:var(--main);font-size:14px;">查看全部 →</a></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>项目编号</th><th>行业</th><th>地区</th><th>年营业额</th><th>提交时间</th><th>状态</th></tr></thead>
+                        <tbody id="recentProjects"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Project Review ===== -->
+        <section class="section" id="review">
+            <div class="filter-row">
+                <select id="reviewStatus"><option value="">全部状态</option><option value="pending">待审核</option><option value="approved">已通过</option><option value="rejected">已驳回</option></select>
+                <select id="reviewIndustry"><option value="">全部行业</option><option value="餐饮">餐饮</option><option value="零售">零售</option><option value="制造">制造</option><option value="IT">IT</option><option value="服务">服务</option></select>
+                <input type="text" id="reviewSearch" placeholder="搜索项目名称/编号...">
+                <button class="btn btn-main" onclick="filterProjects()">筛选</button>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>项目审核列表</h3><span style="font-size:14px;color:var(--gray);" id="reviewCount"></span></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>编号</th><th>项目名称</th><th>行业</th><th>地区</th><th>年营业额(万)</th><th>期望价格(万)</th><th>卖家</th><th>提交时间</th><th>状态</th><th>操作</th></tr></thead>
+                        <tbody id="reviewTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Verification Review ===== -->
+        <section class="section" id="verification">
+            <div class="filter-row">
+                <select id="verifyStatus"><option value="">全部状态</option><option value="pending">待审核</option><option value="approved">已通过</option><option value="rejected">已驳回</option></select>
+                <select id="verifyType"><option value="">全部类型</option><option value="personal">个人认证</option><option value="company">法人认证</option></select>
+                <input type="text" id="verifySearch" placeholder="搜索姓名/公司名...">
+                <button class="btn btn-main" onclick="filterVerifications()">筛选</button>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>实名认证审核</h3><span style="font-size:14px;color:var(--gray);" id="verifyCount"></span></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>编号</th><th>类型</th><th>姓名/公司</th><th>电话</th><th>关键信息</th><th>提交时间</th><th>状态</th><th>操作</th></tr></thead>
+                        <tbody id="verifyTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== User Management ===== -->
+        <section class="section" id="users">
+            <div class="filter-row">
+                <select id="userRole"><option value="">全部角色</option><option value="seller">卖家</option><option value="buyer">买家</option><option value="admin">管理员</option></select>
+                <select id="userStatus"><option value="">全部状态</option><option value="active">正常</option><option value="disabled">已禁用</option></select>
+                <input type="text" id="userSearch" placeholder="搜索手机号/姓名...">
+                <button class="btn btn-main" onclick="filterUsers()">筛选</button>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>用户列表</h3></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>ID</th><th>姓名</th><th>手机号</th><th>角色</th><th>会员等级</th><th>注册时间</th><th>状态</th><th>操作</th></tr></thead>
+                        <tbody id="userTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Analytics ===== -->
+        <section class="section" id="analytics">
+            <div class="chart-row">
+                <div class="chart-box">
+                    <h4>月度项目新增趋势（2026）</h4>
+                    <div class="bar-chart" id="projectChart"></div>
+                </div>
+                <div class="chart-box">
+                    <h4>月度成交额趋势（2026·万元）</h4>
+                    <div class="bar-chart" id="dealChart"></div>
+                </div>
+            </div>
+            <div class="chart-row" style="margin-top:20px;">
+                <div class="chart-box">
+                    <h4>行业分布</h4>
+                    <div class="bar-chart" id="industryChart"></div>
+                </div>
+                <div class="chart-box">
+                    <h4>会员续费统计</h4>
+                    <div style="padding:20px 0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <span style="font-size:14px;">个人会员续费率</span>
+                            <span style="font-weight:700;font-size:16px;color:var(--main);">68%</span>
+                        </div>
+                        <div style="background:#eee;height:10px;border-radius:5px;"><div style="background:var(--main);width:68%;height:10px;border-radius:5px;"></div></div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:20px;">
+                            <span style="font-size:14px;">企业会员续费率</span>
+                            <span style="font-weight:700;font-size:16px;color:var(--main);">72%</span>
+                        </div>
+                        <div style="background:#eee;height:10px;border-radius:5px;"><div style="background:var(--main);width:72%;height:10px;border-radius:5px;"></div></div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:20px;">
+                            <span style="font-size:14px;">企业高级会员续费率</span>
+                            <span style="font-weight:700;font-size:16px;color:var(--main);">55%</span>
+                        </div>
+                        <div style="background:#eee;height:10px;border-radius:5px;"><div style="background:var(--main);width:55%;height:10px;border-radius:5px;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== System Config ===== -->
+        <section class="section" id="config">
+            <div class="card">
+                <div class="card-header"><h3>基础参数配置</h3></div>
+                <div class="card-body" style="padding:24px;">
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label>成交佣金比例（%）</label>
+                            <input type="number" id="cfgCommission" value="2.0" step="0.1" min="0" max="10">
+                            <div class="hint">仅买家支付，含税</div>
+                        </div>
+                        <div class="config-item">
+                            <label>最低成交收费（元）</label>
+                            <input type="number" id="cfgMinFee" value="6000" step="1000" min="0">
+                            <div class="hint">成交价＜30万元时适用</div>
+                        </div>
+                        <div class="config-item">
+                            <label>个人会员月费（元）</label>
+                            <input type="number" id="cfgPersonalFee" value="300" step="10" min="0">
+                        </div>
+                        <div class="config-item">
+                            <label>企业会员月费（元）</label>
+                            <input type="number" id="cfgCompanyFee" value="600" step="10" min="0">
+                        </div>
+                        <div class="config-item">
+                            <label>企业高级会员月费（元）</label>
+                            <input type="number" id="cfgVipFee" value="1800" step="10" min="0">
+                        </div>
+                        <div class="config-item">
+                            <label>审核超时时间（分钟）</label>
+                            <input type="number" id="cfgReviewTimeout" value="120" step="10" min="10">
+                            <div class="hint">超过此时间自动提醒审核员</div>
+                        </div>
+                        <div class="config-item">
+                            <label>卖家项目有效期（天）</label>
+                            <input type="number" id="cfgProjectExpire" value="90" step="1" min="1">
+                        </div>
+                        <div class="config-item">
+                            <label>新项目通知窗口（分钟）</label>
+                            <input type="number" id="cfgNotifyWindow" value="60" step="5" min="5">
+                            <div class="hint">付费买家在发布后多久内收到推送</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:24px;display:flex;gap:12px;">
+                        <button class="btn btn-main" onclick="saveConfig()">保存配置</button>
+                        <button class="btn btn-gray" onclick="loadConfig()">恢复默认</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Modal: project detail / review -->
+<div class="modal-overlay" id="reviewModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('reviewModal')">&times;</button>
+        <h3 id="reviewModalTitle">审核项目</h3>
+        <div id="reviewModalBody"></div>
+        <div class="modal-actions">
+            <button class="btn btn-red" id="btnReject" onclick="reviewProject('rejected')">驳回</button>
+            <button class="btn btn-green" id="btnApprove" onclick="reviewProject('approved')">通过</button>
+            <button class="btn btn-gray" onclick="closeModal('reviewModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: verification review -->
+<div class="modal-overlay" id="verifyModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('verifyModal')">&times;</button>
+        <h3 id="verifyModalTitle">实名认证审核</h3>
+        <div id="verifyModalBody"></div>
+        <div class="form-group" id="rejectReasonGroup" style="display:none;">
+            <label><span class="required">*</span> 驳回原因</label>
+            <textarea id="rejectReason" placeholder="请填写驳回原因..." style="width:100%;padding:10px;border:1px solid #bbb;border-radius:4px;font-size:14px;resize:vertical;min-height:70px;"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-red" id="btnVerifyReject" onclick="reviewVerify('rejected')">驳回</button>
+            <button class="btn btn-green" id="btnVerifyApprove" onclick="reviewVerify('approved')">通过</button>
+            <button class="btn btn-gray" onclick="closeModal('verifyModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== INIT DATA =====
+function getStore(key, def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function setStore(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+const initProjects = [
+    {id:'P20260501',name:'北京朝阳区精品火锅店',industry:'餐饮',region:'北京',revenue:1200,price:800,seller:'张建国',time:'2026-05-21 10:32',status:'pending'},
+    {id:'P20260502',name:'深圳电子产品制造厂',industry:'制造',region:'广东',revenue:3500,price:2500,seller:'深圳鑫源电子有限公司',time:'2026-05-21 09:15',status:'pending'},
+    {id:'P20260503',name:'杭州互联网科技公司',industry:'IT',region:'浙江',revenue:5000,price:4200,seller:'李明远',time:'2026-05-20 16:48',status:'approved'},
+    {id:'P20260504',name:'成都社区连锁便利店',industry:'零售',region:'四川',revenue:2800,price:1800,seller:'成都蓉城商贸有限公司',time:'2026-05-20 14:22',status:'pending'},
+    {id:'P20260505',name:'三亚海边度假民宿',industry:'服务',region:'海南',revenue:800,price:650,seller:'刘美琳',time:'2026-05-20 11:05',status:'approved'},
+    {id:'P20260506',name:'景德镇陶瓷工艺品公司',industry:'零售',region:'江西',revenue:450,price:320,seller:'景德镇匠心陶瓷有限公司',time:'2026-05-19 17:30',status:'rejected'},
+    {id:'P20260507',name:'郑州跨境物流公司',industry:'服务',region:'河南',revenue:6200,price:5000,seller:'郑州通达物流有限公司',time:'2026-05-19 15:10',status:'pending'},
+    {id:'P20260508',name:'长沙食品加工厂',industry:'制造',region:'湖南',revenue:2100,price:1500,seller:'长沙湘味食品有限公司',time:'2026-05-19 13:44',status:'approved'},
+];
+
+const initUsers = [
+    {id:'U001',name:'张建国',phone:'13812345678',role:'seller',memberLv:'普通免费',regTime:'2026-03-15',status:'active'},
+    {id:'U002',name:'深圳鑫源电子有限公司',phone:'13923456789',role:'seller',memberLv:'付费诊断',regTime:'2026-01-22',status:'active'},
+    {id:'U003',name:'李明远',phone:'13612345678',role:'buyer',memberLv:'企业高级会员',regTime:'2025-11-08',status:'active'},
+    {id:'U004',name:'成都蓉城商贸有限公司',phone:'13734567890',role:'seller',memberLv:'普通免费',regTime:'2026-04-02',status:'active'},
+    {id:'U005',name:'王建华',phone:'13512345678',role:'buyer',memberLv:'个人会员',regTime:'2026-02-18',status:'active'},
+    {id:'U006',name:'陈思雨',phone:'15823456789',role:'buyer',memberLv:'企业会员',regTime:'2026-04-25',status:'disabled'},
+    {id:'U007',name:'刘志强',phone:'13899998888',role:'seller',memberLv:'普通免费',regTime:'2026-05-10',status:'active'},
+    {id:'U008',name:'赵明辉',phone:'13977776666',role:'admin',memberLv:'管理员',regTime:'2025-10-01',status:'active'},
+];
+
+const initVerifications = [
+    {id:'V20260521001',type:'personal',real_name:'张建国',id_number:'110101199001011234',address:'北京市朝阳区建国路88号',phone:'13812345678',id_card_url:'',status:'pending',submitTime:'2026-05-21 11:20'},
+    {id:'V20260521002',type:'company',company_name:'深圳鑫源电子有限公司',legal_person:'王磊',biz_type:'制造',address:'广东省深圳市南山区科技园',phone:'13923456789',license_url:'',status:'pending',submitTime:'2026-05-21 10:05'},
+    {id:'V20260520003',type:'personal',real_name:'李明远',id_number:'330101198506152345',address:'浙江省杭州市西湖区文三路',phone:'13612345678',id_card_url:'',status:'approved',submitTime:'2026-05-20 15:30',reviewTime:'2026-05-20 16:10'},
+    {id:'V20260520004',type:'company',company_name:'景德镇匠心陶瓷有限公司',legal_person:'陈志远',biz_type:'零售',address:'江西省景德镇市珠山区',phone:'13712345678',license_url:'',status:'rejected',submitTime:'2026-05-20 09:15',reviewTime:'2026-05-20 10:30',reason:'营业执照信息不清晰，请重新上传'},
+    {id:'V20260519005',type:'personal',real_name:'刘美琳',id_number:'460100199203016789',address:'海南省三亚市天涯区',phone:'13899998888',id_card_url:'',status:'pending',submitTime:'2026-05-19 14:00'},
+];
+
+let projects = getStore('xiaoweimm_projects', initProjects);
+let users = getStore('xiaoweimm_users', initUsers);
+let verifications = getStore('xiaoweimm_verifications', initVerifications);
+let currentReviewId = null;
+let currentVerifyId = null;
+
+// ===== NAVIGATION =====
+const pages = ['dashboard','review','verification','users','analytics','config'];
+const titles = {dashboard:'数据总览',review:'项目审核',verification:'实名认证',users:'用户管理',analytics:'数据分析',config:'系统配置'};
+
+function switchPage(name){
+    pages.forEach(p=>{ document.getElementById(p).classList.remove('active'); });
+    document.getElementById(name).classList.add('active');
+    document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
+    document.querySelector(`[data-page="${name}"]`).classList.add('active');
+    document.getElementById('pageTitle').textContent = titles[name];
+    if(name==='dashboard') renderDashboard();
+    if(name==='review') renderReview();
+    if(name==='verification') renderVerifications();
+    if(name==='users') renderUsers();
+    if(name==='analytics') renderAnalytics();
+}
+document.querySelectorAll('.sidebar-nav a').forEach(a=>{
+    a.addEventListener('click', ()=>switchPage(a.dataset.page));
+});
+
+// ===== TOAST =====
+function showToast(msg,type){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className='toast '+(type||'')+' show';
+    clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+    const pending = projects.filter(p=>p.status==='pending').length;
+    document.getElementById('statPending').textContent = pending;
+    const verifyPending = verifications.filter(v=>v.status==='pending').length;
+    document.getElementById('statVerifyPending').textContent = verifyPending;
+    const tbody = document.getElementById('recentProjects');
+    tbody.innerHTML = projects.slice(-6).reverse().map(p=>`
+        <tr>
+            <td>${p.id}</td><td>${p.industry}</td><td>${p.region}</td>
+            <td>¥${p.revenue.toLocaleString()}万</td><td>${p.time}</td>
+            <td>${statusBadge(p.status)}</td>
+        </tr>`).join('');
+}
+
+// ===== REVIEW =====
+function renderReview(filter){
+    const statusFilter = document.getElementById('reviewStatus').value;
+    const industryFilter = document.getElementById('reviewIndustry').value;
+    const search = (document.getElementById('reviewSearch').value||'').toLowerCase();
+    let list = projects;
+    if(statusFilter) list=list.filter(p=>p.status===statusFilter);
+    if(industryFilter) list=list.filter(p=>p.industry===industryFilter);
+    if(search) list=list.filter(p=>p.id.toLowerCase().includes(search)||p.name.includes(search)||p.seller.includes(search));
+    document.getElementById('reviewCount').textContent = `共 ${list.length} 条`;
+    document.getElementById('reviewTable').innerHTML = list.map(p=>`
+        <tr>
+            <td>${p.id}</td><td>${p.name}</td><td>${p.industry}</td><td>${p.region}</td>
+            <td>¥${p.revenue.toLocaleString()}</td><td>¥${p.price.toLocaleString()}</td>
+            <td>${p.seller}</td><td>${p.time}</td>
+            <td>${statusBadge(p.status)}</td>
+            <td>${p.status==='pending'?`<button class="btn btn-sm btn-main" onclick="openReview('${p.id}')">审核</button>`:`<button class="btn btn-sm btn-gray" onclick="openReview('${p.id}')">查看</button>`}</td>
+        </tr>`).join('');
+}
+function filterProjects(){ renderReview(); }
+
+function openReview(id){
+    currentReviewId = id;
+    const p = projects.find(p=>p.id===id);
+    document.getElementById('reviewModalTitle').textContent = p.status==='pending'?'审核项目':'项目详情';
+    document.getElementById('btnApprove').style.display = p.status==='pending'?'':'none';
+    document.getElementById('btnReject').style.display = p.status==='pending'?'':'none';
+    document.getElementById('reviewModalBody').innerHTML = `
+        <p><strong>编号：</strong>${p.id}</p>
+        <p><strong>项目名称：</strong>${p.name}</p>
+        <p><strong>行业：</strong>${p.industry}</p>
+        <p><strong>地区：</strong>${p.region}</p>
+        <p><strong>年营业额：</strong>¥${p.revenue.toLocaleString()}万</p>
+        <p><strong>期望转让价格：</strong>¥${p.price.toLocaleString()}万</p>
+        <p><strong>卖家：</strong>${p.seller}</p>
+        <p><strong>提交时间：</strong>${p.time}</p>
+        <p><strong>状态：</strong>${statusBadge(p.status)}</p>
+    `;
+    document.getElementById('reviewModal').classList.add('show');
+}
+
+function reviewProject(action){
+    const p = projects.find(p=>p.id===currentReviewId);
+    p.status = action;
+    setStore('xiaoweimm_projects', projects);
+    showToast(action==='approved'?'项目已通过审核':'项目已驳回', action==='approved'?'success':'');
+    closeModal('reviewModal');
+    renderReview();
+    renderDashboard();
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+// ===== USERS =====
+function renderUsers(){
+    const roleF = document.getElementById('userRole').value;
+    const statusF = document.getElementById('userStatus').value;
+    const search = (document.getElementById('userSearch').value||'').toLowerCase();
+    let list = users;
+    if(roleF) list=list.filter(u=>u.role===roleF);
+    if(statusF) list=list.filter(u=>u.status===statusF);
+    if(search) list=list.filter(u=>u.name.includes(search)||u.phone.includes(search));
+    document.getElementById('userTable').innerHTML = list.map(u=>`
+        <tr>
+            <td>${u.id}</td><td>${u.name}</td><td>${u.phone}</td>
+            <td>${u.role==='seller'?'卖家':u.role==='buyer'?'买家':'管理员'}</td>
+            <td>${u.memberLv}</td><td>${u.regTime}</td>
+            <td>${u.status==='active'?'<span class="badge badge-ok">正常</span>':'<span class="badge badge-err">已禁用</span>'}</td>
+            <td>
+                ${u.role!=='admin'?`
+                    ${u.status==='active'?`<button class="btn btn-sm btn-red" onclick="toggleUser('${u.id}','disabled')">禁用</button>`:`<button class="btn btn-sm btn-green" onclick="toggleUser('${u.id}','active')">启用</button>`}
+                `:''}
+            </td>
+        </tr>`).join('');
+}
+function filterUsers(){ renderUsers(); }
+function toggleUser(id,status){
+    const u = users.find(u=>u.id===id);
+    u.status = status;
+    setStore('xiaoweimm_users', users);
+    showToast(status==='active'?'用户已启用':'用户已禁用', 'success');
+    renderUsers();
+}
+
+// ===== VERIFICATION =====
+function renderVerifications(){
+    const statusF = document.getElementById('verifyStatus').value;
+    const typeF = document.getElementById('verifyType').value;
+    const search = (document.getElementById('verifySearch').value||'').toLowerCase();
+    let list = verifications;
+    if(statusF) list=list.filter(v=>v.status===statusF);
+    if(typeF) list=list.filter(v=>v.type===typeF);
+    if(search) list=list.filter(v=>{
+        const name = v.type==='personal'?v.real_name:v.company_name;
+        return (name||'').toLowerCase().includes(search)||v.id.toLowerCase().includes(search);
+    });
+    document.getElementById('verifyCount').textContent = `共 ${list.length} 条`;
+    document.getElementById('verifyTable').innerHTML = list.map(v=>{
+        const name = v.type==='personal'?v.real_name:v.company_name;
+        const keyInfo = v.type==='personal'?`住址:${v.address||''}`:`法人:${v.legal_person||''} / ${v.biz_type||''}`;
+        return `<tr>
+            <td>${v.id}</td>
+            <td><span class="badge badge-info">${v.type==='personal'?'个人':'法人'}</span></td>
+            <td>${name||'-'}</td>
+            <td>${v.phone||'-'}</td>
+            <td>${keyInfo}</td>
+            <td>${v.submitTime}</td>
+            <td>${statusBadge(v.status)}</td>
+            <td>${v.status==='pending'?`<button class="btn btn-sm btn-main" onclick="openVerify('${v.id}')">审核</button>`:`<button class="btn btn-sm btn-gray" onclick="openVerify('${v.id}')">查看</button>`}</td>
+        </tr>`;
+    }).join('');
+}
+function filterVerifications(){ renderVerifications(); }
+
+function openVerify(id){
+    currentVerifyId = id;
+    const v = verifications.find(v=>v.id===id);
+    document.getElementById('verifyModalTitle').textContent = v.status==='pending'?'审核实名认证':'认证详情';
+    const isPending = v.status==='pending';
+    document.getElementById('btnVerifyApprove').style.display = isPending?'':'none';
+    document.getElementById('btnVerifyReject').style.display = isPending?'':'none';
+    document.getElementById('btnVerifyReject').textContent = '驳回';
+    document.getElementById('rejectReasonGroup').style.display = 'none';
+    document.getElementById('rejectReason').value = '';
+    let html = `<p><strong>编号：</strong>${v.id}</p>`;
+    html += `<p><strong>认证类型：</strong>${v.type==='personal'?'个人认证':'法人认证'}</p>`;
+    html += `<p><strong>提交时间：</strong>${v.submitTime}</p>`;
+    if(v.reviewTime) html += `<p><strong>审核时间：</strong>${v.reviewTime}</p>`;
+    html += `<p><strong>状态：</strong>${statusBadge(v.status)}</p>`;
+    if(v.reason) html += `<p><strong>驳回原因：</strong><span style="color:var(--red);">${v.reason}</span></p>`;
+    html += '<hr style="margin:16px 0;border-color:#eee;">';
+    if(v.type==='personal'){
+        html += `<p><strong>姓名：</strong>${v.real_name||'-'}</p>`;
+        html += `<p><strong>身份证号：</strong>${v.id_number||'-'}</p>`;
+        html += `<p><strong>电话：</strong>${v.phone||'-'}</p>`;
+        html += `<p><strong>住址：</strong>${v.address||'-'}</p>`;
+        html += `<p><strong>身份证照片：</strong>${v.id_card_url?`<a href="${v.id_card_url}" target="_blank">查看</a>`:'未上传'}</p>`;
+    } else {
+        html += `<p><strong>公司名称：</strong>${v.company_name||'-'}</p>`;
+        html += `<p><strong>法定代表人：</strong>${v.legal_person||'-'}</p>`;
+        html += `<p><strong>法人电话：</strong>${v.phone||'-'}</p>`;
+        html += `<p><strong>营业内容：</strong>${v.biz_type||'-'}</p>`;
+        html += `<p><strong>公司地址：</strong>${v.address||'-'}</p>`;
+        html += `<p><strong>营业执照：</strong>${v.license_url?`<a href="${v.license_url}" target="_blank">查看</a>`:'未上传'}</p>`;
+    }
+    document.getElementById('verifyModalBody').innerHTML = html;
+    document.getElementById('verifyModal').classList.add('show');
+}
+
+function reviewVerify(action){
+    const v = verifications.find(v=>v.id===currentVerifyId);
+    const now = new Date().toLocaleString('zh-CN');
+    if(action==='rejected'){
+        const reasonGroup = document.getElementById('rejectReasonGroup');
+        const reason = document.getElementById('rejectReason').value.trim();
+        if(reasonGroup.style.display === 'none'){
+            reasonGroup.style.display = 'block';
+            document.getElementById('btnVerifyReject').textContent = '确认驳回';
+            return;
+        }
+        if(!reason){ showToast('请填写驳回原因','error'); return; }
+        v.reason = reason;
+    }
+    v.status = action;
+    v.reviewTime = now;
+    setStore('xiaoweimm_verifications', verifications);
+
+    // Sync with user's verify record
+    const userVerify = JSON.parse(localStorage.getItem('xiaoweimm_verify')||'null');
+    if(userVerify && userVerify.submitTime === v.submitTime && userVerify.type === v.type){
+        userVerify.status = action;
+        userVerify.reviewTime = now;
+        if(action==='rejected') userVerify.reason = v.reason;
+        localStorage.setItem('xiaoweimm_verify', JSON.stringify(userVerify));
+    }
+
+    showToast(action==='approved'?'认证已通过':'认证已驳回', action==='approved'?'success':'');
+    closeModal('verifyModal');
+    renderVerifications();
+    renderDashboard();
+}
+
+// ===== ANALYTICS =====
+function renderAnalytics(){
+    const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    const projData = [820,750,910,880,960,1050,920,870,990,1030,1100,1180];
+    const dealData = [3500,2800,4200,3900,4500,5100,4300,3700,4800,5200,5800,6300];
+    const industryData = [{name:'餐饮',v:28},{name:'零售',v:22},{name:'制造',v:18},{name:'IT',v:15},{name:'服务',v:12},{name:'其他',v:5}];
+    const maxP = Math.max(...projData);
+    const maxD = Math.max(...dealData);
+    const maxI = Math.max(...industryData.map(d=>d.v));
+
+    const renderBars = (data, max, unit) => data.map((v,i)=>`
+        <div class="bar-item">
+            <div class="bar-val">${unit}${v.toLocaleString()}</div>
+            <div class="bar" style="height:${(v/max*150).toFixed(0)}px;"></div>
+            <div class="bar-label">${months[i]}</div>
+        </div>`).join('');
+
+    document.getElementById('projectChart').innerHTML = renderBars(projData, maxP, '');
+    document.getElementById('dealChart').innerHTML = renderBars(dealData, maxD, '¥');
+    document.getElementById('industryChart').innerHTML = industryData.map(d=>`
+        <div class="bar-item">
+            <div class="bar-val">${d.v}%</div>
+            <div class="bar" style="height:${(d.v/maxI*150).toFixed(0)}px;background:${d.name==='餐饮'?'#2255cc':d.name==='零售'?'#27ae60':d.name==='制造'?'#f39c12':d.name==='IT'?'#e74c3c':d.name==='服务'?'#8e44ad':'#95a5a6'};"></div>
+            <div class="bar-label">${d.name}</div>
+        </div>`).join('');
+}
+
+// ===== CONFIG =====
+function loadConfig(){
+    const cfg = getStore('xiaoweimm_config',{commission:2,minFee:6000,personalFee:300,companyFee:600,vipFee:1800,reviewTimeout:120,projectExpire:90,notifyWindow:60});
+    document.getElementById('cfgCommission').value = cfg.commission;
+    document.getElementById('cfgMinFee').value = cfg.minFee;
+    document.getElementById('cfgPersonalFee').value = cfg.personalFee;
+    document.getElementById('cfgCompanyFee').value = cfg.companyFee;
+    document.getElementById('cfgVipFee').value = cfg.vipFee;
+    document.getElementById('cfgReviewTimeout').value = cfg.reviewTimeout;
+    document.getElementById('cfgProjectExpire').value = cfg.projectExpire;
+    document.getElementById('cfgNotifyWindow').value = cfg.notifyWindow;
+}
+function saveConfig(){
+    const cfg = {
+        commission: +document.getElementById('cfgCommission').value,
+        minFee: +document.getElementById('cfgMinFee').value,
+        personalFee: +document.getElementById('cfgPersonalFee').value,
+        companyFee: +document.getElementById('cfgCompanyFee').value,
+        vipFee: +document.getElementById('cfgVipFee').value,
+        reviewTimeout: +document.getElementById('cfgReviewTimeout').value,
+        projectExpire: +document.getElementById('cfgProjectExpire').value,
+        notifyWindow: +document.getElementById('cfgNotifyWindow').value,
+    };
+    setStore('xiaoweimm_config', cfg);
+    showToast('配置已保存','success');
+}
+
+function statusBadge(s){
+    if(s==='pending') return '<span class="badge badge-warn">待审核</span>';
+    if(s==='approved') return '<span class="badge badge-ok">已通过</span>';
+    if(s==='rejected') return '<span class="badge badge-err">已驳回</span>';
+    return s;
+}
+
+// ===== INIT =====
+renderDashboard();
+loadConfig();
+</script>
+
+<script>(function(){var btn=document.querySelector(".sidebar-toggle");var sidebar=document.querySelector(".sidebar");if(!btn||!sidebar)return;var overlay=document.createElement("div");overlay.style.cssText="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:99;";document.body.appendChild(overlay);var open=false;function t(){open=!open;if(open){sidebar.style.transform="translateX(0)";sidebar.style.boxShadow="4px 0 20px rgba(0,0,0,0.3)";overlay.style.display="block";btn.textContent="u2715";}else{sidebar.style.transform="";sidebar.style.boxShadow="";overlay.style.display="none";btn.textContent="u2630";}}btn.addEventListener("click",t);overlay.addEventListener("click",t);sidebar.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){if(open)t();});});})();</script></body>
+</html>

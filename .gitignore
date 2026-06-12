@@ -1,0 +1,12 @@
+node_modules/
+*.log
+_backup_*/
+*.zip
+caigou.db
+mumu-screen.png
+screenshot_latest.jpg
+*.docx
+.DS_Store
+backend/.pid
+backend/uploads/*
+!backend/uploads/.gitkeep

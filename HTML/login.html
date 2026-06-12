@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 / 注册｜xiaoweimm</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.7;background:#f7f9fc;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;}
+        a{text-decoration:none;color:inherit;}
+
+        .login-wrapper{width:100%;max-width:440px;padding:20px;}
+        .login-header{text-align:center;margin-bottom:28px;}
+        .login-header .logo{font-size:30px;font-weight:700;color:var(--main);display:block;}
+        .login-header p{font-size:14px;color:var(--gray);margin-top:4px;}
+
+        .login-card{background:#fff;border-radius:12px;padding:36px 32px 28px;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
+        .tabs{display:flex;border-bottom:2px solid #ddd;margin-bottom:26px;}
+        .tab{flex:1;text-align:center;padding:12px 0;font-size:18px;font-weight:600;cursor:pointer;color:#999;border-bottom:2px solid transparent;margin-bottom:-2px;transition:0.3s;background:none;border-top:none;border-left:none;border-right:none;}
+        .tab.active{color:var(--main);border-bottom-color:var(--main);}
+
+        .form-group{margin-bottom:18px;}
+        .form-group label{display:block;font-size:14px;font-weight:500;margin-bottom:6px;color:#333;}
+        .form-group label .required{color:#e74c3c;}
+        .form-group input,.form-group select{width:100%;padding:12px 14px;border:1px solid #bbb;border-radius:6px;font-size:15px;outline:none;transition:border 0.3s;}
+        .form-group input:focus,.form-group select:focus{border-color:var(--main);}
+        .sms-row{display:flex;gap:10px;}
+        .sms-row input{flex:1;}
+        .sms-btn{white-space:nowrap;padding:12px 16px;background:var(--main);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;}
+        .sms-btn:disabled{background:#ccc;cursor:not-allowed;}
+
+        .submit-btn{width:100%;padding:14px;background:var(--main);color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px;transition:0.3s;}
+        .submit-btn:hover{opacity:0.9;}
+        .form-check{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:18px;}
+        .form-check input{width:auto;}
+        .form-check a{color:var(--main);text-decoration:underline;}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;}
+
+        .extra-links{text-align:center;margin-top:16px;font-size:13px;color:#999;}
+        .extra-links a{color:var(--main);cursor:pointer;}
+
+        .back-link{text-align:center;margin-top:20px;font-size:14px;}
+        .back-link a{color:var(--gray);}
+        .back-link a:hover{color:var(--main);}
+
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 28px;border-radius:6px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+        .toast.show{opacity:1;}
+        .toast.success{background:#27ae60;}
+        .toast.error{background:#e74c3c;}
+        @media(max-width:768px){
+            input,select,textarea,button{font-size:16px!important;}
+            .login-wrapper{padding:12px;}
+            .login-card{padding:24px 16px 20px;border-radius:10px;}
+            .login-header .logo{font-size:24px;}
+            .tab{font-size:15px;padding:10px 0;}
+            .sms-btn{font-size:12px;padding:10px 12px;}
+            .submit-btn{padding:12px;font-size:15px;}
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" style="position:fixed;top:20px;left:20px;font-size:14px;color:var(--main);z-index:100;">&larr; 返回首页</a>
+
+<div class="login-wrapper">
+    <div class="login-header">
+        <span class="logo">xiaoweimm</span>
+        <p>中小企业M&A・企业并购平台</p>
+    </div>
+    <div class="login-card">
+        <div class="tabs">
+            <button class="tab active" id="tabLogin">登录</button>
+            <button class="tab" id="tabReg">注册</button>
+        </div>
+        <!-- 登录表单 -->
+        <div class="tab-content active" id="loginForm">
+            <div class="form-group">
+                <label>手机号</label>
+                <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label>验证码</label>
+                <div class="sms-row">
+                    <input type="text" id="loginCode" placeholder="短信验证码" maxlength="6">
+                    <button class="sms-btn" id="loginSmsBtn" type="button">获取验证码</button>
+                </div>
+            </div>
+            <button class="submit-btn" id="loginSubmit" type="button">登录</button>
+            <div class="extra-links"><a id="toRegister">没有账号？立即注册</a></div>
+        </div>
+        <!-- 注册表单 -->
+        <div class="tab-content" id="regForm">
+            <div class="form-group">
+                <label><span class="required">*</span> 手机号</label>
+                <input type="tel" id="regPhone" placeholder="请输入手机号（必填）" maxlength="11" required>
+            </div>
+            <div class="form-group">
+                <label><span class="required">*</span> 验证码</label>
+                <div class="sms-row">
+                    <input type="text" id="regCode" placeholder="短信验证码" maxlength="6" required>
+                    <button class="sms-btn" id="regSmsBtn" type="button">获取验证码</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="regName" placeholder="请输入您的姓名">
+            </div>
+            <div class="form-group">
+                <label>使用角色</label>
+                <select id="regRole">
+                    <option value="">请选择</option>
+                    <option value="seller">我是卖家（希望转让）</option>
+                    <option value="buyer">我是买家（希望收购）</option>
+                </select>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="regAgree" required>
+                <label for="regAgree">同意 <a href="javascript:void(0)">服务协议</a> 及 <a href="javascript:void(0)">隐私政策</a></label>
+            </div>
+            <button class="submit-btn" id="regSubmit" type="button">注册</button>
+            <div class="extra-links"><a id="toLogin">已有账号？立即登录</a></div>
+        </div>
+    </div>
+    <div class="back-link"><a href="index.html">&larr; 返回首页</a></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+(function(){
+    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+    if(!users["13800000000"]){
+        users["13800000000"] = {phone:"13800000000",name:"管理员",role:"admin",time:"2026-05-01"};
+        users["13800138001"] = {phone:"13800138001",name:"张卖家",role:"seller",time:"2026-05-01"};
+        users["13800138002"] = {phone:"13800138002",name:"李买家",role:"buyer",time:"2026-05-02"};
+        localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
+    }
+})();
+function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
+var currentDevCode = "";
+function generateDevCode(){ currentDevCode = String(Math.floor(100000 + Math.random() * 900000)); return currentDevCode; }
+var overlay = document.getElementById("modalOverlay");
+var btnLogin = document.getElementById("btnLogin");
+var modalClose = document.getElementById("modalClose");
+if(btnLogin) btnLogin.addEventListener("click", function(){ if(overlay) overlay.classList.add("show"); });
+if(modalClose) modalClose.addEventListener("click", function(){ if(overlay) overlay.classList.remove("show"); });
+if(overlay) overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.classList.remove("show"); });
+var tabLogin = document.getElementById("tabLogin");
+var tabReg = document.getElementById("tabReg");
+var loginForm = document.getElementById("loginForm");
+var regForm = document.getElementById("regForm");
+function switchTab(toLoginTab){
+    if(!tabLogin) return;
+    if(toLoginTab){ tabLogin.classList.add("active"); if(tabReg) tabReg.classList.remove("active"); if(loginForm) loginForm.classList.add("active"); if(regForm) regForm.classList.remove("active"); }
+    else { if(tabReg) tabReg.classList.add("active"); tabLogin.classList.remove("active"); if(regForm) regForm.classList.add("active"); if(loginForm) loginForm.classList.remove("active"); }
+}
+if(tabLogin) tabLogin.addEventListener("click", function(){ switchTab(true); });
+if(tabReg) tabReg.addEventListener("click", function(){ switchTab(false); });
+var tR = document.getElementById("toRegister"); if(tR) tR.addEventListener("click", function(){ switchTab(false); });
+var tL = document.getElementById("toLogin"); if(tL) tL.addEventListener("click", function(){ switchTab(true); });
+function startCountdown(btn){
+    var sec = 60; btn.disabled = true; btn.textContent = sec + "秒后重发";
+    var timer = setInterval(function(){ sec--; btn.textContent = sec + "秒后重发";
+        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证码"; }
+    }, 1000);
+}
+var lSms = document.getElementById("loginSmsBtn");
+if(lSms) lSms.addEventListener("click", function(){
+    var phone = document.getElementById("loginPhone").value.trim();
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    startCountdown(lSms);
+    var codeInput = document.getElementById("loginCode");
+    var origText = lSms.textContent;
+    lSms.disabled = true;
+    fetch("/api/auth/sms-code", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone })
+    }).then(function(r){ return r.json(); }).then(function(d){
+        if(d && d.success && d.data && d.data.code){
+            if(codeInput && !codeInput.value){ codeInput.value = d.data.code; }
+            if(d.data.dev_mode){ alert("开发模式验证码：" + d.data.code + "（已自动填入）"); }
+            else { alert("验证码已发送至 " + phone); }
+        } else {
+            alert("发送失败：" + ((d && d.error) || "未知错误"));
+            lSms.disabled = false;
+            lSms.textContent = origText;
+        }
+    }).catch(function(e){
+        alert("网络错误：" + e.message);
+        lSms.disabled = false;
+        lSms.textContent = origText;
+    });
+});
+var rSms = document.getElementById("regSmsBtn");
+if(rSms) rSms.addEventListener("click", function(){
+    var phone = document.getElementById("regPhone").value.trim();
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    startCountdown(rSms);
+    var codeInput = document.getElementById("regCode");
+    var origText = rSms.textContent;
+    rSms.disabled = true;
+    fetch("/api/auth/sms-code", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone })
+    }).then(function(r){ return r.json(); }).then(function(d){
+        if(d && d.success && d.data && d.data.code){
+            if(codeInput && !codeInput.value){ codeInput.value = d.data.code; }
+            if(d.data.dev_mode){ alert("开发模式验证码：" + d.data.code + "（已自动填入）"); }
+            else { alert("验证码已发送至 " + phone); }
+        } else {
+            alert("发送失败：" + ((d && d.error) || "未知错误"));
+            rSms.disabled = false;
+            rSms.textContent = origText;
+        }
+    }).catch(function(e){
+        alert("网络错误：" + e.message);
+        rSms.disabled = false;
+        rSms.textContent = origText;
+    });
+});
+function updateNavUser(phone){
+    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "none";
+    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "flex";
+    var ua = document.getElementById("userAvatar"); if(ua) ua.textContent = phone.slice(-2);
+    var up = document.getElementById("userPhone"); if(up) up.textContent = phone.slice(0,3) + "****" + phone.slice(-4);
+}
+var lSub = document.getElementById("loginSubmit");
+if(lSub) lSub.addEventListener("click", function(){
+    var phone = document.getElementById("loginPhone").value.trim();
+    var code = document.getElementById("loginCode").value.trim();
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    if(!code){ alert("请先点击右侧\u201c获取验证码\u201d"); return; }
+    var origText = lSub.textContent;
+    lSub.disabled = true; lSub.textContent = "登录中…";
+    fetch("/api/auth/login-sms", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone, code: code })
+    }).then(function(r){ return r.json(); }).then(function(d){
+        if(d && d.success && d.data && d.data.token){
+            var u = d.data;
+            sessionStorage.setItem("xiaoweimm_user", JSON.stringify({
+                phone: u.phone, role: u.role, name: u.name || "",
+                time: Date.now(), token: u.token
+            }));
+            var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+            users[u.phone] = users[u.phone] || {};
+            users[u.phone].phone = u.phone;
+            users[u.phone].role = u.role;
+            users[u.phone].name = u.name || "";
+            localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
+            updateNavUser(u.phone);
+            if(overlay) overlay.classList.remove("show");
+            var target = getTargetAfterAuth();
+            if(!target){ target = u.role === "admin" ? "admin.html" : u.role === "seller" ? "seller.html" : u.role === "buyer" ? "buyer.html" : "member.html"; }
+            setTimeout(function(){ window.location.href = target; }, 400);
+        } else {
+            alert("登录失败：" + ((d && d.error) || "未知错误"));
+            lSub.disabled = false; lSub.textContent = origText;
+        }
+    }).catch(function(e){
+        alert("网络错误：" + e.message);
+        lSub.disabled = false; lSub.textContent = origText;
+    });
+});
+var rSub = document.getElementById("regSubmit");
+if(rSub) rSub.addEventListener("click", function(){
+    var phone = document.getElementById("regPhone").value.trim();
+    var code = document.getElementById("regCode").value.trim();
+    var name = document.getElementById("regName").value.trim();
+    var role = document.getElementById("regRole").value;
+    var agree = document.getElementById("regAgree");
+    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
+    if(!code){ alert("请先点击右侧\u201c获取验证码\u201d"); return; }
+    if(!role){ alert("请选择使用角色"); return; }
+    if(agree && !agree.checked){ alert("请先同意服务协议和隐私政策"); return; }
+    var origText = rSub.textContent;
+    rSub.disabled = true; rSub.textContent = "注册中…";
+    fetch("/api/auth/register", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone, code: code, name: name, role: role })
+    }).then(function(r){ return r.json(); }).then(function(d){
+        if(d && d.success && d.data && d.data.token){
+            var u = d.data;
+            sessionStorage.setItem("xiaoweimm_user", JSON.stringify({
+                phone: u.phone, role: u.role, name: u.name || name,
+                time: Date.now(), token: u.token
+            }));
+            var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+            users[u.phone] = { phone: u.phone, role: u.role, name: u.name || name, time: new Date().toISOString() };
+            localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
+            updateNavUser(u.phone);
+            if(overlay) overlay.classList.remove("show");
+            var target = getTargetAfterAuth();
+            if(!target){ target = u.role === "seller" ? "seller.html" : u.role === "buyer" ? "buyer.html" : "verify.html"; }
+            setTimeout(function(){ window.location.href = target; }, 400);
+        } else {
+            alert("注册失败：" + ((d && d.error) || "未知错误"));
+            rSub.disabled = false; rSub.textContent = origText;
+        }
+    }).catch(function(e){
+        alert("网络错误：" + e.message);
+        rSub.disabled = false; rSub.textContent = origText;
+    });
+});
+var bLg = document.getElementById("btnLogout");
+if(bLg) bLg.addEventListener("click", function(){
+    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "";
+    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "none";
+    sessionStorage.removeItem("xiaoweimm_user"); alert("已退出登录");
+});
+(function initAuth(){
+    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
+    if(user && user.phone){ updateNavUser(user.phone); }
+})();
+if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
+</script>
+function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
