@@ -10,3 +10,5 @@ screenshot_latest.jpg
 backend/.pid
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+docs/pw-tmp/
