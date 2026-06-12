@@ -6,7 +6,8 @@
     <title>餐饮店事业转让成功案例｜xiaoweimm</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.8;background:#fff;min-height:100dvh;display:flex;flex-direction:column;}
+        button,input,select,textarea,.btn,a.nav-btn,[role="button"],.nav-login,.nav-btn,.menu-icon,.sidebar-toggle{min-height:44px;min-width:44px;touch-action:manipulation;}
+body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.8;background:#fff;min-height:100dvh;display:flex;flex-direction:column;}
         img,video,iframe{max-width:100%;height:auto;}
         a{text-decoration:none;color:inherit;}
         ul{list-style:none;}
@@ -99,6 +100,7 @@
         .footer-inner{text-align:center;font-size:13px;}
 
         @media(max-width:768px){
+            input,select,textarea,button{font-size:16px!important;}
             .case-hero h1{font-size:26px;}
             .hero-metrics{gap:20px;}
             .hero-metric .val{font-size:24px;}
@@ -106,6 +108,8 @@
             .metrics-grid{grid-template-columns:repeat(2,1fr);}
             .related-grid{grid-template-columns:1fr;}
             .quote-block{padding:30px 24px;}
+            .info-label{width:90px;padding:10px 12px;font-size:12px;}
+            .info-row{overflow-x:auto;-webkit-overflow-scrolling:touch;}
         }
     </style>
 </head>
