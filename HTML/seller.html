@@ -244,11 +244,11 @@
                     <div class="form-group"><label><span class="req">*</span> 项目简介</label><textarea id="description" placeholder="请简要描述项目情况、优势特点、客户群体、发展前景等" rows="5" required></textarea><div class="hint"><span id="descLen">0</span> 字</div></div>
                 </div>
                 <div class="card"><h3>隐私设置（可选隐藏）</h3>
-                    <div class="toggle-row"><div class="toggle-label">隐藏公司名称</div><label class="toggle-switch"><input type="checkbox" id="hideCompany"><span class="toggle-slider"></span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏公司地址</div><label class="toggle-switch"><input type="checkbox" id="hideAddress"><span class="toggle-slider"></span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏客户名单</div><label class="toggle-switch"><input type="checkbox" id="hideCustomers" checked><span class="toggle-slider"></span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏合作商名称</div><label class="toggle-switch"><input type="checkbox" id="hidePartners" checked><span class="toggle-slider"></span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏财务详情</div><label class="toggle-switch"><input type="checkbox" id="hideFinancial" checked><span class="toggle-slider"></span></label></div>
+                    <div class="toggle-row"><div class="toggle-label">隐藏公司名称</div><label class="toggle-switch"><input type="checkbox" id="hideCompany"><span class="toggle-slider">▸</span></label></div>
+                    <div class="toggle-row"><div class="toggle-label">隐藏公司地址</div><label class="toggle-switch"><input type="checkbox" id="hideAddress"><span class="toggle-slider">▸</span></label></div>
+                    <div class="toggle-row"><div class="toggle-label">隐藏客户名单</div><label class="toggle-switch"><input type="checkbox" id="hideCustomers" checked><span class="toggle-slider">▸</span></label></div>
+                    <div class="toggle-row"><div class="toggle-label">隐藏合作商名称</div><label class="toggle-switch"><input type="checkbox" id="hidePartners" checked><span class="toggle-slider">▸</span></label></div>
+                    <div class="toggle-row"><div class="toggle-label">隐藏财务详情</div><label class="toggle-switch"><input type="checkbox" id="hideFinancial" checked><span class="toggle-slider">▸</span></label></div>
                 </div>
                 <button class="btn btn-main btn-block" type="button" onclick="submitProject()">提交审核</button>
                 <p style="text-align:center;font-size:12px;color:var(--gray);margin-top:8px;">提交后将在10分钟 ~ 2小时 内完成审核</p>
@@ -259,11 +259,11 @@
         <div class="section" id="manage">
             <div class="card">
                 <div class="sub-tabs">
-                    <button class="sub-tab active" data-status="all">全部<span class="count" id="countAll">0</span></button>
-                    <button class="sub-tab" data-status="online">上线</span><span class="count" id="countOnline">0</span></button>
-                    <button class="sub-tab" data-status="pending">审核中</span><span class="count" id="countPending">0</span></button>
-                    <button class="sub-tab" data-status="offline">已下架</span><span class="count" id="countOffline">0</span></button>
-                    <button class="sub-tab" data-status="sold">已成交</span><span class="count" id="countSold">0</span></button>
+                    <button class="sub-tab active" data-status="all">全部<span class="count" id="countAll">0</span>×</button>
+                    <button class="sub-tab" data-status="online">上线</span><span class="count" id="countOnline">0</span>×</button>
+                    <button class="sub-tab" data-status="pending">审核中</span><span class="count" id="countPending">0</span>×</button>
+                    <button class="sub-tab" data-status="offline">已下架</span><span class="count" id="countOffline">0</span>×</button>
+                    <button class="sub-tab" data-status="sold">已成交</span><span class="count" id="countSold">0</span>×</button>
                 </div>
                 <table><thead><tr><th>编号</th><th>行业</th><th>细分</th><th>省份</th><th>城市</th><th>年营业额</th><th>期望价格</th><th>浏览</th><th>报价</th><th>状态</th><th>提交</th><th>操作</th></tr></thead><tbody id="projectTable"></tbody></table>
             </div>
@@ -286,7 +286,7 @@
 <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
     <div style="background:#fff;border-radius:12px;width:680px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:24px;position:relative;">
         <button onclick="closeModal('editModal')" style="position:absolute;top:10px;right:14px;font-size:20px;cursor:pointer;color:#999;background:none;border:none;">&times;</button>
-        <h3 style="margin-bottom:14px;">编辑项目 ✏<span id="editProjectId"></span></h3>
+        <h3 style="margin-bottom:14px;">编辑项目 ✏<span id="editProjectId">▸</span></h3>
         <div class="form-grid">
             <div class="form-group"><label>行业</label><select id="editIndustry"><option value="">请选择</option></select></div>
             <div class="form-group"><label>细分行业</label><select id="editSubIndustry"><option value="">请先选择行业</option></select></div>
@@ -341,7 +341,7 @@ var tL = document.getElementById("toLogin"); if(tL) tL.addEventListener("click",
 function startCountdown(btn){
     var sec = 60; btn.disabled = true; btn.textContent = sec + "秒后重发";
     var timer = setInterval(function(){ sec--; btn.textContent = sec + "秒后重发";
-        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证�?"; }
+        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证码"; }
     }, 1000);
 }
 var lSms = document.getElementById("loginSmsBtn");
@@ -412,7 +412,7 @@ if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Esca
 </script>
 <script>
 function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
-// ===== 鉴权检�?=====
+// ===== 鉴权检查=====
 (function authCheck(){
     var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
     if(!user || !user.phone){
@@ -452,7 +452,7 @@ document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(item){
     item.addEventListener("click", function(){ showSection(this.getAttribute("data-page")); });
 });
 
-// ===== 移动端侧栏切换按�?=====
+// ===== 移动端侧栏切换按钮=====
 (function sidebarToggle(){
     var btn = document.querySelector(".sidebar-toggle");
     var sidebar = document.querySelector(".sidebar");
@@ -470,7 +470,7 @@ document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(item){
     overlay.addEventListener("click", toggle);
 })();
 
-// ===== 行业级联选择（从 API 加载�?=====
+// ===== 行业级联选择（从 API 加载）=====
 var industryData = {};
 var regionData = {};
 function loadCascadeData(){
@@ -517,7 +517,7 @@ function renderIndustryLeft(){
                     r.addEventListener("click", function(){
                         var v = r.getAttribute("data-value").split("|");
                         var display = document.getElementById("industryDisplay");
-                        if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">�?</span>";
+                        if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">▸</span>";
                         var p = document.getElementById("industryPicker");
                         if(p) p.classList.remove("open");
                     });
@@ -547,7 +547,7 @@ function renderRegionLeft(){
                     r.addEventListener("click", function(){
                         var v = r.getAttribute("data-value").split("|");
                         var display = document.getElementById("regionDisplay");
-                        if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">�?</span>";
+                        if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">▸</span>";
                         var p = document.getElementById("regionPicker");
                         if(p) p.classList.remove("open");
                     });
@@ -565,7 +565,7 @@ function togglePicker(id){
     if(p) p.classList.toggle("open");
 }
 
-// ===== 点击外部 / Esc 键自动收起级联面�?=====
+// ===== 点击外部 / Esc 键自动收起级联面板=====
 (function initPickerAutoClose(){
     if(document.__cascadeOutsideHandler) return;
     document.__cascadeOutsideHandler = true;
@@ -583,7 +583,7 @@ function togglePicker(id){
     });
 })();
 
-// ===== 资产行添加（设备/原料/库存�?=====
+// ===== 资产行添加（设备/原料/库存等）=====
 function addAssetRow(bodyId){
     var body = document.getElementById(bodyId);
     if(!body) return;
@@ -596,7 +596,7 @@ function addAssetRow(bodyId){
         '<td><input type="text" name="year" placeholder="2023" style="width:60px;"></td>' +
         '<td><input type="number" name="value" min="0" placeholder="0" style="width:70px;"></td>' +
         '<td class="img-cell"><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload">上传</button><input type="hidden" name="imageUrl" value=""></td>' +
-        '<td><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">�?/button></td>';
+        '<td><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">×/button></td>';
     body.appendChild(tr);
 }
 
@@ -620,8 +620,8 @@ function addAssetRow(bodyId){
     });
 });
 
-// 图片上传：临�?input -> POST /api/uploads -> 缩略�?
-// �?sessionStorage �?phone 但缺 token（旧版登录残留），自动通过 /api/auth/dev-token 透明获取�?
+// 图片上传：临时input -> POST /api/uploads -> 缩略图
+// // 若sessionStorage 有phone 但缺 token（旧版登录残留），自动通过 /api/auth/dev-token 透明获取token
 function uploadAssetImage(btn){
     var user = null;
     try { user = JSON.parse(sessionStorage.getItem("xiaoweimm_user") || "null"); } catch(e) {}
@@ -719,7 +719,7 @@ uploadAssetImage.openPicker = function(btn, token){
     fileInput.click();
 };
 
-// 自动绑定所�?onclicks �?addAssetRow（兼容初始按钮）
+// 自动绑定所有onclicks 到addAssetRow（兼容初始按钮）
 document.querySelectorAll("button[onclick]").forEach(function(btn){
     var oc = btn.getAttribute("onclick") || "";
     var m = oc.match(/addAssetRow\(['"]([^'"]+)['"]\)/);
@@ -756,13 +756,13 @@ if(pf){
                 box.innerHTML = '<div class="empty-tip">还没有发布过项目</div><a href="javascript:showSection(chr(39)+chr(112)+chr(117)+chr(98)+chr(108)+chr(105)+chr(115)+chr(104)+chr(39))">立即发布</a></div>';
             } else {
                 box.innerHTML = list.map(function(p){
-                    return '<div class="project-card"><div class="title">' + (p.industry || "") + ' / ' + (p.city || "") + '</div><div class="meta">¥' + (p.price || 0) + '�?· ' + (p.status || "") + '</div></div>';
+                    return '<div class="project-card"><div class="title">' + (p.industry || "") + ' / ' + (p.city || "") + '</div><div class="meta">¥' + (p.price || 0) + '</div><div class="meta">· ' + (p.status || "") + '</div></div>';
                 }).join("");
             }
         })
         .catch(function(){
             var box = document.getElementById("myProjectsList");
-            if(box) box.innerHTML = '<div class="empty-tip">请先登录后查�?</div>';
+            if(box) box.innerHTML = '<div class="empty-tip">请先登录后查看</div>';
         });
 
 // Expose functions to global scope for onclick handlers
