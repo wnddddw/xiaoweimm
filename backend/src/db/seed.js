@@ -33,10 +33,10 @@ async function seed() {
 
   // Projects
   const projects = [
-    ['P20260501001', sellerUserId, 'Catering', 'Hotpot/BBQ', 'Beijing', 'Chaoyang', 1200, '6-20', 'no_heir', 18, 800, 'Popular hotpot chain in Beijing, 12 years.', 342, 8, 23, '2026-05-01 10:30', '2026-05-01 11:45'],
-    ['P20260515002', sellerUserId, 'Manufacturing', 'Precision Machining', 'Jiangsu', 'Suzhou', 3500, '21-50', 'owner_age', 12, 2500, 'Suzhou industrial park precision machining factory.', 218, 5, 16, '2026-05-15 14:20', '2026-05-15 15:10'],
-    ['P20260520003', sellerUserId, 'IT/Internet', 'FinTech/Payment', 'Guangdong', 'Shenzhen', 5000, '6-20', 'transformation', 25, 4200, 'Shenzhen fintech outsourcing company.', 0, 0, 0, '2026-05-20 16:48', null],
-    ['P20260410004', sellerUserId, 'Retail', 'Clothing/Shoes/Bags', 'Sichuan', 'Chengdu', 450, '1-5', 'other', null, 320, 'Chengdu cultural creative retail store.', 56, 1, 3, '2026-04-10 09:15', '2026-04-10 10:30'],
+    ['P20260501001', sellerUserId, '餐饮美食', '火锅/烧烤', '北京', '朝阳区', 1200, '6-20', 'no_heir', 18, 800, '北京知名火锅连锁，经营12年，客源稳定。', 342, 8, 23, '2026-05-01 10:30', '2026-05-01 11:45'],
+    ['P20260515002', sellerUserId, '生产制造', '精密加工', '江苏省', '苏州市', 3500, '21-50', 'owner_age', 12, 2500, '苏州工业园区精密机械加工厂，设备齐全。', 218, 5, 16, '2026-05-15 14:20', '2026-05-15 15:10'],
+    ['P20260520003', sellerUserId, 'IT互联网', '金融科技/支付', '广东省', '深圳市', 5000, '6-20', 'transformation', 25, 4200, '深圳金融科技外包公司，客户资源丰富。', 0, 0, 0, '2026-05-20 16:48', null],
+    ['P20260410004', sellerUserId, '零售百货', '服装/鞋包', '四川省', '成都市', 450, '1-5', 'other', null, 320, '成都文创零售店，地理位置优越。', 56, 1, 3, '2026-04-10 09:15', '2026-04-10 10:30'],
   ];
 
   projects.forEach(p => {

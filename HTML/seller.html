@@ -97,6 +97,8 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         .btn-green{background:var(--green);color:#fff;}
         .btn-red{background:#fff;color:var(--red);border:1px solid var(--red);}
         .btn-red:hover{background:var(--red);color:#fff;}
+        .btn-del{width:30px;height:30px;padding:0;line-height:30px;text-align:center;font-size:16px;font-weight:bold;background:#fff;color:#e74c3c;border:1px solid #e0b4b4;border-radius:4px;cursor:pointer;}
+        .btn-del:hover{background:#c0392b;color:#fff;}
         .btn-gray{background:#e5e7ea;color:#444;}
         .btn-sm{padding:4px 10px;font-size:12px;}
         .btn-block{width:100%;justify-content:center;padding:13px;font-size:15px;}
@@ -224,7 +226,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
                         </div>
                         <div class="form-group unit"><label><span class="req">*</span> 年营业额（万元）</label><input type="number" id="revenue" placeholder="例如：200" required min="0"><span class="unit-text">万</span></div>
                         <div class="form-group"><label><span class="req">*</span> 员工数</label><select id="employees" required><option value="">请选择</option><option value="1-5">1-5人</option><option value="6-20">6-20人</option><option value="21-50">21-50人</option><option value="51-100">51-100人</option><option value="101-300">101-300人</option><option value="300+">300人以上</option></select></div>
-                        <div class="form-group full"><label><span class="req">*</span> 转让原因</label><select id="reason" required><option value="">请选择</option><option value="无人接班">无人接班/继承人不明</option><option value="经营者高龄>经营者高龄</option><option value="事业转型">事业转型/战略调整</option><option value="经营困难">经营困难</option><option value="其他">其他原因</option></select></div>
+                        <div class="form-group full"><label><span class="req">*</span> 转让原因</label><select id="reason" required><option value="">请选择</option><option value="无人接班">无人接班/继承人不明</option><option value="经营者高龄">经营者高龄</option><option value="事业转型">事业转型/战略调整</option><option value="经营困难">经营困难</option><option value="其他">其他原因</option></select></div>
                     </div>
                 </div>
                 <div class="card"><h3>财务信息</h3>
@@ -235,11 +237,11 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
                 </div>
                 <div class="card"><h3>资产清单</h3>
                     <h4>设备清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="equipTable"><thead><tr><th style="width:30px;">#</th><th>设备名称</th><th>型号/规格</th><th style="width:64px;">数量</th><th style="width:72px;">年份</th><th style="width:80px;">价格(万</th><th style="width:52px;">图片</th><th style="width:40px;"></th></tr></thead><tbody id="equipBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('equip')" style="margin-top:6px;">+ 添加设备</button></div>
+                    <div class="asset-table-wrap"><table class="asset-table" id="equipTable"><thead><tr><th style="width:30px;">#</th><th style="width:180px;">设备名称</th><th style="width:130px;">型号/规格</th><th style="width:64px;">数量</th><th style="width:72px;">年份</th><th style="width:80px;">价格(万)</th><th style="width:130px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="equipBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('equip')" style="margin-top:6px;">+ 添加设备</button></div>
                     <h4>原材料清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="materialTable"><thead><tr><th style="width:30px;">#</th><th>原料名称</th><th>规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">价格(万</th><th style="width:52px;">图片</th><th style="width:40px;"></th></tr></thead><tbody id="materialBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('material')" style="margin-top:6px;">+ 添加原料</button></div>
+                    <div class="asset-table-wrap"><table class="asset-table" id="materialTable"><thead><tr><th style="width:30px;">#</th><th style="width:180px;">原料名称</th><th style="width:130px;">规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">价格(万)</th><th style="width:130px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="materialBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('material')" style="margin-top:6px;">+ 添加原料</button></div>
                     <h4>成品库存清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="stockTable"><thead><tr><th style="width:30px;">#</th><th>产品名称</th><th>规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">单价(万</th><th style="width:52px;">图片</th><th style="width:40px;"></th></tr></thead><tbody id="stockBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('stock')" style="margin-top:6px;">+ 添加库存</button></div>
+                    <div class="asset-table-wrap"><table class="asset-table" id="stockTable"><thead><tr><th style="width:30px;">#</th><th style="width:180px;">产品名称</th><th style="width:130px;">规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">单价(万)</th><th style="width:130px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="stockBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('stock')" style="margin-top:6px;">+ 添加库存</button></div>
                 </div>
                 <div class="card"><h3>项目描述</h3>
                     <div class="form-group"><label><span class="req">*</span> 项目简介</label><textarea id="description" placeholder="请简要描述项目情况、优势特点、客户群体、发展前景等" rows="5" required></textarea><div class="hint"><span id="descLen">0</span> 字</div></div>
@@ -286,7 +288,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 <!-- Edit Modal -->
 <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
     <div style="background:#fff;border-radius:12px;width:680px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:24px;position:relative;">
-        <button onclick="closeModal('editModal')" style="position:absolute;top:10px;right:14px;font-size:20px;cursor:pointer;color:#999;background:none;border:none;">&times;</button>
+        <button onclick="closeModal('editModal')" style="position:absolute;top:10px;right:14px;font-size:20px;cursor:pointer;color:#999;background:none;border:none;">×</button>
         <h3 style="margin-bottom:14px;">编辑项目 ✏<span id="editProjectId">▸</span></h3>
         <div class="form-grid">
             <div class="form-group"><label>行业</label><select id="editIndustry"><option value="">请选择</option></select></div>
@@ -596,8 +598,8 @@ function addAssetRow(bodyId){
         '<td><input type="number" name="qty" min="1" value="1" style="width:50px;"></td>' +
         '<td><input type="text" name="year" placeholder="2023" style="width:60px;"></td>' +
         '<td><input type="number" name="value" min="0" placeholder="0" style="width:70px;"></td>' +
-        '<td class="img-cell"><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload">上传</button><input type="hidden" name="imageUrl" value=""></td>' +
-        '<td><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">×/button></td>';
+        '<td class="img-cell"><div class="img-gallery" style="display:flex;flex-wrap:wrap;gap:2px;align-items:center;"></div><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload" style="margin-top:2px;">+ 上传</button></td>' +
+        '<td style="text-align:center;"><button type="button" class="btn-del" data-asset-action="delete">✕</button></td>';
     body.appendChild(tr);
 }
 
@@ -614,9 +616,12 @@ function addAssetRow(bodyId){
             if(tr) tr.remove();
         } else if(action === "upload"){
             uploadAssetImage(btn);
+        } else if(action === "removeImg"){
+            var span = btn.closest("span");
+            if(span) span.remove();
         } else if(action === "clearImg"){
-            var td = btn.parentNode;
-            td.innerHTML = '<button type="button" class="btn btn-sm btn-outline" data-asset-action="upload">上传</button><input type="hidden" name="imageUrl" value="">';
+            var td = btn.closest(".img-cell");
+            if(td) td.querySelector(".img-gallery").innerHTML = '';
         }
     });
 });
@@ -691,20 +696,26 @@ uploadAssetImage.openPicker = function(btn, token){
         };
         xhr.onload = function(){
             btn.disabled = false;
+            btn.textContent = origText;
             try {
                 var data = JSON.parse(xhr.responseText);
                 if(xhr.status === 200 && data.success && data.data && data.data.url){
                     var url = data.data.url;
-                    td.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener">' +
-                        '<img src="' + url + '" alt="资产图片" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #ddd;vertical-align:middle;"></a>' +
-                        '<button type="button" class="btn btn-sm btn-red" data-asset-action="clearImg" style="margin-left:4px;padding:1px 6px;font-size:11px;line-height:1;">×</button>' +
+                    var gallery = td.querySelector(".img-gallery");
+                    if(!gallery){ gallery = td; }
+                    // Append new thumbnail to gallery (supports multiple images)
+                    var thumb = document.createElement("span");
+                    thumb.style.cssText = "position:relative;display:inline-block;";
+                    thumb.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener">' +
+                        '<img src="' + url + '" alt="图片" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">' +
+                        '</a>' +
+                        '<button type="button" data-asset-action="removeImg" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;padding:0;font-size:14px;line-height:20px;border-radius:50%;background:#e74c3c;color:#fff;border:none;cursor:pointer;text-align:center;font-weight:bold;">✕</button>' +
                         '<input type="hidden" name="imageUrl" value="' + url + '">';
+                    gallery.appendChild(thumb);
                 } else {
-                    btn.textContent = origText;
                     alert("上传失败：" + (data.error || ("HTTP " + xhr.status)));
                 }
             } catch(e){
-                btn.textContent = origText;
                 alert("上传失败：" + e.message);
             }
             fileInput.remove();
