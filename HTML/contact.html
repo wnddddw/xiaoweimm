@@ -70,6 +70,29 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             .nav-menu{display:none;}.menu-icon{display:block;}
             .footer-inner{grid-template-columns:1fr;gap:20px;text-align:center;}.footer-col h4{font-size:15px;margin-bottom:12px;}.footer-col li{font-size:13px;}.copyright{padding-top:24px;margin-top:20px;font-size:12px;}
         }
+    
+        .nav-mobile-fix-loaded{display:initial;}
+        @media(max-width:768px){
+            .top-nav{position:sticky;}
+            .nav-inner{height:auto;min-height:64px;padding:10px 0;gap:8px;position:relative;flex-wrap:nowrap;}
+            .logo{font-size:22px;white-space:nowrap;flex-shrink:0;}
+            .nav-right{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;gap:6px;max-width:58vw;flex-wrap:wrap;}
+            .nav-login,.nav-btn{font-size:12px;padding:6px 10px;min-height:36px;min-width:auto;line-height:1.2;}
+            .nav-btn{display:none;}
+            .menu-icon{display:flex;align-items:center;justify-content:center;color:var(--main);background:#fff;border:1px solid #d8dfef;border-radius:4px;font-size:22px;line-height:1;order:4;}
+            .nav-menu{display:none;position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid #e0e5f0;border-top:0;box-shadow:0 18px 36px rgba(21,29,43,0.14);padding:8px 0;z-index:1000;}
+            .nav-menu.open{display:block;}
+            .nav-menu li a{display:block;padding:12px 18px;font-size:15px;border-bottom:1px solid #f0f2f6;}
+            .nav-menu li:last-child a{border-bottom:0;}
+            .modal-overlay{align-items:flex-start;overflow-y:auto;padding:18px 10px;}
+            .modal-box{width:100%;max-width:420px;padding:25px 20px 20px;}
+            .sms-row{flex-direction:column;}
+        }
+        @media(max-width:420px){
+            .nav-inner{align-items:flex-start;}
+            .nav-right{max-width:52vw;gap:5px;}
+            .nav-login{font-size:11px;padding:5px 8px;}
+        }
     </style>
 </head>
 <body>
@@ -93,7 +116,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             </div>
             <a href="contact.html" class="nav-btn active">免费咨询</a>
         </div>
-        <div class="menu-icon">≡</div>
+        <button class="menu-icon" type="button" aria-label="menu" aria-expanded="false">&#8801;</button>
     </div>
 </header>
 
@@ -206,119 +229,43 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     </div>
 </div>
 <script>
+(function bindMobileMenu(){
+  function init(){
+    var menuButton = document.querySelector('.menu-icon');
+    var navMenu = document.querySelector('.nav-menu');
+    if(!menuButton || !navMenu) return;
 
-
-
-
-
-
-
-
-
-// 登录/注册弹窗
-const overlay = document.getElementById('modalOverlay');
-const btnLogin = document.getElementById('btnLogin');
-const modalClose = document.getElementById('modalClose');
-btnLogin.addEventListener('click', ()=>{ overlay.classList.add('show'); });
-modalClose.addEventListener('click', ()=>{ overlay.classList.remove('show'); });
-overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.classList.remove('show'); });
-
-const tabLogin = document.getElementById('tabLogin');
-const tabReg = document.getElementById('tabReg');
-const loginForm = document.getElementById('loginForm');
-const regForm = document.getElementById('regForm');
-const toRegister = document.getElementById('toRegister');
-const toLogin = document.getElementById('toLogin');
-function switchTab(toLoginTab){
-    if(toLoginTab){
-        tabLogin.classList.add('active'); tabReg.classList.remove('active');
-        loginForm.classList.add('active'); regForm.classList.remove('active');
-    } else {
-        tabReg.classList.add('active'); tabLogin.classList.remove('active');
-        regForm.classList.add('active'); loginForm.classList.remove('active');
+    function closeMenu(){
+      navMenu.classList.remove('open');
+      menuButton.setAttribute('aria-expanded', 'false');
+      menuButton.innerHTML = '&#8801;';
     }
-}
-tabLogin.addEventListener('click', ()=>switchTab(true));
-tabReg.addEventListener('click', ()=>switchTab(false));
-toRegister.addEventListener('click', ()=>switchTab(false));
-toLogin.addEventListener('click', ()=>switchTab(true));
 
-function startCountdown(btn){
-    let sec = 60; btn.disabled = true; btn.textContent = sec + '秒后重发';
-    const timer = setInterval(()=>{ sec--; btn.textContent = sec + '秒后重发';
-        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
-    }, 1000);
-}
-function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
+    menuButton.addEventListener('click', function(e){
+      e.preventDefault();
+      var isOpen = navMenu.classList.toggle('open');
+      menuButton.setAttribute('aria-expanded', String(isOpen));
+      menuButton.textContent = isOpen ? '\u00d7' : '\u2261';
+    });
 
-document.getElementById('loginSmsBtn').addEventListener('click', ()=>{
-    const phone = document.getElementById('loginPhone').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    startCountdown(document.getElementById('loginSmsBtn'));
-    generateDevCode(); alert('验证码已发送至 ' + phone + '（开发模式验证码：' + currentDevCode + '）');
-});
+    navMenu.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', closeMenu);
+    });
 
-document.getElementById('regSmsBtn').addEventListener('click', ()=>{
-    const phone = document.getElementById('regPhone').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    startCountdown(document.getElementById('regSmsBtn'));
-    generateDevCode(); alert('验证码已发送至 ' + phone + '（开发模式验证码：' + currentDevCode + '）');
-});
+    document.addEventListener('click', function(e){
+      if(!navMenu.classList.contains('open')) return;
+      if(navMenu.contains(e.target) || menuButton.contains(e.target)) return;
+      closeMenu();
+    });
 
-function updateNavUser(phone){
-    document.getElementById('btnLogin').style.display = 'none';
-    document.getElementById('userGreeting').style.display = 'flex';
-    document.getElementById('userAvatar').textContent = phone.slice(-2);
-    document.getElementById('userPhone').textContent = phone.slice(0,3) + '****' + phone.slice(-4);
-}
+    window.addEventListener('resize', function(){
+      if(window.innerWidth > 768) closeMenu();
+    });
+  }
 
-document.getElementById('loginSubmit').addEventListener('click', ()=>{
-    const phone = document.getElementById('loginPhone').value.trim();
-    const code = document.getElementById('loginCode').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误，请重新获取"); return; }
-    overlay.classList.remove('show'); updateNavUser(phone); alert('登录成功！欢迎回来');
-});
-
-document.getElementById('regSubmit').addEventListener('click', ()=>{
-    const phone = document.getElementById('regPhone').value.trim();
-    const code = document.getElementById('regCode').value.trim();
-    const name = document.getElementById('regName').value.trim();
-    const role = document.getElementById('regRole').value;
-    const agree = document.getElementById('regAgree').checked;
-    if(!isValidPhone(phone)){ alert('手机号为必填项，请输入有效的手机号'); return; }
-    if(!code){ alert('请输入短信验证码'); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误，请重新获取"); return; }
-    if(!agree){ alert('请先同意服务协议和隐私政策'); return; }
-    overlay.classList.remove('show'); updateNavUser(phone);
-    const roleLabel = role === 'seller' ? '卖家' : role === 'buyer' ? '买家' : '用户';
-    alert('注册成功！欢迎加入xiaoweimm，' + (name || '新' + roleLabel));
-});
-
-document.getElementById('btnLogout').addEventListener('click', ()=>{
-    document.getElementById('btnLogin').style.display = '';
-    document.getElementById('userGreeting').style.display = 'none';
-    alert('已退出登录');
-});
-
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') overlay.classList.remove('show'); });
-</script>
-
-<script>
-  // ── 移动端汉堡菜单 ──
-  document.addEventListener("DOMContentLoaded",function(){
-    var icon=document.querySelector(".menu-icon");
-    var menu=document.querySelector(".nav-menu");
-    if(!icon||!menu)return;
-    var bd=document.createElement("div");
-    bd.style.cssText="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:998;";
-    document.body.appendChild(bd);
-    function openM(){menu.style.display="flex";menu.style.position="absolute";menu.style.top="75px";menu.style.left="0";menu.style.width="100%";menu.style.background="#fff";menu.style.flexDirection="column";menu.style.padding="20px";menu.style.boxShadow="0 10px 30px rgba(0,0,0,0.15)";menu.style.zIndex="999";bd.style.display="block";icon.textContent="✕";}
-    function closeM(){menu.style.display="";menu.style.position="";menu.style.top="";menu.style.left="";menu.style.width="";menu.style.background="";menu.style.flexDirection="";menu.style.padding="";menu.style.boxShadow="";menu.style.zIndex="";bd.style.display="none";icon.textContent="≡";}
-    icon.addEventListener("click",function(){if(menu.style.display==="flex")closeM();else openM();});
-    bd.addEventListener("click",closeM);
-    menu.querySelectorAll("a").forEach(function(a){a.addEventListener("click",closeM);});
-  });
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
 </script>
 
 </body>

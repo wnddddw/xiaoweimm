@@ -9,6 +9,7 @@ const router = express.Router();
 
 const MAX_RECHARGE_AMOUNT = 500000; // ¥500,000 max per recharge
 const isProduction = () => process.env.NODE_ENV === 'production';
+const allowManualRecharge = () => process.env.PAYMENT_ALLOW_MANUAL_RECHARGE === 'true';
 
 // Rate limiter for recharge — 5 per hour per user
 const rechargeLimiter = createRateLimit({
@@ -43,7 +44,8 @@ router.post('/order', auth, async (req, res) => {
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const result = await paymentService.createPaymentOrder(
-    req.user.id, Number(amount), channel, ip, subject || 'Balance Recharge'
+    req.user.id, Number(amount), channel, ip, subject || 'Balance Recharge',
+    { businessType: 'recharge' }
   );
 
   if (!result.success) return res.json({ success: false, error: result.error });
@@ -57,7 +59,7 @@ router.post('/order', auth, async (req, res) => {
 // GET /payments/order/:id — Query order status
 router.get('/order/:id', auth, (req, res) => {
   const order = get(
-    'SELECT id, channel, amount, subject, status, out_trade_no, created_at, paid_at FROM payment_orders WHERE id = ? AND user_id = ?',
+    'SELECT id, channel, amount, subject, business_type, business_id, status, out_trade_no, created_at, paid_at FROM payment_orders WHERE id = ? AND user_id = ?',
     [req.params.id, req.user.id]
   );
   if (!order) return res.json({ success: false, error: 'Order not found' });
@@ -82,7 +84,7 @@ router.post('/callback/wechat', (req, res) => {
     return res.send('<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[Payload too large]]></return_msg></xml>');
   }
 
-  console.log('[WECHAT CB]', rawBody);
+  if (!isProduction()) console.log('[WECHAT CB] received');
   const result = paymentService.processPaymentCallback('wechat_h5', rawBody);
 
   const resp = result.success
@@ -94,7 +96,7 @@ router.post('/callback/wechat', (req, res) => {
 
 // Alipay async notify — receives URL-encoded form data
 router.post('/callback/alipay', (req, res) => {
-  console.log('[ALIPAY CB]', req.body);
+  if (!isProduction()) console.log('[ALIPAY CB] received');
   const result = paymentService.processPaymentCallback('alipay_h5', req.body);
   res.send(result.success ? 'success' : 'fail');
 });
@@ -114,13 +116,13 @@ router.get('/callback/alipay', (req, res) => {
 // ── Recharge (DEV ONLY — requires admin in production) ─────────────
 
 // POST /payments/recharge — manual balance recharge
-// In production: admin-only. In dev: any authenticated user (for testing).
+// Manual recharge is disabled unless PAYMENT_ALLOW_MANUAL_RECHARGE=true.
 router.post('/recharge', auth, rechargeLimiter, (req, res) => {
-  // Production guard: admin-only recharge
-  if (isProduction()) {
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Only admins can manually recharge in production' });
-    }
+  if (!allowManualRecharge()) {
+    return res.status(403).json({ success: false, error: 'Manual recharge is disabled' });
+  }
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Only admins can manually recharge' });
   }
 
   const { amount, pay_method } = req.body;

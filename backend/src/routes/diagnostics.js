@@ -91,7 +91,14 @@ router.post('/:id/pay/order', auth, async (req, res) => {
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const paymentService = require('../services/payment');
-  const result = await paymentService.createPaymentOrder(req.user.id, order.amount, channel, ip, '估值诊断 — ' + order.id);
+  const result = await paymentService.createPaymentOrder(
+    req.user.id,
+    order.amount,
+    channel,
+    ip,
+    '估值诊断 — ' + order.id,
+    { businessType: 'diagnostic', businessId: order.id }
+  );
 
   if (!result.success) return res.json({ success: false, error: result.error });
   if (result.devPaid) {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -128,7 +128,6 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 
 <div class="toast" id="toast"></div>
 
-
 <script>
 (function(){
     var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
@@ -139,182 +138,211 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
     }
 })();
+
 function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
-var currentDevCode = "";
-function generateDevCode(){ currentDevCode = String(Math.floor(100000 + Math.random() * 900000)); return currentDevCode; }
-var overlay = document.getElementById("modalOverlay");
-var btnLogin = document.getElementById("btnLogin");
-var modalClose = document.getElementById("modalClose");
-if(btnLogin) btnLogin.addEventListener("click", function(){ if(overlay) overlay.classList.add("show"); });
-if(modalClose) modalClose.addEventListener("click", function(){ if(overlay) overlay.classList.remove("show"); });
-if(overlay) overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.classList.remove("show"); });
-var tabLogin = document.getElementById("tabLogin");
-var tabReg = document.getElementById("tabReg");
-var loginForm = document.getElementById("loginForm");
-var regForm = document.getElementById("regForm");
-function switchTab(toLoginTab){
-    if(!tabLogin) return;
-    if(toLoginTab){ tabLogin.classList.add("active"); if(tabReg) tabReg.classList.remove("active"); if(loginForm) loginForm.classList.add("active"); if(regForm) regForm.classList.remove("active"); }
-    else { if(tabReg) tabReg.classList.add("active"); tabLogin.classList.remove("active"); if(regForm) regForm.classList.add("active"); if(loginForm) loginForm.classList.remove("active"); }
+function showToast(message, type){
+    var toast = document.getElementById("toast");
+    if(!toast){ alert(message); return; }
+    toast.textContent = message;
+    toast.className = "toast show " + (type || "");
+    setTimeout(function(){ toast.className = "toast"; }, 2200);
 }
-if(tabLogin) tabLogin.addEventListener("click", function(){ switchTab(true); });
-if(tabReg) tabReg.addEventListener("click", function(){ switchTab(false); });
-var tR = document.getElementById("toRegister"); if(tR) tR.addEventListener("click", function(){ switchTab(false); });
-var tL = document.getElementById("toLogin"); if(tL) tL.addEventListener("click", function(){ switchTab(true); });
-function startCountdown(btn){
-    var sec = 60; btn.disabled = true; btn.textContent = sec + "秒后重发";
-    var timer = setInterval(function(){ sec--; btn.textContent = sec + "秒后重发";
-        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证码"; }
-    }, 1000);
+function getTargetAfterAuth(){
+    var redirect = sessionStorage.getItem("redirectAfterLogin");
+    if(redirect){ sessionStorage.removeItem("redirectAfterLogin"); return redirect; }
+    return null;
 }
-var lSms = document.getElementById("loginSmsBtn");
-if(lSms) lSms.addEventListener("click", function(){
-    var phone = document.getElementById("loginPhone").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    startCountdown(lSms);
-    var codeInput = document.getElementById("loginCode");
-    var origText = lSms.textContent;
-    lSms.disabled = true;
-    fetch("/api/auth/sms-code", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone })
-    }).then(function(r){ return r.json(); }).then(function(d){
-        if(d && d.success && d.data && d.data.code){
-            if(codeInput && !codeInput.value){ codeInput.value = d.data.code; }
-            if(d.data.dev_mode){ alert("开发模式验证码：" + d.data.code + "（已自动填入）"); }
-            else { alert("验证码已发送至 " + phone); }
-        } else {
-            alert("发送失败：" + ((d && d.error) || "未知错误"));
-            lSms.disabled = false;
-            lSms.textContent = origText;
-        }
-    }).catch(function(e){
-        alert("网络错误：" + e.message);
-        lSms.disabled = false;
-        lSms.textContent = origText;
-    });
-});
-var rSms = document.getElementById("regSmsBtn");
-if(rSms) rSms.addEventListener("click", function(){
-    var phone = document.getElementById("regPhone").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    startCountdown(rSms);
-    var codeInput = document.getElementById("regCode");
-    var origText = rSms.textContent;
-    rSms.disabled = true;
-    fetch("/api/auth/sms-code", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone })
-    }).then(function(r){ return r.json(); }).then(function(d){
-        if(d && d.success && d.data && d.data.code){
-            if(codeInput && !codeInput.value){ codeInput.value = d.data.code; }
-            if(d.data.dev_mode){ alert("开发模式验证码：" + d.data.code + "（已自动填入）"); }
-            else { alert("验证码已发送至 " + phone); }
-        } else {
-            alert("发送失败：" + ((d && d.error) || "未知错误"));
-            rSms.disabled = false;
-            rSms.textContent = origText;
-        }
-    }).catch(function(e){
-        alert("网络错误：" + e.message);
-        rSms.disabled = false;
-        rSms.textContent = origText;
-    });
-});
+function saveSession(user){
+    sessionStorage.setItem("xiaoweimm_user", JSON.stringify(user));
+    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
+    users[user.phone] = users[user.phone] || {};
+    users[user.phone].phone = user.phone;
+    users[user.phone].role = user.role || users[user.phone].role || "";
+    users[user.phone].name = user.name || users[user.phone].name || "";
+    localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
+}
 function updateNavUser(phone){
     var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "none";
     var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "flex";
     var ua = document.getElementById("userAvatar"); if(ua) ua.textContent = phone.slice(-2);
     var up = document.getElementById("userPhone"); if(up) up.textContent = phone.slice(0,3) + "****" + phone.slice(-4);
 }
-var lSub = document.getElementById("loginSubmit");
-if(lSub) lSub.addEventListener("click", function(){
-    var phone = document.getElementById("loginPhone").value.trim();
-    var code = document.getElementById("loginCode").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    if(!code){ alert("请先点击右侧\u201c获取验证码\u201d"); return; }
-    var origText = lSub.textContent;
-    lSub.disabled = true; lSub.textContent = "登录中…";
-    fetch("/api/auth/login-sms", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone, code: code })
-    }).then(function(r){ return r.json(); }).then(function(d){
-        if(d && d.success && d.data && d.data.token){
-            var u = d.data;
-            sessionStorage.setItem("xiaoweimm_user", JSON.stringify({
-                phone: u.phone, role: u.role, name: u.name || "",
-                time: Date.now(), token: u.token
-            }));
-            var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-            users[u.phone] = users[u.phone] || {};
-            users[u.phone].phone = u.phone;
-            users[u.phone].role = u.role;
-            users[u.phone].name = u.name || "";
-            localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
-            updateNavUser(u.phone);
-            if(overlay) overlay.classList.remove("show");
-            var target = getTargetAfterAuth();
-            if(!target){ target = u.role === "admin" ? "admin.html" : u.role === "seller" ? "seller.html" : u.role === "buyer" ? "buyer.html" : "member.html"; }
-            setTimeout(function(){ window.location.href = target; }, 400);
-        } else {
-            alert("登录失败：" + ((d && d.error) || "未知错误"));
-            lSub.disabled = false; lSub.textContent = origText;
+function startCountdown(btn){
+    var sec = 60;
+    btn.disabled = true;
+    btn.textContent = sec + "秒后重发";
+    var timer = setInterval(function(){
+        sec--;
+        if(sec <= 0){
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = "获取验证码";
+            return;
         }
-    }).catch(function(e){
-        alert("网络错误：" + e.message);
-        lSub.disabled = false; lSub.textContent = origText;
-    });
-});
-var rSub = document.getElementById("regSubmit");
-if(rSub) rSub.addEventListener("click", function(){
-    var phone = document.getElementById("regPhone").value.trim();
-    var code = document.getElementById("regCode").value.trim();
-    var name = document.getElementById("regName").value.trim();
-    var role = document.getElementById("regRole").value;
-    var agree = document.getElementById("regAgree");
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    if(!code){ alert("请先点击右侧\u201c获取验证码\u201d"); return; }
-    if(!role){ alert("请选择使用角色"); return; }
-    if(agree && !agree.checked){ alert("请先同意服务协议和隐私政策"); return; }
-    var origText = rSub.textContent;
-    rSub.disabled = true; rSub.textContent = "注册中…";
-    fetch("/api/auth/register", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone, code: code, name: name, role: role })
-    }).then(function(r){ return r.json(); }).then(function(d){
-        if(d && d.success && d.data && d.data.token){
-            var u = d.data;
-            sessionStorage.setItem("xiaoweimm_user", JSON.stringify({
-                phone: u.phone, role: u.role, name: u.name || name,
-                time: Date.now(), token: u.token
-            }));
-            var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-            users[u.phone] = { phone: u.phone, role: u.role, name: u.name || name, time: new Date().toISOString() };
-            localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
-            updateNavUser(u.phone);
-            if(overlay) overlay.classList.remove("show");
-            var target = getTargetAfterAuth();
-            if(!target){ target = u.role === "seller" ? "seller.html" : u.role === "buyer" ? "buyer.html" : "verify.html"; }
-            setTimeout(function(){ window.location.href = target; }, 400);
+        btn.textContent = sec + "秒后重发";
+    }, 1000);
+}
+function bindAuthLogin(){
+    var overlay = document.getElementById("modalOverlay");
+    var btnLogin = document.getElementById("btnLogin");
+    var modalClose = document.getElementById("modalClose");
+    var tabLogin = document.getElementById("tabLogin");
+    var tabReg = document.getElementById("tabReg");
+    var loginForm = document.getElementById("loginForm");
+    var regForm = document.getElementById("regForm");
+    var toRegister = document.getElementById("toRegister");
+    var toLogin = document.getElementById("toLogin");
+    var loginSmsBtn = document.getElementById("loginSmsBtn");
+    var regSmsBtn = document.getElementById("regSmsBtn");
+    var loginSubmit = document.getElementById("loginSubmit");
+    var regSubmit = document.getElementById("regSubmit");
+    var loginPhone = document.getElementById("loginPhone");
+    var loginCode = document.getElementById("loginCode");
+    var loginPassword = document.getElementById("loginPassword");
+    var regPhone = document.getElementById("regPhone");
+    var regCode = document.getElementById("regCode");
+    var regName = document.getElementById("regName");
+    var regRole = document.getElementById("regRole");
+    var regAgree = document.getElementById("regAgree");
+
+    function setTab(showLogin){
+        if(showLogin){
+            tabLogin.classList.add("active");
+            tabReg.classList.remove("active");
+            loginForm.classList.add("active");
+            regForm.classList.remove("active");
         } else {
-            alert("注册失败：" + ((d && d.error) || "未知错误"));
-            rSub.disabled = false; rSub.textContent = origText;
+            tabReg.classList.add("active");
+            tabLogin.classList.remove("active");
+            regForm.classList.add("active");
+            loginForm.classList.remove("active");
         }
-    }).catch(function(e){
-        alert("网络错误：" + e.message);
-        rSub.disabled = false; rSub.textContent = origText;
+    }
+
+    if(btnLogin) btnLogin.addEventListener("click", function(){ if(overlay) overlay.classList.add("show"); setTab(true); });
+    if(modalClose) modalClose.addEventListener("click", function(){ if(overlay) overlay.classList.remove("show"); });
+    if(overlay) overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.classList.remove("show"); });
+    if(tabLogin) tabLogin.addEventListener("click", function(){ setTab(true); });
+    if(tabReg) tabReg.addEventListener("click", function(){ setTab(false); });
+    if(toRegister) toRegister.addEventListener("click", function(){ setTab(false); });
+    if(toLogin) toLogin.addEventListener("click", function(){ setTab(true); });
+
+    if(loginSmsBtn) loginSmsBtn.addEventListener("click", function(){
+        var phone = loginPhone.value.trim();
+        if(!isValidPhone(phone)) return showToast("请输入有效的手机号", "error");
+        startCountdown(loginSmsBtn);
+        fetch("/api/auth/sms-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phone })
+        }).then(function(r){ return r.json(); }).then(function(d){
+            if(d && d.success && d.data && d.data.code){
+                loginCode.value = d.data.code;
+                showToast("验证码已自动填入（开发模式）", "success");
+            } else {
+                showToast("发送失败：" + ((d && d.error) || "未知错误"), "error");
+            }
+        }).catch(function(e){ showToast("网络错误：" + e.message, "error"); });
     });
-});
-var bLg = document.getElementById("btnLogout");
-if(bLg) bLg.addEventListener("click", function(){
-    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "";
-    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "none";
-    sessionStorage.removeItem("xiaoweimm_user"); alert("已退出登录");
-});
-(function initAuth(){
+
+    if(regSmsBtn) regSmsBtn.addEventListener("click", function(){
+        var phone = regPhone.value.trim();
+        if(!isValidPhone(phone)) return showToast("请输入有效的手机号", "error");
+        startCountdown(regSmsBtn);
+        fetch("/api/auth/sms-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phone })
+        }).then(function(r){ return r.json(); }).then(function(d){
+            if(d && d.success && d.data && d.data.code){
+                regCode.value = d.data.code;
+                showToast("验证码已自动填入（开发模式）", "success");
+            } else {
+                showToast("发送失败：" + ((d && d.error) || "未知错误"), "error");
+            }
+        }).catch(function(e){ showToast("网络错误：" + e.message, "error"); });
+    });
+
+    if(loginSubmit) loginSubmit.addEventListener("click", function(){
+        var phone = loginPhone.value.trim();
+        var password = loginPassword ? loginPassword.value.trim() : "";
+        var code = loginCode.value.trim();
+        if(!isValidPhone(phone)) return showToast("请输入有效的手机号", "error");
+        loginSubmit.disabled = true;
+        loginSubmit.textContent = "登录中…";
+        var endpoint = password ? "/api/auth/login" : "/api/auth/login-sms";
+        var payload = password ? { phone: phone, password: password } : { phone: phone, code: code };
+        if(!password && !code){
+            showToast("请输入密码，或者填写短信验证码", "error");
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "登录";
+            return;
+        }
+        fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        }).then(function(r){ return r.json(); }).then(function(d){
+            if(d && d.success && d.data && d.data.token){
+                saveSession({ phone: d.data.phone, role: d.data.role, name: d.data.name || "", token: d.data.token, time: Date.now() });
+                window.location.href = getTargetAfterAuth() || (d.data.role === "admin" ? "admin.html" : d.data.role === "seller" ? "seller.html" : d.data.role === "buyer" ? "buyer.html" : "member.html");
+                return;
+            }
+            showToast("登录失败：" + ((d && d.error) || "未知错误"), "error");
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "登录";
+        }).catch(function(e){
+            showToast("网络错误：" + e.message, "error");
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "登录";
+        });
+    });
+
+    if(regSubmit) regSubmit.addEventListener("click", function(){
+        var phone = regPhone.value.trim();
+        var code = regCode.value.trim();
+        var name = regName.value.trim();
+        var role = regRole.value;
+        if(!isValidPhone(phone)) return showToast("请输入有效的手机号", "error");
+        if(!code) return showToast("请输入短信验证码", "error");
+        if(!name) return showToast("请输入姓名", "error");
+        if(!role) return showToast("请选择使用角色", "error");
+        if(regAgree && !regAgree.checked) return showToast("请先同意服务协议和隐私政策", "error");
+        regSubmit.disabled = true;
+        regSubmit.textContent = "注册中…";
+        fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phone, code: code, name: name, role: role })
+        }).then(function(r){ return r.json(); }).then(function(d){
+            if(d && d.success && d.data && d.data.token){
+                saveSession({ phone: d.data.phone, role: d.data.role, name: d.data.name || name, token: d.data.token, time: Date.now() });
+                window.location.href = getTargetAfterAuth() || (d.data.role === "seller" ? "seller.html" : d.data.role === "buyer" ? "buyer.html" : "verify.html");
+                return;
+            }
+            showToast("注册失败：" + ((d && d.error) || "未知错误"), "error");
+            regSubmit.disabled = false;
+            regSubmit.textContent = "注册";
+        }).catch(function(e){
+            showToast("网络错误：" + e.message, "error");
+            regSubmit.disabled = false;
+            regSubmit.textContent = "注册";
+        });
+    });
+
+    var btnLogout = document.getElementById("btnLogout");
+    if(btnLogout) btnLogout.addEventListener("click", function(){
+        sessionStorage.removeItem("xiaoweimm_user");
+        var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "";
+        var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "none";
+    });
+
     var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
-    if(user && user.phone){ updateNavUser(user.phone); }
-})();
-if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
+    if(user && user.phone) updateNavUser(user.phone);
+    if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
+}
+
+bindAuthLogin();
 </script>
-function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
+</body>
+</html>

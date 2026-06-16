@@ -64,7 +64,7 @@ router.patch('/verifications/:id/approve', (req, res) => {
     run(
       'INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)',
       [uuidv4(), v.user_id, 'system', subject,
-       '恭喜！您的' + (v.type === 'personal' ? '实名' : '企业') + '认证已通过审核。您现在可以使用平台的全部功能。', now]
+       `恭喜，您的${v.type === 'personal' ? '实名认证' : '企业认证'}已通过审核，您现在可以使用平台的全部功能。`, now]
     );
   }
   res.json({ success: true });
@@ -80,7 +80,7 @@ router.patch('/verifications/:id/reject', (req, res) => {
       run(
         'INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)',
         [uuidv4(), v.user_id, 'system', '认证申请已驳回',
-         '您的认证申请未通过审核。\n驳回原因：' + reason + '\n请根据提示修改后重新提交。', now]
+         `您的认证申请未通过审核。\n驳回原因：${reason}\n请根据提示修改后重新提交。`, now]
       );
     }
   }

@@ -51,7 +51,7 @@ app.use('/uploads', express.static(path.resolve(config.uploadDir)));
 
 // Serve HTML frontend with cache — 1h for production, 0 for dev
 const staticOpts = { maxAge: process.env.NODE_ENV === 'production' ? 3600000 : 0 };
-app.use(express.static(path.resolve('../HTML'), staticOpts));
+app.use(express.static(path.resolve(__dirname, '../../HTML'), staticOpts));
 
 // Constants
 const { industryData, regionData, dealStages } = require('./utils/constants');

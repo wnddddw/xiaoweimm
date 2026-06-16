@@ -83,7 +83,14 @@ router.post('/:id/pay/order', auth, async (req, res) => {
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const paymentService = require('../services/payment');
-  const result = await paymentService.createPaymentOrder(req.user.id, order.price, channel, ip, '专家服务 — ' + (SERVICE_TYPES[order.service_type]?.title || order.service_type));
+  const result = await paymentService.createPaymentOrder(
+    req.user.id,
+    order.price,
+    channel,
+    ip,
+    '专家服务 — ' + (SERVICE_TYPES[order.service_type]?.title || order.service_type),
+    { businessType: 'expert_service', businessId: order.id }
+  );
 
   if (!result.success) return res.json({ success: false, error: result.error });
   if (result.devPaid) {

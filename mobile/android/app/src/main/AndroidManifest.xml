@@ -2,15 +2,15 @@
     <uses-permission android:name='android.permission.INTERNET'/>
     <application
         android:name='.MainApplication'
-        android:label='小微买卖'
+        android:label='灏忓井涔板崠'
         android:icon='@mipmap/ic_launcher'
         android:roundIcon='@mipmap/ic_launcher_round'
-android:allowBackup='false'
+        android:allowBackup='false'
         android:theme='@style/AppTheme'
         android:usesCleartextTraffic='true'>
         <activity
             android:name='.MainActivity'
-            android:label='小微买卖'
+            android:label='灏忓井涔板崠'
             android:configChanges='keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode'
             android:launchMode='singleTask'
             android:windowSoftInputMode='adjustResize'

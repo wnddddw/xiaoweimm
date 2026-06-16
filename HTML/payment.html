@@ -409,4 +409,128 @@ if(bLg) bLg.addEventListener("click", function(){
 })();
 if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
 </script>
+<script>
 function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
+</script>
+
+<script>
+(function initPaymentFlow(){
+  var payMap = { wechat: 'wechat_h5', alipay: 'alipay_h5', card: 'wechat_h5' };
+  var amountKey = 'xiaoweimm_payment_amount';
+  var channelKey = 'xiaoweimm_payment_channel';
+  var orderKey = 'xiaoweimm_payment_order';
+  var selectedAmount = 300;
+  var selectedChannel = 'wechat';
+  var customRow = document.getElementById('customRow');
+  var customAmount = document.getElementById('customAmount');
+  var rechargeAmount = document.getElementById('rechargeAmount');
+  var balanceDisplay = document.getElementById('balanceDisplay');
+
+  function authHeaders() {
+    var user = JSON.parse(sessionStorage.getItem('xiaoweimm_user') || 'null');
+    if (!user || !user.token) return null;
+    return { 'Authorization': 'Bearer ' + user.token, 'Content-Type': 'application/json' };
+  }
+
+  function fmt(value) { return '?' + Number(value || 0).toFixed(2); }
+
+  function setAmount(value) {
+    selectedAmount = Number(value) || 0;
+    localStorage.setItem(amountKey, String(selectedAmount));
+    if (rechargeAmount) rechargeAmount.textContent = fmt(selectedAmount);
+  }
+
+  function setChannel(channel) {
+    selectedChannel = channel || 'wechat';
+    localStorage.setItem(channelKey, selectedChannel);
+    document.querySelectorAll('.pay-method[data-pay]').forEach(function(el){
+      el.classList.toggle('selected', el.getAttribute('data-pay') === selectedChannel);
+    });
+  }
+
+  function pollOrder(orderId) {
+    var headers = authHeaders();
+    if (!headers) return;
+    var tries = 0;
+    var timer = setInterval(function() {
+      tries++;
+      fetch('/api/payments/order/' + encodeURIComponent(orderId), { headers: headers })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (data && data.success && data.data && data.data.status === 'paid') {
+            clearInterval(timer);
+            sessionStorage.removeItem(orderKey);
+            alert('?????');
+            window.location.href = 'payment.html';
+          }
+          if (tries >= 20) clearInterval(timer);
+        })
+        .catch(function(){ if (tries >= 20) clearInterval(timer); });
+    }, 3000);
+  }
+
+  window.doRecharge = function() {
+    var headers = authHeaders();
+    if (!headers) {
+      alert('????????');
+      sessionStorage.setItem('redirectAfterLogin', 'payment.html');
+      window.location.href = 'index.html';
+      return;
+    }
+    if (customRow && customRow.style.display !== 'none' && customAmount && customAmount.value) setAmount(customAmount.value);
+    if (!selectedAmount || selectedAmount <= 0) { alert('???????'); return; }
+
+    fetch('/api/payments/order', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        amount: selectedAmount,
+        channel: payMap[selectedChannel] || 'wechat_h5',
+        subject: '????'
+      })
+    }).then(function(r){ return r.json(); }).then(function(resp){
+      if (!resp || !resp.success) { alert((resp && resp.error) || '??????'); return; }
+      sessionStorage.setItem(orderKey, resp.data.order_id);
+      if (resp.data.payment_url) {
+        window.location.href = resp.data.payment_url;
+        pollOrder(resp.data.order_id);
+      }
+    }).catch(function(err){ alert('?????' + err.message); });
+  };
+
+  document.querySelectorAll('.amount-item').forEach(function(el){
+    el.addEventListener('click', function(){
+      document.querySelectorAll('.amount-item').forEach(function(node){ node.classList.remove('selected'); });
+      el.classList.add('selected');
+      var amount = el.getAttribute('data-amount');
+      if (amount === 'custom') {
+        if (customRow) customRow.style.display = 'flex';
+        if (customAmount) customAmount.focus();
+        return;
+      }
+      if (customRow) customRow.style.display = 'none';
+      setAmount(amount);
+    });
+  });
+
+  document.querySelectorAll('.pay-method[data-pay]').forEach(function(el){
+    el.addEventListener('click', function(){ setChannel(el.getAttribute('data-pay')); });
+  });
+  if (customAmount) customAmount.addEventListener('input', function(){ setAmount(customAmount.value); });
+
+  setAmount(Number(localStorage.getItem(amountKey) || '300'));
+  setChannel(localStorage.getItem(channelKey) || 'wechat');
+
+  var headers = authHeaders();
+  if (headers) {
+    fetch('/api/payments/balance', { headers: headers })
+      .then(function(r){ return r.json(); })
+      .then(function(data){ if (data && data.success && data.data && balanceDisplay) balanceDisplay.textContent = Number(data.data.balance || 0).toFixed(2); })
+      .catch(function(){});
+    var lastOrder = sessionStorage.getItem(orderKey);
+    if (lastOrder) pollOrder(lastOrder);
+  }
+})();
+</script>
+</body>
+</html>

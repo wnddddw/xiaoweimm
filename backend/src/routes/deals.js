@@ -131,7 +131,14 @@ router.post('/:id/pay-commission/order', auth, async (req, res) => {
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const paymentService = require('../services/payment');
-  const result = await paymentService.createPaymentOrder(req.user.id, commission, channel, ip, '成交佣金 — Deal #' + req.params.id);
+  const result = await paymentService.createPaymentOrder(
+    req.user.id,
+    commission,
+    channel,
+    ip,
+    '成交佣金 — Deal #' + req.params.id,
+    { businessType: 'commission', businessId: req.params.id }
+  );
 
   if (!result.success) return res.json({ success: false, error: result.error });
   res.json({ success: true, data: { order_id: result.orderId, payment_url: result.paymentUrl, commission } });

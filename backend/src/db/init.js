@@ -121,6 +121,7 @@ function createTables() {
     CREATE TABLE IF NOT EXISTS payment_orders (
       id TEXT PRIMARY KEY, user_id TEXT NOT NULL, channel TEXT NOT NULL,
       amount REAL NOT NULL, subject TEXT DEFAULT '',
+      business_type TEXT DEFAULT 'recharge', business_id TEXT DEFAULT '',
       status TEXT DEFAULT 'pending', out_trade_no TEXT, payment_url TEXT,
       callback_data TEXT, created_at TEXT NOT NULL, paid_at TEXT
     );
@@ -194,6 +195,8 @@ function createTables() {
     "ALTER TABLE verifications ADD COLUMN biz_type TEXT DEFAULT ''",
     "ALTER TABLE bills ADD COLUMN related_type TEXT DEFAULT ''",
     "ALTER TABLE bills ADD COLUMN related_id TEXT DEFAULT ''",
+    "ALTER TABLE payment_orders ADD COLUMN business_type TEXT DEFAULT 'recharge'",
+    "ALTER TABLE payment_orders ADD COLUMN business_id TEXT DEFAULT ''",
   ];
   migrations.forEach(sql => { try { db.run(sql); } catch(e) { /* column already exists */ } });
 
