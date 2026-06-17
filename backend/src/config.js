@@ -1,5 +1,6 @@
-﻿require('dotenv').config();
+﻿require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
 const crypto = require('crypto');
+const path = require('path');
 
 /**
  * Load a secret from env, or auto-generate for development.
@@ -37,8 +38,8 @@ module.exports = {
   smsCodeLength: 6,
 
   // Paths
-  dbPath: process.env.DB_PATH || './data/xiaoweimm.db',
-  uploadDir: process.env.UPLOAD_DIR || './uploads',
+  dbPath: path.resolve(__dirname, '../..', process.env.DB_PATH || './data/xiaoweimm.db'),
+  uploadDir: path.resolve(__dirname, '../..', process.env.UPLOAD_DIR || './uploads'),
 
   // CORS
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3002',

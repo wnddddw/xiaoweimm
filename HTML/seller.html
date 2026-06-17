@@ -1,794 +1,183 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>卖家工作台｜xiaoweimm</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        button,input,select,textarea,.btn,a.nav-btn,[role="button"],.nav-login,.nav-btn,.menu-icon,.sidebar-toggle{min-height:44px;min-width:44px;touch-action:manipulation;}
-body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.7;background:#f4f6fa;display:flex;min-height:100vh;}
-        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;--green:#1e8449;--red:#c0392b;--orange:#d68910;}
-        a{text-decoration:none;color:inherit;}
-
-        /* Sidebar */
-        .sidebar{width:220px;background:var(--dark);color:#ccc;display:flex;flex-direction:column;position:fixed;top:60px;left:0;bottom:0;z-index:100;}
-        .sidebar-header{padding:16px 20px;border-bottom:1px solid #2a3a4a;}
-        .sidebar-header .logo{font-size:20px;font-weight:700;color:#fff;}
-        .sidebar-header .sub{font-size:11px;color:var(--main);margin-top:2px;}
-        .sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;}
-        .sidebar-nav .nav-group{padding:0 20px;margin:12px 0 6px;font-size:11px;color:#556;letter-spacing:1px;}
-        .sidebar-nav a,.sidebar-nav .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:#aab;font-size:14px;transition:0.15s;cursor:pointer;border-left:3px solid transparent;}
-        .sidebar-nav a:hover,.sidebar-nav .nav-item:hover{background:rgba(26,68,170,0.15);color:#fff;border-left-color:var(--main);}
-        .sidebar-nav .nav-item.active{background:rgba(26,68,170,0.2);color:#fff;border-left-color:var(--main);font-weight:600;}
-        .sidebar-footer{padding:14px 20px;border-top:1px solid #2a3a4a;font-size:12px;}
-        .sidebar-footer a{color:#778;}
-
-        /* Main */
-        .main{flex:1;margin-left:220px;padding-top:60px;min-height:100vh;}
-        .topbar{position:fixed;top:0;left:0;right:0;height:60px;background:var(--main);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,0.1);z-index:200;}
-        .topbar .page-title{font-size:18px;font-weight:700;color:#fff;}
-        .topbar .top-nav-links{display:flex;gap:20px;font-size:14px;}`n        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;display:none;}
-        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;display:none;}
-        .topbar .top-nav-links a:hover{color:#fff;}
-        .topbar .top-nav-links a.active{color:#fff;font-weight:600;}
-        .topbar .user-info{font-size:13px;color:var(--gray);}
-        .content{padding:24px 28px;}
-        .section{display:none;}
-        .section.active{display:block;}
-
-        .card{background:#fff;border-radius:10px;padding:24px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:20px;}
-        .card h3{font-size:17px;margin-bottom:18px;color:#111;padding-bottom:10px;border-bottom:2px solid #ddd;}
-        .card h4{font-size:15px;color:#444;margin:16px 0 10px;}
-
-        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-        .form-grid.col3{grid-template-columns:1fr 1fr 1fr;}
-        .form-group{margin-bottom:12px;}
-        .form-group.full{grid-column:1/-1;}
-        .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#222;}
-        .form-group label .req{color:var(--red);}
-        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #bbb;border-radius:6px;font-size:14px;outline:none;transition:border 0.2s;font-family:inherit;color:#222;}
-        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--main);}
-        .form-group textarea{resize:vertical;min-height:80px;}
-        .form-group .hint{font-size:11px;color:var(--gray);margin-top:3px;}
-        .form-group .unit{position:relative;}
-        .form-group .unit input{padding-right:36px;}
-        .form-group .unit .unit-text{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:13px;pointer-events:none;}
-
-        .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #dde0e4;}
-        .toggle-row .toggle-label{font-size:13px;}
-        .toggle-switch{position:relative;width:42px;height:22px;flex-shrink:0;}
-        .toggle-switch input{opacity:0;width:0;height:0;}
-        .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#aaa;border-radius:22px;transition:0.3s;}
-        .toggle-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;}
-        .toggle-switch input:checked+.toggle-slider{background:var(--main);}
-        .toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px);}
-
-        .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-        .stat-item{background:#fff;padding:18px 20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07);text-align:center;}
-        .stat-item .stat-icon{font-size:24px;margin-bottom:6px;}
-        .stat-item .stat-num{font-size:26px;font-weight:700;color:#111;}
-        .stat-item .stat-label{font-size:12px;color:var(--gray);}
-
-        .sub-tabs{display:flex;gap:0;border-bottom:2px solid #ddd;margin-bottom:14px;}
-        .sub-tab{padding:9px 18px;font-size:13px;cursor:pointer;color:var(--gray);background:none;border:none;border-bottom:2px solid transparent;transition:0.2s;}
-        .sub-tab:hover{color:var(--main);}
-        .sub-tab.active{color:var(--main);border-bottom-color:var(--main);font-weight:600;}
-        .sub-tab .count{font-size:11px;background:#dde1e7;color:#555;padding:1px 7px;border-radius:10px;margin-left:4px;}
-        .sub-tab.active .count{background:var(--main);color:#fff;}
-
-        table{width:100%;border-collapse:collapse;}
-        th,td{padding:9px 12px;text-align:left;font-size:13px;}
-        th{background:#eef0f3;color:#333;font-weight:600;border-bottom:2px solid #ccc;white-space:nowrap;}
-        td{border-bottom:1px solid #e0e2e6;}
-        tr:hover td{background:#f4f6fa;}
-
-        .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;}
-        .badge-ok{background:#d5f5e3;color:#145a32;}
-        .badge-warn{background:#fdebd0;color:#7d6608;}
-        .badge-info{background:#d4e4fd;color:#1a44aa;}
-        .badge-gray{background:#e5e7ea;color:#555;}
-
-        .btn{padding:8px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:0.2s;display:inline-flex;align-items:center;gap:5px;}
-        .btn-main{background:var(--main);color:#fff;}
-        .btn-main:hover{opacity:0.85;}
-        .btn-outline{background:#fff;color:var(--main);border:1px solid var(--main);}
-        .btn-outline:hover{background:var(--main);color:#fff;}
-        .btn-green{background:var(--green);color:#fff;}
-        .btn-red{background:#fff;color:var(--red);border:1px solid var(--red);}
-        .btn-red:hover{background:var(--red);color:#fff;}
-        .btn-del{width:30px;height:30px;padding:0;line-height:30px;text-align:center;font-size:16px;font-weight:bold;background:#fff;color:#e74c3c;border:1px solid #e0b4b4;border-radius:4px;cursor:pointer;}
-        .btn-del:hover{background:#c0392b;color:#fff;}
-        .btn-gray{background:#e5e7ea;color:#444;}
-        .btn-sm{padding:4px 10px;font-size:12px;}
-        .btn-block{width:100%;justify-content:center;padding:13px;font-size:15px;}
-        .top-badge{display:inline-block;background:var(--orange);color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:3px;}
-        .empty-state{text-align:center;padding:40px;color:var(--gray);}
-
-        /* Cascade Picker */
-        .cascade-picker{position:relative;user-select:none;-webkit-user-select:none;}
-        .cascade-display{width:100%;padding:10px 12px;border:1px solid #bbb;border-radius:6px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:border 0.2s;min-height:42px;}
-        .cascade-display:hover,.cascade-picker.open .cascade-display{border-color:var(--main);}
-        .cascade-display .placeholder{color:#888;}
-        .cascade-display .selected{color:#111;font-weight:500;}
-        .cascade-display .arrow{color:#777;font-size:11px;transition:0.2s;}
-        .cascade-picker.open .cascade-display .arrow{transform:rotate(180deg);}
-        .cascade-panel{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #bbb;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:300;margin-top:3px;max-height:320px;overflow:hidden;}
-        .cascade-picker.open .cascade-panel{display:flex;}
-        .cascade-col{flex:1;overflow-y:auto;max-height:320px;border-right:1px solid #ddd;}
-        .cascade-col:last-child{border-right:none;}
-        .cascade-col .cascade-item{padding:9px 12px;font-size:13px;cursor:pointer;transition:0.12s;display:flex;justify-content:space-between;align-items:center;color:#333;}
-        .cascade-col .cascade-item:hover{background:#e8f0fe;color:var(--main);}
-        .cascade-col .cascade-item.selected{background:#d4e4fd;color:var(--main);font-weight:600;}
-        .cascade-col .cascade-item .item-arrow{font-size:10px;color:#999;}
-        .cascade-col .cascade-group-label{padding:7px 12px;font-size:11px;color:#777;font-weight:600;background:#f0f2f5;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:2;}
-        .cascade-col .cascade-empty{padding:36px 12px;text-align:center;color:#999;font-size:12px;}
-        .cascade-col-left .cascade-item{border-bottom:1px solid #e9eaec;}
-        .cascade-col-right .cascade-item{border-bottom:1px solid #eef0f3;padding-left:14px;}
-
-        /* Asset Tables */
-        .asset-table-wrap{overflow-x:auto;}
-        .asset-table{width:100%;border-collapse:collapse;margin-bottom:0;}
-        .asset-table th,.asset-table td{padding:7px 9px;font-size:12px;}
-        .asset-table th{background:#eef0f3;color:#333;font-weight:600;border-bottom:2px solid #ccc;}
-        .asset-table td{border-bottom:1px solid #e0e2e6;vertical-align:middle;}
-        .asset-table tbody tr:hover td{background:#f4f6fa;}
-        .asset-table input[type="text"],.asset-table input[type="number"]{width:100%;padding:5px 7px;border:1px solid #bbb;border-radius:4px;font-size:12px;outline:none;box-sizing:border-box;}
-        .asset-table input:focus{border-color:var(--main);}
-        .asset-table .img-cell{text-align:center;}
-        .asset-table .img-btn{position:relative;display:inline-block;width:34px;height:34px;border:1px dashed #bbb;border-radius:4px;cursor:pointer;background:#fafbfc;transition:0.15s;overflow:hidden;}
-        .asset-table .img-btn:hover{border-color:var(--main);background:#f0f4ff;}
-        .asset-table .img-btn .add-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:#999;line-height:1;}
-        .asset-table .img-btn.has-img{border-style:solid;border-color:var(--green);}
-        .asset-table .img-btn.has-img .add-icon{display:none;}
-        .asset-table .img-btn img{width:100%;height:100%;object-fit:cover;display:none;}
-        .asset-table .img-btn.has-img img{display:block;}
-        .asset-table .img-btn input[type="file"]{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
-        .asset-table .del-btn{background:none;border:none;color:#c0392b;font-size:15px;cursor:pointer;padding:3px 7px;line-height:1;border-radius:3px;}
-
-        .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 24px;border-radius:6px;font-size:14px;z-index:9999;opacity:0;transform:translateX(20px);transition:0.3s;pointer-events:none;}
-        .toast.show{opacity:1;transform:translateX(0);}
-        .toast.success{background:var(--green);}
-        .toast.error{background:var(--red);}
-        /* Sidebar mobile toggle */
-        .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--main);color:#fff;border:none;width:36px;height:36px;border-radius:6px;font-size:18px;cursor:pointer;align-items:center;justify-content:center;}
-
-        
-        @media(min-width:769px){.topbar .top-nav-links a{display:inline-block;}.sidebar-toggle{display:none;}}
-        @media(max-width:768px){
-            input,select,textarea,button{font-size:16px!important;}
-            .topbar{padding:0 14px 0 62px;}
-            .topbar .page-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-            .topbar .top-nav-links{display:none;}
-            .sidebar{width:220px;transform:translateX(-100%);transition:transform 0.3s;}
-            .sidebar-toggle{display:flex;}
-            .main{margin-left:0!important;}
-            .content{padding:16px 12px;}
-            .card{padding:18px 14px;}
-            .stat-grid{grid-template-columns:repeat(2,1fr);}
-            .chart-row{grid-template-columns:1fr;}
-            .form-grid,.form-grid.col3{grid-template-columns:1fr;}
-            .filter-row{flex-direction:column;align-items:stretch;}
-            .config-grid{grid-template-columns:1fr;}
-            .sub-tabs{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;}
-            .cascade-panel{position:fixed;left:12px;right:12px;top:110px;max-height:60vh;}
-            .cascade-col{max-height:60vh;}
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卖家工作台 - xiaoweimm</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:"Microsoft YaHei","Noto Sans SC",Arial,sans-serif;background:#f4f6fb;color:#1d2433;line-height:1.6}a{text-decoration:none;color:inherit}button,input,select,textarea{font:inherit}.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:#1745ad;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:20;box-shadow:0 4px 16px rgba(20,45,110,.18)}.page-title{font-size:18px;font-weight:700}.top-links{display:flex;gap:18px;font-size:14px}.top-links a{opacity:.8}.top-links a:hover,.top-links .active{opacity:1;font-weight:700}.sidebar{position:fixed;top:60px;left:0;bottom:0;width:230px;background:#111827;color:#cbd5e1;z-index:15;display:flex;flex-direction:column}.sidebar-header{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08)}.logo{color:#fff;font-size:20px;font-weight:800}.sub{font-size:12px;color:#7aa2ff;margin-top:2px}.sidebar-nav{flex:1;padding:12px 0}.nav-group{padding:12px 22px 6px;font-size:12px;color:#64748b;letter-spacing:1px}.nav-item,.sidebar-nav a{display:flex;align-items:center;gap:10px;width:100%;padding:12px 22px;color:#cbd5e1;border-left:3px solid transparent;cursor:pointer;background:none;border-top:0;border-right:0;border-bottom:0;text-align:left}.nav-item:hover,.sidebar-nav a:hover,.nav-item.active{background:rgba(59,130,246,.15);color:#fff;border-left-color:#3b82f6}.sidebar-footer{padding:16px 22px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#94a3b8}.main{margin-left:230px;padding-top:60px}.content{padding:28px}.section{display:none}.section.active{display:block}.card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(15,23,42,.07);margin-bottom:22px}.card h3{font-size:18px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}.card h4{font-size:15px;margin:18px 0 12px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.form-grid.col3{grid-template-columns:repeat(3,minmax(0,1fr))}.form-group.full{grid-column:1/-1}.form-group label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}.req{color:#dc2626}.form-group input,.form-group select,.form-group textarea{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px 12px;background:#fff;outline:none}.form-group textarea{min-height:110px;resize:vertical}.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1745ad;box-shadow:0 0 0 3px rgba(23,69,173,.12)}.hint{font-size:12px;color:#64748b;margin-top:4px}.unit{position:relative}.unit input{padding-right:44px}.unit-text{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#64748b}.toggle-row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eef2f7;padding:10px 0}.toggle-switch{position:relative;width:46px;height:24px}.toggle-switch input{opacity:0;width:0;height:0}.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:999px;transition:.2s}.toggle-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.toggle-switch input:checked+.toggle-slider{background:#1745ad}.toggle-switch input:checked+.toggle-slider:before{transform:translateX(22px)}.btn{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px}.btn-main{background:#1745ad;color:#fff}.btn-main:hover{background:#12398f}.btn-outline{background:#fff;color:#1745ad;border:1px solid #1745ad}.btn-gray{background:#e5e7eb;color:#334155}.btn-red{background:#fff;color:#dc2626;border:1px solid #fca5a5}.btn-sm{padding:6px 10px;min-height:32px;font-size:12px}.btn-block{width:100%;padding:13px 18px;font-weight:700}.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}.stat-item{background:#fff;border-radius:16px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(15,23,42,.07)}.stat-icon{font-size:26px}.stat-num{font-size:28px;font-weight:800;margin-top:4px}.stat-label{font-size:13px;color:#64748b}.sub-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.sub-tab{background:#eef2ff;color:#1745ad;border:0;border-radius:999px;padding:8px 14px;cursor:pointer}.sub-tab.active{background:#1745ad;color:#fff}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e7eb;font-size:13px}th{background:#f8fafc;color:#334155;font-weight:800}.badge{display:inline-block;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}.badge-ok{background:#dcfce7;color:#166534}.badge-warn{background:#fef3c7;color:#92400e}.badge-gray{background:#e5e7eb;color:#475569}.badge-info{background:#dbeafe;color:#1d4ed8}.empty-state{text-align:center;color:#64748b;padding:36px}.cascade-picker{position:relative;user-select:none}.cascade-display{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px 12px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:space-between;min-height:46px}.cascade-picker.open .cascade-display{border-color:#1745ad;box-shadow:0 0 0 3px rgba(23,69,173,.12)}.placeholder{color:#94a3b8}.selected{font-weight:700;color:#111827}.arrow{font-size:12px;color:#64748b}.cascade-picker.open .arrow{transform:rotate(180deg)}.cascade-panel{display:none;position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;border:1px solid #d1d5db;border-radius:12px;box-shadow:0 18px 38px rgba(15,23,42,.18);z-index:50;max-height:330px;overflow:hidden}.cascade-picker.open .cascade-panel{display:flex}.cascade-col{flex:1;max-height:330px;overflow-y:auto;border-right:1px solid #eef2f7}.cascade-col:last-child{border-right:0}.cascade-item{padding:10px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px}.cascade-item:hover,.cascade-item.selected{background:#eff6ff;color:#1745ad;font-weight:700}.cascade-empty{padding:34px 12px;text-align:center;color:#94a3b8;font-size:13px}.toast{position:fixed;top:76px;right:18px;background:#111827;color:#fff;padding:12px 18px;border-radius:10px;box-shadow:0 14px 34px rgba(15,23,42,.25);opacity:0;transform:translateY(-8px);pointer-events:none;transition:.2s;z-index:100}.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:#15803d}.toast.error{background:#b91c1c}.sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:40;background:#1745ad;color:#fff;border:0;border-radius:10px;width:40px;height:40px;font-size:22px}.sidebar-mask{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:14}@media(max-width:768px){.topbar{padding-left:64px}.top-links{display:none}.sidebar-toggle{display:block}.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.sidebar-mask.show{display:block}.main{margin-left:0}.content{padding:16px 12px}.form-grid,.form-grid.col3{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,1fr)}.card{padding:18px 14px}.cascade-panel{position:fixed;left:12px;right:12px;top:112px;max-height:60vh}.cascade-col{max-height:60vh}}
+  </style>
 </head>
 <body>
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="打开菜单">☰</button>
+<div class="sidebar-mask" id="sidebarMask"></div>
 
-<aside class="sidebar">
-    <div class="sidebar-header"><div class="logo">xiaoweimm</div><div class="sub">卖家工作台</div></div>
-    <nav class="sidebar-nav">
-        <div class="nav-group">项目管理</div>
-        <div class="nav-item active" data-page="publish">📝 发布项目</div>
-        <div class="nav-item" data-page="manage">📋 我的项目</div>
-        <div class="nav-item" data-page="dashboard">📊 数据看板</div>
-        <div class="nav-group">快捷入口</div>
-        <a href="member.html">👤 会员中心</a>
-        <a href="index.html">🏠 返回首页</a>
-    </nav>
-    <div class="sidebar-footer"><span id="sidebarUser">卖家用户</span></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">xiaoweimm</div>
+    <div class="sub">卖家工作台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">项目管理</div>
+    <button class="nav-item active" data-page="publish">📝 发布项目</button>
+    <button class="nav-item" data-page="manage">📋 我的项目</button>
+    <button class="nav-item" data-page="dashboard">📊 数据概览</button>
+    <div class="nav-group">常用入口</div>
+    <a href="buyer.html">🛒 买家工作台</a>
+    <a href="messages.html">💬 消息中心</a>
+    <a href="member.html">⭐ 会员中心</a>
+    <a href="payment.html">💳 支付中心</a>
+    <a href="index.html">🏠 返回首页</a>
+  </nav>
+  <div class="sidebar-footer">当前用户：<span id="sidebarUser">未登录</span></div>
 </aside>
 
-<div class="topbar">
-            <button class="sidebar-toggle">&#9776;</button>
-    <span class="page-title" id="pageTitle">发布项目</span>
-    <div class="top-nav-links">
-        <a href="seller.html" class="active">卖家工作台</a>
-        <a href="buyer.html">买家工作台</a>
-            <a href="deal.html">交易管理</a>
-        <a href="messages.html">消息</a>
-        <a href="member.html">会员中心</a>
-        <a href="payment.html">支付</a>
-        <a href="index.html">首页</a>
-    </div>
-</div>
+<header class="topbar">
+  <span class="page-title" id="pageTitle">发布转让项目</span>
+  <nav class="top-links">
+    <a href="seller.html" class="active">卖家工作台</a>
+    <a href="buyer.html">买家工作台</a>
+    <a href="deal.html">交易流程</a>
+    <a href="index.html">首页</a>
+  </nav>
+</header>
 
-<div class="main">
-    <div class="content">
-
-        <!-- Publish -->
-        <div class="section active" id="publish">
-            <form id="publishForm" onsubmit="return false;">
-                <div class="card"><h3>基本信息</h3>
-                    <div class="form-grid">
-                        <div class="form-group full">
-                            <label><span class="req">*</span> 行业</label>
-                            <div class="cascade-picker" id="industryPicker">
-                                <div class="cascade-display" id="industryDisplay" onclick="togglePicker('industryPicker')"><span class="placeholder">请选择行业</span><span class="arrow">▸</span></div>
-                                <div class="cascade-panel"><div class="cascade-col cascade-col-left" id="industryLeft"></div><div class="cascade-col cascade-col-right" id="industryRight"><div class="cascade-empty">请先选择一级行业</div></div></div>
-                            </div>
-                        </div>
-                        <div class="form-group full">
-                            <label><span class="req">*</span> 省份/城市</label>
-                            <div class="cascade-picker" id="regionPicker">
-                                <div class="cascade-display" id="regionDisplay" onclick="togglePicker('regionPicker')"><span class="placeholder">请选择省份及城市</span><span class="arrow">▸</span></div>
-                                <div class="cascade-panel"><div class="cascade-col cascade-col-left" id="regionLeft"></div><div class="cascade-col cascade-col-right" id="regionRight"><div class="cascade-empty">请先选择省份</div></div></div>
-                            </div>
-                        </div>
-                        <div class="form-group unit"><label><span class="req">*</span> 年营业额（万元）</label><input type="number" id="revenue" placeholder="例如：200" required min="0"><span class="unit-text">万</span></div>
-                        <div class="form-group"><label><span class="req">*</span> 员工数</label><select id="employees" required><option value="">请选择</option><option value="1-5">1-5人</option><option value="6-20">6-20人</option><option value="21-50">21-50人</option><option value="51-100">51-100人</option><option value="101-300">101-300人</option><option value="300+">300人以上</option></select></div>
-                        <div class="form-group full"><label><span class="req">*</span> 转让原因</label><select id="reason" required><option value="">请选择</option><option value="无人接班">无人接班/继承人不明</option><option value="经营者高龄">经营者高龄</option><option value="事业转型">事业转型/战略调整</option><option value="经营困难">经营困难</option><option value="其他">其他原因</option></select></div>
-                    </div>
-                </div>
-                <div class="card"><h3>财务信息</h3>
-                    <div class="form-grid">
-                        <div class="form-group unit"><label><span class="req">*</span> 营业利润率</label><input type="number" id="profitRate" placeholder="例如：5" required min="0" max="100" step="0.1"><span class="unit-text">%</span></div>
-                        <div class="form-group unit"><label><span class="req">*</span> 期望转让价格（万元）</label><input type="number" id="price" placeholder="例如：200" required min="0"><span class="unit-text">万</span></div>
-                    </div>
-                </div>
-                <div class="card"><h3>资产清单</h3>
-                    <h4>设备清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="equipTable"><thead><tr><th style="width:30px;">#</th><th style="width:180px;">设备名称</th><th style="width:130px;">型号/规格</th><th style="width:64px;">数量</th><th style="width:72px;">年份</th><th style="width:80px;">价格(万)</th><th style="width:130px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="equipBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('equip')" style="margin-top:6px;">+ 添加设备</button></div>
-                    <h4>原材料清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="materialTable"><thead><tr><th style="width:30px;">#</th><th style="width:180px;">原料名称</th><th style="width:130px;">规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">价格(万)</th><th style="width:130px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="materialBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('material')" style="margin-top:6px;">+ 添加原料</button></div>
-                    <h4>成品库存清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="stockTable"><thead><tr><th style="width:30px;">#</th><th style="width:180px;">产品名称</th><th style="width:130px;">规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">单价(万)</th><th style="width:130px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="stockBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('stock')" style="margin-top:6px;">+ 添加库存</button></div>
-                </div>
-                <div class="card"><h3>项目描述</h3>
-                    <div class="form-group"><label><span class="req">*</span> 项目简介</label><textarea id="description" placeholder="请简要描述项目情况、优势特点、客户群体、发展前景等" rows="5" required></textarea><div class="hint"><span id="descLen">0</span> 字</div></div>
-                </div>
-                <div class="card"><h3>隐私设置（可选隐藏）</h3>
-                    <div class="toggle-row"><div class="toggle-label">隐藏公司名称</div><label class="toggle-switch"><input type="checkbox" id="hideCompany"><span class="toggle-slider">▸</span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏公司地址</div><label class="toggle-switch"><input type="checkbox" id="hideAddress"><span class="toggle-slider">▸</span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏客户名单</div><label class="toggle-switch"><input type="checkbox" id="hideCustomers" checked><span class="toggle-slider">▸</span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏合作商名称</div><label class="toggle-switch"><input type="checkbox" id="hidePartners" checked><span class="toggle-slider">▸</span></label></div>
-                    <div class="toggle-row"><div class="toggle-label">隐藏财务详情</div><label class="toggle-switch"><input type="checkbox" id="hideFinancial" checked><span class="toggle-slider">▸</span></label></div>
-                </div>
-                <button class="btn btn-main btn-block" type="button" onclick="submitProject()">提交审核</button>
-                <p style="text-align:center;font-size:12px;color:var(--gray);margin-top:8px;">提交后将在10分钟 ~ 2小时 内完成审核</p>
-            </form>
-        </div>
-
-        <!-- Manage -->
-        <div class="section" id="manage">
-            <div class="card">
-                <div class="sub-tabs">
-                    <button class="sub-tab active" data-status="all">全部<span class="count" id="countAll">0</span>×</button>
-                    <button class="sub-tab" data-status="online">上线</span><span class="count" id="countOnline">0</span>×</button>
-                    <button class="sub-tab" data-status="pending">审核中</span><span class="count" id="countPending">0</span>×</button>
-                    <button class="sub-tab" data-status="offline">已下架</span><span class="count" id="countOffline">0</span>×</button>
-                    <button class="sub-tab" data-status="sold">已成交</span><span class="count" id="countSold">0</span>×</button>
-                </div>
-                <table><thead><tr><th>编号</th><th>行业</th><th>细分</th><th>省份</th><th>城市</th><th>年营业额</th><th>期望价格</th><th>浏览</th><th>报价</th><th>状态</th><th>提交</th><th>操作</th></tr></thead><tbody id="projectTable"></tbody></table>
+<main class="main">
+  <div class="content">
+    <section class="section active" id="publish">
+      <form id="publishForm">
+        <div class="card">
+          <h3>项目基础信息</h3>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label><span class="req">*</span> 所属行业</label>
+              <div class="cascade-picker" id="industryPicker">
+                <div class="cascade-display" id="industryDisplay" onclick="togglePicker('industryPicker')"><span class="placeholder">请选择行业和细分领域</span><span class="arrow">▼</span></div>
+                <div class="cascade-panel"><div class="cascade-col" id="industryLeft"></div><div class="cascade-col" id="industryRight"></div></div>
+              </div>
             </div>
-        </div>
-
-        <!-- Dashboard -->
-        <div class="section" id="dashboard">
-            <div class="stat-grid">
-                <div class="stat-item"><div class="stat-icon">📋</div><div class="stat-num" id="dashTotal">0</div><div class="stat-label">累计项目</div></div>
-                <div class="stat-item"><div class="stat-icon">👁</div><div class="stat-num" id="dashViews">0</div><div class="stat-label">总浏览量</div></div>
-                <div class="stat-item"><div class="stat-icon">💰</div><div class="stat-num" id="dashOffers">0</div><div class="stat-label">收到报价</div></div>
-                <div class="stat-item"><div class="stat-icon">🎯</div><div class="stat-num" id="dashMatches">0</div><div class="stat-label">AI匹配次数</div></div>
+            <div class="form-group full">
+              <label><span class="req">*</span> 所在地区</label>
+              <div class="cascade-picker" id="regionPicker">
+                <div class="cascade-display" id="regionDisplay" onclick="togglePicker('regionPicker')"><span class="placeholder">请选择省市/城区</span><span class="arrow">▼</span></div>
+                <div class="cascade-panel"><div class="cascade-col" id="regionLeft"></div><div class="cascade-col" id="regionRight"></div></div>
+              </div>
             </div>
+            <div class="form-group">
+              <label>年营业额</label>
+              <div class="unit"><input id="revenue" type="number" min="0" placeholder="例如 1200"><span class="unit-text">万元</span></div>
+            </div>
+            <div class="form-group">
+              <label>员工人数</label>
+              <select id="employees">
+                <option value="">请选择</option><option value="1-5">1-5人</option><option value="6-20">6-20人</option><option value="21-50">21-50人</option><option value="51-100">51-100人</option><option value="100+">100人以上</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>转让原因</label>
+              <select id="reason">
+                <option value="">请选择</option><option value="no_heir">无人接班</option><option value="owner_age">业主退休</option><option value="transformation">业务转型</option><option value="cashflow">资金周转</option><option value="other">其他原因</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>净利润率</label>
+              <div class="unit"><input id="profitRate" type="number" min="0" max="100" placeholder="例如 18"><span class="unit-text">%</span></div>
+            </div>
+            <div class="form-group">
+              <label><span class="req">*</span> 转让价格</label>
+              <div class="unit"><input id="price" type="number" min="0" placeholder="例如 800"><span class="unit-text">万元</span></div>
+            </div>
+            <div class="form-group full">
+              <label>项目描述</label>
+              <textarea id="description" placeholder="请说明经营年限、核心资产、客户资源、交接方式等关键信息。"></textarea>
+            </div>
+          </div>
         </div>
 
-    </div>
-</div>
-
-<!-- Edit Modal -->
-<div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
-    <div style="background:#fff;border-radius:12px;width:680px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:24px;position:relative;">
-        <button onclick="closeModal('editModal')" style="position:absolute;top:10px;right:14px;font-size:20px;cursor:pointer;color:#999;background:none;border:none;">×</button>
-        <h3 style="margin-bottom:14px;">编辑项目 ✏<span id="editProjectId">▸</span></h3>
-        <div class="form-grid">
-            <div class="form-group"><label>行业</label><select id="editIndustry"><option value="">请选择</option></select></div>
-            <div class="form-group"><label>细分行业</label><select id="editSubIndustry"><option value="">请先选择行业</option></select></div>
-            <div class="form-group"><label>省份</label><select id="editProvince"><option value="">请选择</option></select></div>
-            <div class="form-group"><label>城市</label><select id="editCity"><option value="">请先选择省份</option></select></div>
-            <div class="form-group unit"><label>年营业额（万元）</label><input type="number" id="editRevenue"><span class="unit-text">万</span></div>
-            <div class="form-group"><label>员工数</label><select id="editEmployees"><option value="">请选择</option><option value="1-5">1-5人</option><option value="6-20">6-20人</option><option value="21-50">21-50人</option><option value="51-100">51-100人</option><option value="101-300">101-300人</option><option value="300+">300人以上</option></select></div>
-            <div class="form-group unit"><label>营业利润率（%）</label><input type="number" id="editProfitRate" step="0.1"><span class="unit-text">%</span></div>
-            <div class="form-group unit"><label>期望价格（万元）</label><input type="number" id="editPrice"><span class="unit-text">万</span></div>
-            <div class="form-group full"><label>项目简介</label><textarea id="editDesc" rows="3"></textarea></div>
+        <div class="card">
+          <h3>隐私设置</h3>
+          <div class="form-grid">
+            <div class="toggle-row"><span>隐藏公司名称</span><label class="toggle-switch"><input id="hideCompany" type="checkbox"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-row"><span>隐藏详细地址</span><label class="toggle-switch"><input id="hideAddress" type="checkbox"><span class="toggle-slider"></span></label></div>
+            <div class="toggle-row"><span>隐藏客户信息</span><label class="toggle-switch"><input id="hideCustomers" type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            <div class="toggle-row"><span>隐藏合作伙伴</span><label class="toggle-switch"><input id="hidePartners" type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            <div class="toggle-row"><span>隐藏详细财务</span><label class="toggle-switch"><input id="hideFinancial" type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          </div>
+          <p class="hint">发布后默认进入待审核状态，管理员审核通过后会展示到项目列表。</p>
         </div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;"><button class="btn btn-gray" onclick="closeModal('editModal')">取消</button><button class="btn btn-main" onclick="saveEdit()">保存</button></div>
-    </div>
-</div>
+
+        <button class="btn btn-main btn-block" type="submit">提交项目</button>
+      </form>
+    </section>
+
+    <section class="section" id="manage">
+      <div class="stat-grid">
+        <div class="stat-item"><div class="stat-icon">📦</div><div class="stat-num" id="totalProjects">0</div><div class="stat-label">项目总数</div></div>
+        <div class="stat-item"><div class="stat-icon">✅</div><div class="stat-num" id="onlineProjects">0</div><div class="stat-label">展示中</div></div>
+        <div class="stat-item"><div class="stat-icon">⏳</div><div class="stat-num" id="pendingProjects">0</div><div class="stat-label">待审核</div></div>
+        <div class="stat-item"><div class="stat-icon">👁</div><div class="stat-num" id="totalViews">0</div><div class="stat-label">总浏览</div></div>
+      </div>
+      <div class="card">
+        <h3>我的项目</h3>
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-status="all">全部</button>
+          <button class="sub-tab" data-status="online">展示中</button>
+          <button class="sub-tab" data-status="pending">待审核</button>
+          <button class="sub-tab" data-status="offline">已下架</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>项目编号</th><th>行业</th><th>地区</th><th>价格</th><th>状态</th><th>浏览</th><th>发布时间</th><th>操作</th></tr></thead>
+            <tbody id="projectTable"><tr><td colspan="8" class="empty-state">正在加载项目...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="dashboard">
+      <div class="stat-grid">
+        <div class="stat-item"><div class="stat-icon">📈</div><div class="stat-num" id="dashViews">0</div><div class="stat-label">总浏览量</div></div>
+        <div class="stat-item"><div class="stat-icon">💬</div><div class="stat-num" id="dashOffers">0</div><div class="stat-label">报价/意向</div></div>
+        <div class="stat-item"><div class="stat-icon">🤝</div><div class="stat-num" id="dashMatches">0</div><div class="stat-label">匹配次数</div></div>
+        <div class="stat-item"><div class="stat-icon">💰</div><div class="stat-num" id="dashAmount">0</div><div class="stat-label">挂牌总额(万元)</div></div>
+      </div>
+      <div class="card">
+        <h3>运营建议</h3>
+        <p>建议完善项目描述、补充财务亮点，并保持价格区间清晰。高质量描述会提升买家咨询转化。</p>
+      </div>
+    </section>
+  </div>
+</main>
 
 <div class="toast" id="toast"></div>
-
-
-
-<script src="/_cascade_data.js"></script><script>
-(function(){
-    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-    if(!users["13800000000"]){
-        users["13800000000"] = {phone:"13800000000",name:"管理员",role:"admin",time:"2026-05-01"};
-        users["13800138001"] = {phone:"13800138001",name:"张卖家",role:"seller",time:"2026-05-01"};
-        users["13800138002"] = {phone:"13800138002",name:"李买家",role:"buyer",time:"2026-05-02"};
-        localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
-    }
-})();
-function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
-var currentDevCode = "";
-function generateDevCode(){ currentDevCode = String(Math.floor(100000 + Math.random() * 900000)); return currentDevCode; }
-var overlay = document.getElementById("modalOverlay");
-var btnLogin = document.getElementById("btnLogin");
-var modalClose = document.getElementById("modalClose");
-if(btnLogin) btnLogin.addEventListener("click", function(){ if(overlay) overlay.classList.add("show"); });
-if(modalClose) modalClose.addEventListener("click", function(){ if(overlay) overlay.classList.remove("show"); });
-if(overlay) overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.classList.remove("show"); });
-var tabLogin = document.getElementById("tabLogin");
-var tabReg = document.getElementById("tabReg");
-var loginForm = document.getElementById("loginForm");
-var regForm = document.getElementById("regForm");
-function switchTab(toLoginTab){
-    if(!tabLogin) return;
-    if(toLoginTab){ tabLogin.classList.add("active"); if(tabReg) tabReg.classList.remove("active"); if(loginForm) loginForm.classList.add("active"); if(regForm) regForm.classList.remove("active"); }
-    else { if(tabReg) tabReg.classList.add("active"); tabLogin.classList.remove("active"); if(regForm) regForm.classList.add("active"); if(loginForm) loginForm.classList.remove("active"); }
-}
-if(tabLogin) tabLogin.addEventListener("click", function(){ switchTab(true); });
-if(tabReg) tabReg.addEventListener("click", function(){ switchTab(false); });
-var tR = document.getElementById("toRegister"); if(tR) tR.addEventListener("click", function(){ switchTab(false); });
-var tL = document.getElementById("toLogin"); if(tL) tL.addEventListener("click", function(){ switchTab(true); });
-function startCountdown(btn){
-    var sec = 60; btn.disabled = true; btn.textContent = sec + "秒后重发";
-    var timer = setInterval(function(){ sec--; btn.textContent = sec + "秒后重发";
-        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证码"; }
-    }, 1000);
-}
-var lSms = document.getElementById("loginSmsBtn");
-if(lSms) lSms.addEventListener("click", function(){
-    var phone = document.getElementById("loginPhone").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    startCountdown(lSms); generateDevCode();
-    alert("验证码已发送至 " + phone + "（开发模式验证码：" + currentDevCode + "）");
-});
-var rSms = document.getElementById("regSmsBtn");
-if(rSms) rSms.addEventListener("click", function(){
-    var phone = document.getElementById("regPhone").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    startCountdown(rSms); generateDevCode();
-    alert("验证码已发送至 " + phone + "（开发模式验证码：" + currentDevCode + "）");
-});
-function updateNavUser(phone){
-    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "none";
-    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "flex";
-    var ua = document.getElementById("userAvatar"); if(ua) ua.textContent = phone.slice(-2);
-    var up = document.getElementById("userPhone"); if(up) up.textContent = phone.slice(0,3) + "****" + phone.slice(-4);
-}
-var lSub = document.getElementById("loginSubmit");
-if(lSub) lSub.addEventListener("click", function(){
-    var phone = document.getElementById("loginPhone").value.trim();
-    var code = document.getElementById("loginCode").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误"); return; }
-    if(overlay) overlay.classList.remove("show");
-    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-    var saved = users[phone]; var role = saved ? saved.role : "";
-    sessionStorage.setItem("xiaoweimm_user", JSON.stringify({phone:phone, role:role, name:saved?saved.name:"", time:Date.now()}));
-    updateNavUser(phone);
-    var target = getTargetAfterAuth(); if(!target){ target = role === "admin" ? "admin.html" : role === "seller" ? "seller.html" : role === "buyer" ? "buyer.html" : "member.html"; }
-    setTimeout(function(){ window.location.href = target; }, 800);
-});
-var rSub = document.getElementById("regSubmit");
-if(rSub) rSub.addEventListener("click", function(){
-    var phone = document.getElementById("regPhone").value.trim();
-    var code = document.getElementById("regCode").value.trim();
-    var name = document.getElementById("regName").value.trim();
-    var role = document.getElementById("regRole").value;
-    var agree = document.getElementById("regAgree");
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    if(!code){ alert("请输入短信验证码"); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误"); return; }
-    if(agree && !agree.checked){ alert("请先同意服务协议和隐私政策"); return; }
-    if(overlay) overlay.classList.remove("show");
-    var user = {phone:phone, name:name, role:role, time:Date.now()};
-    sessionStorage.setItem("xiaoweimm_user", JSON.stringify(user));
-    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-    users[phone] = user; localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
-    updateNavUser(phone);
-    var target = getTargetAfterAuth(); if(!target){ target = role === "seller" ? "seller.html" : role === "buyer" ? "buyer.html" : "verify.html"; }
-    setTimeout(function(){ window.location.href = target; }, 800);
-});
-var bLg = document.getElementById("btnLogout");
-if(bLg) bLg.addEventListener("click", function(){
-    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "";
-    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "none";
-    sessionStorage.removeItem("xiaoweimm_user"); alert("已退出登录");
-});
-(function initAuth(){
-    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
-    if(user && user.phone){ updateNavUser(user.phone); }
-})();
-if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
-</script>
+<script src="/_cascade_data.js"></script>
 <script>
-function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
-// ===== 鉴权检查=====
-(function authCheck(){
-    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
-    if(!user || !user.phone){
-        sessionStorage.setItem("redirectAfterLogin", "seller.html");
-        alert("请先登录");
-        window.location.href = "index.html";
-        return;
-    }
-    if(user.role !== "seller" && user.role !== "admin"){
-        alert("此页面仅卖家可访问");
-        window.location.href = user.role === "buyer" ? "buyer.html" : "index.html";
-        return;
-    }
-    var su = document.getElementById("sidebarUser");
-    if(su) su.textContent = user.name ? (user.name + "（卖家）") : (user.phone.slice(0,3)+"****"+user.phone.slice(-4) + "（卖家）");
-})();
-
-// ===== 侧栏切换 =====
-function showSection(name){
-    document.querySelectorAll(".section").forEach(function(s){ s.classList.remove("active"); });
-    var sec = document.getElementById(name);
-    if(sec) sec.classList.add("active");
-    document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(n){ n.classList.remove("active"); });
-    var nav = document.querySelector(".sidebar-nav .nav-item[data-page='" + name + "']");
-    if(nav) nav.classList.add("active");
-    var title = document.getElementById("pageTitle");
-    if(title){
-        var titles = {publish:"发布项目", manage:"我的项目", dashboard:"数据看板"};
-        title.textContent = titles[name] || name;
-    }
-    var sidebar = document.querySelector(".sidebar");
-    if(sidebar && window.innerWidth <= 768 && sidebar.style.transform === "translateX(0)"){
-        sidebar.style.transform = ""; sidebar.style.boxShadow = "";
-    }
-}
-document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(item){
-    item.addEventListener("click", function(){ showSection(this.getAttribute("data-page")); });
-});
-
-// ===== 移动端侧栏切换按钮=====
-(function sidebarToggle(){
-    var btn = document.querySelector(".sidebar-toggle");
-    var sidebar = document.querySelector(".sidebar");
-    if(!btn || !sidebar) return;
-    var overlay = document.createElement("div");
-    overlay.style.cssText = "display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:99;";
-    document.body.appendChild(overlay);
-    var open = false;
-    function toggle(){
-        open = !open;
-        if(open){ sidebar.style.transform = "translateX(0)"; sidebar.style.boxShadow = "4px 0 20px rgba(0,0,0,0.3)"; overlay.style.display = "block"; btn.textContent = "✕"; }
-        else { sidebar.style.transform = ""; sidebar.style.boxShadow = ""; overlay.style.display = "none"; btn.textContent = "✕"; }
-    }
-    btn.addEventListener("click", toggle);
-    overlay.addEventListener("click", toggle);
-})();
-
-// ===== 行业级联选择（从 API 加载）=====
-var industryData = {};
-var regionData = {};
-function loadCascadeData(){
-    if(window.__INDUSTRY_DATA && Object.keys(window.__INDUSTRY_DATA).length){
-        industryData = window.__INDUSTRY_DATA;
-        regionData = window.__REGION_DATA || {};
-        renderIndustryLeft();
-        renderRegionLeft();
-        return;
-    }
-    Promise.all([
-        fetch("/api/constants/industry-data").then(function(r){ return r.json(); }),
-        fetch("/api/constants/region-data").then(function(r){ return r.json(); })
-    ]).then(function(results){
-        industryData = (results[0] && results[0].data) || {};
-        regionData = (results[1] && results[1].data) || {};
-        renderIndustryLeft();
-        renderRegionLeft();
-    }).catch(function(){
-        industryData = {"餐饮美食":["中式正餐","西餐"],"零售":["超市","便利店"]};
-        regionData = {"北京":["朝阳区","海淀区"],"上海":["浦东新区","徐汇区"]};
-        renderIndustryLeft();
-        renderRegionLeft();
-    });
-}
-function renderIndustryLeft(){
-    var box = document.getElementById("industryLeft");
-    if(!box) return;
-    box.innerHTML = Object.keys(industryData).map(function(k){
-        return '<div class="cascade-item" data-key="' + k + '">' + k + '</div>';
-    }).join("");
-    box.querySelectorAll(".cascade-item").forEach(function(it){
-        it.addEventListener("click", function(){
-            box.querySelectorAll(".cascade-item").forEach(function(x){ x.classList.remove("selected"); });
-            it.classList.add("selected");
-            var key = it.getAttribute("data-key");
-            var sub = industryData[key] || [];
-            var right = document.getElementById("industryRight");
-            if(right){
-                right.innerHTML = sub.map(function(s){
-                    return '<div class="cascade-item" data-value="' + key + '|' + s + '">' + s + '</div>';
-                }).join("");
-                right.querySelectorAll(".cascade-item").forEach(function(r){
-                    r.addEventListener("click", function(){
-                        var v = r.getAttribute("data-value").split("|");
-                        var display = document.getElementById("industryDisplay");
-                        if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">▸</span>";
-                        var p = document.getElementById("industryPicker");
-                        if(p) p.classList.remove("open");
-                    });
-                });
-            }
-        });
-    });
-}
-function renderRegionLeft(){
-    var box = document.getElementById("regionLeft");
-    if(!box) return;
-    box.innerHTML = Object.keys(regionData).map(function(k){
-        return '<div class="cascade-item" data-key="' + k + '">' + k + '</div>';
-    }).join("");
-    box.querySelectorAll(".cascade-item").forEach(function(it){
-        it.addEventListener("click", function(){
-            box.querySelectorAll(".cascade-item").forEach(function(x){ x.classList.remove("selected"); });
-            it.classList.add("selected");
-            var key = it.getAttribute("data-key");
-            var sub = regionData[key] || [];
-            var right = document.getElementById("regionRight");
-            if(right){
-                right.innerHTML = sub.map(function(s){
-                    return '<div class="cascade-item" data-value="' + key + '|' + s + '">' + s + '</div>';
-                }).join("");
-                right.querySelectorAll(".cascade-item").forEach(function(r){
-                    r.addEventListener("click", function(){
-                        var v = r.getAttribute("data-value").split("|");
-                        var display = document.getElementById("regionDisplay");
-                        if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">▸</span>";
-                        var p = document.getElementById("regionPicker");
-                        if(p) p.classList.remove("open");
-                    });
-                });
-            }
-        });
-    });
-}
-loadCascadeData();
-function togglePicker(id){
-    document.querySelectorAll(".cascade-picker").forEach(function(p){
-        if(p.id !== id) p.classList.remove("open");
-    });
-    var p = document.getElementById(id);
-    if(p) p.classList.toggle("open");
-}
-
-// ===== 点击外部 / Esc 键自动收起级联面板=====
-(function initPickerAutoClose(){
-    if(document.__cascadeOutsideHandler) return;
-    document.__cascadeOutsideHandler = true;
-    function closeAll(){
-        document.querySelectorAll(".cascade-picker.open").forEach(function(p){
-            p.classList.remove("open");
-        });
-    }
-    document.addEventListener("click", function(ev){
-        var t = ev.target;
-        if(!t || !t.closest || !t.closest(".cascade-picker")) closeAll();
-    });
-    document.addEventListener("keydown", function(ev){
-        if(ev.key === "Escape") closeAll();
-    });
-})();
-
-// ===== 资产行添加（设备/原料/库存等）=====
-function addAssetRow(bodyId){
-    var body = document.getElementById(bodyId);
-    if(!body) return;
-    var idx = body.children.length + 1;
-    var tr = document.createElement("tr");
-    tr.innerHTML = '<td>' + idx + '</td>' +
-        '<td><input type="text" name="name" placeholder="名称" style="width:100%;"></td>' +
-        '<td><input type="text" name="spec" placeholder="型号/规格" style="width:100%;"></td>' +
-        '<td><input type="number" name="qty" min="1" value="1" style="width:50px;"></td>' +
-        '<td><input type="text" name="year" placeholder="2023" style="width:60px;"></td>' +
-        '<td><input type="number" name="value" min="0" placeholder="0" style="width:70px;"></td>' +
-        '<td class="img-cell"><div class="img-gallery" style="display:flex;flex-wrap:wrap;gap:2px;align-items:center;"></div><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload" style="margin-top:2px;">+ 上传</button></td>' +
-        '<td style="text-align:center;"><button type="button" class="btn-del" data-asset-action="delete">✕</button></td>';
-    body.appendChild(tr);
-}
-
-// 资产行事件委托：删除 / 上传 / 清除图片
-["equipBody","materialBody","stockBody"].forEach(function(bodyId){
-    var body = document.getElementById(bodyId);
-    if(!body) return;
-    body.addEventListener("click", function(ev){
-        var btn = ev.target.closest("button[data-asset-action]");
-        if(!btn) return;
-        var action = btn.getAttribute("data-asset-action");
-        if(action === "delete"){
-            var tr = btn.closest("tr");
-            if(tr) tr.remove();
-        } else if(action === "upload"){
-            uploadAssetImage(btn);
-        } else if(action === "removeImg"){
-            var span = btn.closest("span");
-            if(span) span.remove();
-        } else if(action === "clearImg"){
-            var td = btn.closest(".img-cell");
-            if(td) td.querySelector(".img-gallery").innerHTML = '';
-        }
-    });
-});
-
-// 图片上传：临时input -> POST /api/uploads -> 缩略图
-// // 若sessionStorage 有phone 但缺 token（旧版登录残留），自动通过 /api/auth/dev-token 透明获取token
-function uploadAssetImage(btn){
-    var user = null;
-    try { user = JSON.parse(sessionStorage.getItem("xiaoweimm_user") || "null"); } catch(e) {}
-    if(!user || !user.phone){
-        alert("请先登录后再上传图片");
-        return;
-    }
-    if(user.token){
-        uploadAssetImage.openPicker(btn, user.token);
-    } else {
-        uploadAssetImage.ensureToken(btn, user.phone, function(err, token){
-            if(err){ alert("自动登录失败：" + err + "。请在登录页重新登录后重试"); return; }
-            uploadAssetImage.openPicker(btn, token);
-        });
-    }
-}
-uploadAssetImage.ensureToken = function(btn, phone, done){
-    var origText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "登录中...";
-    fetch("/api/auth/dev-token", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone })
-    }).then(function(r){ return r.json(); }).then(function(d){
-        if(!d || !d.success || !d.data || !d.data.token){
-            btn.disabled = false; btn.textContent = origText;
-            done((d && d.error) || "获取登录凭证失败");
-            return;
-        }
-        var stored = null;
-        try { stored = JSON.parse(sessionStorage.getItem("xiaoweimm_user") || "{}"); } catch(e) {}
-        if(!stored) stored = { phone: phone };
-        stored.token = d.data.token;
-        if(d.data.role) stored.role = d.data.role;
-        if(d.data.name) stored.name = d.data.name;
-        sessionStorage.setItem("xiaoweimm_user", JSON.stringify(stored));
-        done(null, d.data.token);
-    }).catch(function(e){
-        btn.disabled = false; btn.textContent = origText;
-        done("网络错误：" + (e && e.message || e));
-    });
-};
-uploadAssetImage.openPicker = function(btn, token){
-    var fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/*";
-    fileInput.style.cssText = "position:fixed;top:-1000px;left:-1000px;opacity:0;";
-    document.body.appendChild(fileInput);
-    fileInput.addEventListener("change", function(){
-        if(!fileInput.files || !fileInput.files[0]){ fileInput.remove(); return; }
-        var file = fileInput.files[0];
-        if(file.size > 10 * 1024 * 1024){ alert("文件超过 10MB"); fileInput.remove(); return; }
-        var td = btn.parentNode;
-        btn.disabled = true;
-        var origText = btn.textContent;
-        btn.textContent = "上传中...";
-        var fd = new FormData();
-        fd.append("file", file);
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/uploads");
-        xhr.setRequestHeader("Authorization", "Bearer " + token);
-        xhr.upload.onprogress = function(e){
-            if(e.lengthComputable){
-                btn.textContent = "上传：" + Math.round(e.loaded / e.total * 100) + "%";
-            }
-        };
-        xhr.onload = function(){
-            btn.disabled = false;
-            btn.textContent = origText;
-            try {
-                var data = JSON.parse(xhr.responseText);
-                if(xhr.status === 200 && data.success && data.data && data.data.url){
-                    var url = data.data.url;
-                    var gallery = td.querySelector(".img-gallery");
-                    if(!gallery){ gallery = td; }
-                    // Append new thumbnail to gallery (supports multiple images)
-                    var thumb = document.createElement("span");
-                    thumb.style.cssText = "position:relative;display:inline-block;";
-                    thumb.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener">' +
-                        '<img src="' + url + '" alt="图片" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">' +
-                        '</a>' +
-                        '<button type="button" data-asset-action="removeImg" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;padding:0;font-size:14px;line-height:20px;border-radius:50%;background:#e74c3c;color:#fff;border:none;cursor:pointer;text-align:center;font-weight:bold;">✕</button>' +
-                        '<input type="hidden" name="imageUrl" value="' + url + '">';
-                    gallery.appendChild(thumb);
-                } else {
-                    alert("上传失败：" + (data.error || ("HTTP " + xhr.status)));
-                }
-            } catch(e){
-                alert("上传失败：" + e.message);
-            }
-            fileInput.remove();
-        };
-        xhr.onerror = function(){
-            btn.disabled = false;
-            btn.textContent = origText;
-            alert("网络错误，上传失败");
-            fileInput.remove();
-        };
-        xhr.send(fd);
-    });
-    fileInput.click();
-};
-
-// 自动绑定所有onclicks 到addAssetRow（兼容初始按钮）
-document.querySelectorAll("button[onclick]").forEach(function(btn){
-    var oc = btn.getAttribute("onclick") || "";
-    var m = oc.match(/addAssetRow\(['"]([^'"]+)['"]\)/);
-    if(m){
-        var bodyId = m[1] + "Body";
-        btn.removeAttribute("onclick");
-        btn.addEventListener("click", function(){ addAssetRow(bodyId); });
-    }
-});
-
-// ===== 表单提交 =====
-var pf = document.getElementById("publishForm");
-if(pf){
-    pf.addEventListener("submit", function(){
-        var industryText = document.getElementById("industryDisplay").textContent;
-        var regionText = document.getElementById("regionDisplay").textContent;
-        if(industryText.indexOf("选择") >= 0){ alert("请选择行业"); return; }
-        if(regionText.indexOf("选择") >= 0){ alert("请选择地区"); return; }
-        alert("项目发布功能开发中。当前表单已通过客户端校验。\n行业：" + industryText + "\n地区：" + regionText);
-    });
-}
-
-// ===== 加载我的项目 =====
-(function loadMyProjects(){
-    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
-    if(!user) return;
-    fetch("/api/projects/my")
-        .then(function(r){ return r.json(); })
-        .then(function(json){
-            var box = document.getElementById("myProjectsList");
-            if(!box) return;
-            var list = json.data || [];
-            if(list.length === 0){
-                box.innerHTML = '<div class="empty-tip">还没有发布过项目</div><a href="javascript:showSection(chr(39)+chr(112)+chr(117)+chr(98)+chr(108)+chr(105)+chr(115)+chr(104)+chr(39))">立即发布</a></div>';
-            } else {
-                box.innerHTML = list.map(function(p){
-                    return '<div class="project-card"><div class="title">' + (p.industry || "") + ' / ' + (p.city || "") + '</div><div class="meta">¥' + (p.price || 0) + '</div><div class="meta">· ' + (p.status || "") + '</div></div>';
-                }).join("");
-            }
-        })
-        .catch(function(){
-            var box = document.getElementById("myProjectsList");
-            if(box) box.innerHTML = '<div class="empty-tip">请先登录后查看</div>';
-        });
-
-// Expose functions to global scope for onclick handlers
-if(typeof loadCascadeData !== "undefined") window.loadCascadeData = loadCascadeData;
-if(typeof renderIndustryLeft !== "undefined") window.renderIndustryLeft = renderIndustryLeft;
-if(typeof renderRegionLeft !== "undefined") window.renderRegionLeft = renderRegionLeft;
-if(typeof togglePicker !== "undefined") window.togglePicker = togglePicker;
-if(typeof closeAll !== "undefined") window.closeAll = closeAll;
-if(typeof addAssetRow !== "undefined") window.addAssetRow = addAssetRow;
-})();
+const state={industry:null,subIndustry:null,province:null,city:null,projects:[],filter:"all"};
+function $(id){return document.getElementById(id)}
+function getCurrentUser(){try{return JSON.parse(localStorage.getItem("xiaoweimm_current_user")||localStorage.getItem("currentUser")||"null")}catch(e){return null}}
+function getToken(){const user=getCurrentUser();return user&&user.token?user.token:localStorage.getItem("token")}
+function authHeaders(){const headers={"Content-Type":"application/json"};const token=getToken();if(token)headers.Authorization="Bearer "+token;return headers}
+function toast(message,type){const el=$("toast");el.textContent=message;el.className="toast show "+(type||"");setTimeout(()=>el.classList.remove("show"),2600)}
+function showSection(name){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));$(name).classList.add("active");document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));const nav=document.querySelector('.nav-item[data-page="'+name+'"]');if(nav)nav.classList.add("active");$("pageTitle").textContent={publish:"发布转让项目",manage:"我的项目",dashboard:"数据概览"}[name]||"卖家工作台";if(name==="manage"||name==="dashboard")loadProjects();closeSidebar()}
+function closeSidebar(){$("sidebar").classList.remove("open");$("sidebarMask").classList.remove("show")}
+document.querySelectorAll(".nav-item").forEach(item=>item.addEventListener("click",()=>showSection(item.dataset.page)));
+$("sidebarToggle").addEventListener("click",()=>{$("sidebar").classList.add("open");$("sidebarMask").classList.add("show")});
+$("sidebarMask").addEventListener("click",closeSidebar);
+function togglePicker(id){document.querySelectorAll(".cascade-picker").forEach(p=>{if(p.id!==id)p.classList.remove("open")});$(id).classList.toggle("open")}
+document.addEventListener("click",e=>{if(!e.target.closest(".cascade-picker"))document.querySelectorAll(".cascade-picker").forEach(p=>p.classList.remove("open"))});
+function renderLeft(data,leftId,rightId,onSelect){const left=$(leftId);left.innerHTML="";Object.keys(data).forEach((key,index)=>{const item=document.createElement("div");item.className="cascade-item"+(index===0?" selected":"");item.innerHTML="<span>"+key+"</span><span>›</span>";item.onclick=()=>{left.querySelectorAll(".cascade-item").forEach(i=>i.classList.remove("selected"));item.classList.add("selected");renderRight(data,key,rightId,onSelect)};left.appendChild(item)});const first=Object.keys(data)[0];if(first)renderRight(data,first,rightId,onSelect)}
+function renderRight(data,parent,rightId,onSelect){const right=$(rightId);right.innerHTML="";(data[parent]||[]).forEach(child=>{const item=document.createElement("div");item.className="cascade-item";item.textContent=child;item.onclick=()=>onSelect(parent,child);right.appendChild(item)});if(!right.innerHTML)right.innerHTML='<div class="cascade-empty">暂无细分项</div>'}
+function setDisplay(id,text){$(id).innerHTML='<span class="selected">'+text+'</span><span class="arrow">▼</span>'}
+function initCascade(){renderLeft(window.__INDUSTRY_DATA||{},"industryLeft","industryRight",(parent,child)=>{state.industry=parent;state.subIndustry=child;setDisplay("industryDisplay",parent+" / "+child);$("industryPicker").classList.remove("open")});renderLeft(window.__REGION_DATA||{},"regionLeft","regionRight",(parent,child)=>{state.province=parent;state.city=child;setDisplay("regionDisplay",parent+" / "+child);$("regionPicker").classList.remove("open")})}
+function statusBadge(status){const map={online:["展示中","badge-ok"],pending:["待审核","badge-warn"],offline:["已下架","badge-gray"],rejected:["未通过","badge-gray"]};const item=map[status]||[status||"未知","badge-info"];return '<span class="badge '+item[1]+'">'+item[0]+'</span>'}
+function updateStats(){const projects=state.projects;const totalViews=projects.reduce((sum,p)=>sum+Number(p.views||0),0);const totalOffers=projects.reduce((sum,p)=>sum+Number(p.offers||0),0);const totalMatches=projects.reduce((sum,p)=>sum+Number(p.matches||0),0);const totalAmount=projects.reduce((sum,p)=>sum+Number(p.price||0),0);$("totalProjects").textContent=projects.length;$("onlineProjects").textContent=projects.filter(p=>p.status==="online").length;$("pendingProjects").textContent=projects.filter(p=>p.status==="pending").length;$("totalViews").textContent=totalViews;$("dashViews").textContent=totalViews;$("dashOffers").textContent=totalOffers;$("dashMatches").textContent=totalMatches;$("dashAmount").textContent=totalAmount}
+function renderProjects(){const tbody=$("projectTable");const list=state.filter==="all"?state.projects:state.projects.filter(p=>p.status===state.filter);if(!list.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state">暂无项目</td></tr>';return}tbody.innerHTML=list.map(p=>'<tr><td>'+p.id+'</td><td>'+p.industry+' / '+(p.sub_industry||"-")+'</td><td>'+p.province+' '+p.city+'</td><td>'+Number(p.price||0)+'万</td><td>'+statusBadge(p.status)+'</td><td>'+Number(p.views||0)+'</td><td>'+(p.submit_time||p.created_at||"").slice(0,10)+'</td><td><button class="btn btn-outline btn-sm" onclick="refreshProject(\\''+p.id+'\\')">刷新</button> <button class="btn btn-red btn-sm" onclick="toggleStatus(\\''+p.id+'\\',\\''+(p.status==="offline"?"online":"offline")+'\\')">'+(p.status==="offline"?"上架":"下架")+'</button></td></tr>').join("")}
+async function loadProjects(){try{const response=await fetch("/api/projects/my",{headers:authHeaders()});const result=await response.json();if(!result.success)throw new Error(result.error||"加载失败");state.projects=result.data||[];updateStats();renderProjects()}catch(error){$("projectTable").innerHTML='<tr><td colspan="8" class="empty-state">请先登录卖家账号后查看项目</td></tr>';toast(error.message||"项目加载失败","error")}}
+async function refreshProject(id){try{const response=await fetch("/api/projects/"+id+"/refresh",{method:"POST",headers:authHeaders()});const result=await response.json();if(!result.success)throw new Error(result.error||"刷新失败");toast("项目已刷新","success");loadProjects()}catch(error){toast(error.message||"刷新失败","error")}}
+async function toggleStatus(id,status){try{const response=await fetch("/api/projects/"+id+"/status",{method:"PATCH",headers:authHeaders(),body:JSON.stringify({status})});const result=await response.json();if(!result.success)throw new Error(result.error||"操作失败");toast(status==="online"?"项目已上架":"项目已下架","success");loadProjects()}catch(error){toast(error.message||"操作失败","error")}}
+document.querySelectorAll(".sub-tab").forEach(tab=>tab.addEventListener("click",()=>{document.querySelectorAll(".sub-tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");state.filter=tab.dataset.status;renderProjects()}));
+$("publishForm").addEventListener("submit",async e=>{e.preventDefault();if(!state.industry||!state.subIndustry||!state.province||!state.city){toast("请选择行业和地区","error");return}const payload={industry:state.industry,sub_industry:state.subIndustry,province:state.province,city:state.city,revenue:Number($("revenue").value||0),employees:$("employees").value,transfer_reason:$("reason").value,profit_rate:Number($("profitRate").value||0),price:Number($("price").value||0),description:$("description").value.trim(),hide_company:$("hideCompany").checked,hide_address:$("hideAddress").checked,hide_customers:$("hideCustomers").checked,hide_partners:$("hidePartners").checked,hide_financial:$("hideFinancial").checked};if(!payload.price){toast("请填写转让价格","error");return}try{const response=await fetch("/api/projects",{method:"POST",headers:authHeaders(),body:JSON.stringify(payload)});const result=await response.json();if(!result.success)throw new Error(result.error||"提交失败");toast("项目已提交审核","success");e.target.reset();state.industry=state.subIndustry=state.province=state.city=null;$("industryDisplay").innerHTML='<span class="placeholder">请选择行业和细分领域</span><span class="arrow">▼</span>';$("regionDisplay").innerHTML='<span class="placeholder">请选择省市/城区</span><span class="arrow">▼</span>';showSection("manage")}catch(error){toast(error.message||"提交失败，请先登录","error")}});
+(function init(){const user=getCurrentUser();if(user&&user.phone)$("sidebarUser").textContent=user.name||user.phone;initCascade();loadProjects()})();
 </script>
 </body>
 </html>

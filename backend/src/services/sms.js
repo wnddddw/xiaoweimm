@@ -8,9 +8,9 @@ const config = require('../config');
 // ── In-memory rate limiter ──────────────────────────────────────────
 const rateMap = new Map(); // phone → { lastSent, hourCount, hourWindow }
 
-const RATE_COOLDOWN_MS = 60_000;      // 60s between sends
-const RATE_HOUR_LIMIT = 5;            // max 5 per hour
-const RATE_IP_DAILY_LIMIT = 10;       // max 10 per IP per day
+const RATE_COOLDOWN_MS = process.env.SMS_DEV_MODE === 'true' ? 0 : 60_000;
+const RATE_HOUR_LIMIT = process.env.SMS_DEV_MODE === 'true' ? 999 : 5;
+const RATE_IP_DAILY_LIMIT = process.env.SMS_DEV_MODE === 'true' ? 999 : 10;
 const ipDaily = new Map();            // ip → { date, count }
 
 function checkRateLimit(phone, ip) {
