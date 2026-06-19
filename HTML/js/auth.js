@@ -179,7 +179,7 @@
 
   // ── UI helpers ─────────────────────────────────────────────────────
 
-  function updateNavUser(phone, name) {
+  function updateNavUser(phone, name, role) {
     var bL = document.getElementById('btnLogin');
     if (bL) bL.style.display = 'none';
     var uG = document.getElementById('userGreeting');
@@ -188,6 +188,21 @@
     if (ua) ua.textContent = (name || phone).slice(-2);
     var up = document.getElementById('userPhone');
     if (up) up.textContent = (phone || '').slice(0, 3) + '****' + (phone || '').slice(-4);
+    // Role-based link: admin → 管理后台, others → 会员中心
+    var role = role || '';
+    var memberLink = document.querySelector('#userGreeting a[href*=\"member.html\"], #userGreeting a[href*=\"admin.html\"]');
+    if (!role) {
+      try { var u = JSON.parse(sessionStorage.getItem(USER_KEY) || 'null'); role = (u && u.role) || ''; } catch(e) {}
+    }
+    if (memberLink) {
+      if (role === 'admin') {
+        memberLink.href = 'admin.html';
+        memberLink.textContent = '管理后台';
+      } else {
+        memberLink.href = 'member.html';
+        memberLink.textContent = '会员中心';
+      }
+    }
   }
 
   // ── Role Guard (replaces client-side authCheck IIFE) ───────────────
