@@ -6,9 +6,16 @@ const mime = { ".html":"text/html;charset=utf-8", ".css":"text/css", ".js":"appl
 process.on("uncaughtException", e => { console.error(e); fs.appendFileSync("d:/xin/server_err.log", e.stack + "\n"); });
 http.createServer((req, res) => {
   let file = req.url === "/" ? "/index.html" : req.url.split("?")[0];
+  // Prevent directory traversal
+  const resolved = path.resolve(root, file);
+  if (!resolved.startsWith(path.resolve(root))) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
   fs.readFile(path.join(root, file), (err, data) => {
     if (err) { res.writeHead(404); res.end("404"); return; }
     res.writeHead(200, { "Content-Type": mime[path.extname(file)] || "text/plain" });
     res.end(data);
   });
-}).listen(3001, "0.0.0.0", () => console.log("Server: http://localhost:3001"));
+}).listen(3001, "127.0.0.1", () => console.log("Server: http://localhost:3001"));

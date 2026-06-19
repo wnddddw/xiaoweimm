@@ -31,6 +31,10 @@ router.get('/:id', auth, (req, res) => {
 router.patch('/:id/stage', auth, (req, res) => {
   const d = get('SELECT * FROM deals WHERE id=?', [req.params.id]);
   if (!d) return res.json({ success: false, error: 'Not found' });
+  // Authorization: only seller, buyer, or admin of this deal can advance stage
+  if (d.seller_id !== req.user.id && d.buyer_id !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: '无权操作此交易' });
+  }
   const stage = req.body.stage, now = new Date().toISOString();
   let st = {};
   try { st = JSON.parse(d.stage_time || '{}'); } catch (e) { st = {}; }

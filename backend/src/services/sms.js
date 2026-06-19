@@ -58,10 +58,11 @@ function recordRate(phone, ip) {
   ipDaily.set(ip, ipE);
 }
 
-// ── Code generation ────────────────────────────────────────────────
+// ── Code generation (cryptographically secure) ──────────────────────
 function generateCode(length) {
+  const crypto = require('crypto');
   let code = '';
-  for (let i = 0; i < length; i++) code += Math.floor(Math.random() * 10);
+  for (let i = 0; i < length; i++) code += crypto.randomInt(0, 10);
   return code;
 }
 
@@ -133,8 +134,9 @@ async function sendSmsCode(phone, ip) {
   recordRate(phone, ip);
 
   if (result.devMode) {
-    console.log(`[SMS DEV] Code for ***${phone.slice(-4)}: ${code} (DEV ONLY)`);
-    return { success: true, data: { message: 'Dev mode — code returned for local development', code, dev_mode: true, expires_at: expiresAt.toISOString() } };
+    // NEVER return the code in the API response — log to server console only
+    console.log(`[SMS DEV] Code for ***${phone.slice(-4)}: ${code} (DEV ONLY — use this code to login)`);
+    return { success: true, data: { message: 'Dev mode — check server logs for code', dev_mode: true, expires_at: expiresAt.toISOString() } };
   }
 
   return { success: true, data: { message: 'Code sent', expires_at: expiresAt.toISOString() } };

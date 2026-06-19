@@ -141,8 +141,8 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     <div class="container nav-inner">
         <a href="index.html" class="logo">xiaoweimm</a>
         <ul class="nav-menu">
-            <li><a href="sell.html">想要出售事业</a></li>
-            <li><a href="buy.html">想要收购事业</a></li>
+            <li><a href="seller.html">想要出售事业</a></li>
+            <li><a href="buyer.html">想要收购事业</a></li>
             <li><a href="service.html">服务介绍</a></li>
             <li><a href="case.html">成功案例</a></li>
             <li><a href="column.html">行业专栏</a></li>
@@ -172,7 +172,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             <h1>中小企业企业转让・<br>M&A就选xiaoweimm</h1>
             <p>最大级企业并购平台<br>卖方基本使用费完全免费</p>
             <div class="hero-btns">
-                <a href="sell.html" class="btn-white">企业转让免费诊断</a>
+                <a href="seller.html" class="btn-white">企业转让免费诊断</a>
                 <a href="service.html" class="btn-trans">查看服务详情</a>
             </div>
         </div>
@@ -269,7 +269,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             <h3>致需要退休的您</h3>
             <p>由于人口结构变化，中小企业的企业并购问题日益严重。</p>
             <p>xiaoweimm为您匹配最佳受让方，在守护公司与员工的同时实现圆满的企业交接。</p>
-            <a href="sell.html" class="btn-white">确认出售流程</a>
+            <a href="seller.html" class="btn-white">确认出售流程</a>
         </div>
         <div class="two-img">
             <img src="https://picsum.photos/550/380" alt="企业并购">
@@ -281,7 +281,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     <div class="container footer-inner">
         <div class="footer-col">
             <h4>服务</h4>
-            <ul><li><a href="sell.html">企业转让</a></li><li><a href="buy.html">企业收购</a></li><li><a href="service.html">价值评估</a></li></ul>
+            <ul><li><a href="seller.html">企业转让</a></li><li><a href="buyer.html">企业收购</a></li><li><a href="service.html">价值评估</a></li></ul>
         </div>
         <div class="footer-col">
             <h4>实用信息</h4>
@@ -359,162 +359,9 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     </div>
 </div>
 
+<script src="js/auth.js"></script>
 <script>
-// 种子演示用户
-(function(){
-    const users = JSON.parse(localStorage.getItem('xiaoweimm_users')||'{}');
-    if(!users['13800000000']){
-        users['13800000000'] = {phone:'13800000000',name:'管理员',role:'admin',time:'2026-05-01'};
-        users['13800138001'] = {phone:'13800138001',name:'张卖家',role:'seller',time:'2026-05-01'};
-        users['13800138002'] = {phone:'13800138002',name:'李买家',role:'buyer',time:'2026-05-02'};
-        localStorage.setItem('xiaoweimm_users', JSON.stringify(users));
-    }
-})();
-
-// 手机号格式验证
-function isValidPhone(phone){ return /^1[3-9]d{9}$/.test(phone); }
-
-// 开发模式验证码管理
-var currentDevCode = "";
-function generateDevCode(){ currentDevCode = String(Math.floor(100000 + Math.random() * 900000)); return currentDevCode; }
-// 弹窗控制
-const overlay = document.getElementById('modalOverlay');
-const btnLogin = document.getElementById('btnLogin');
-const modalClose = document.getElementById('modalClose');
-
-btnLogin.addEventListener('click', ()=>{ overlay.classList.add('show'); });
-modalClose.addEventListener('click', ()=>{ overlay.classList.remove('show'); });
-overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.classList.remove('show'); }); // Tab 切换
-const tabLogin = document.getElementById('tabLogin');
-const tabReg = document.getElementById('tabReg');
-const loginForm = document.getElementById('loginForm');
-const regForm = document.getElementById('regForm');
-const toRegister = document.getElementById('toRegister');
-const toLogin = document.getElementById('toLogin');
-
-function switchTab(toLoginTab){
-    if(toLoginTab){
-        tabLogin.classList.add('active'); tabReg.classList.remove('active');
-        loginForm.classList.add('active'); regForm.classList.remove('active');
-    } else {
-        tabReg.classList.add('active'); tabLogin.classList.remove('active');
-        regForm.classList.add('active'); loginForm.classList.remove('active');
-    }
-}
-tabLogin.addEventListener('click', ()=>switchTab(true));
-tabReg.addEventListener('click', ()=>switchTab(false));
-toRegister.addEventListener('click', ()=>switchTab(false));
-toLogin.addEventListener('click', ()=>switchTab(true));
-
-// 短信倒计时
-function startCountdown(btn){
-    let sec = 60;
-    btn.disabled = true;
-    btn.textContent = sec + '秒后重发';
-    const timer = setInterval(()=>{
-        sec--;
-        btn.textContent = sec + '秒后重发';
-        if(sec <= 0){
-            clearInterval(timer);
-            btn.disabled = false;
-            btn.textContent = '获取验证码';
-        }
-    }, 1000);
-}
-
-// 手机号校验
-function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
-
-// 登录 - 获取验证码
-document.getElementById('loginSmsBtn').addEventListener('click', ()=>{
-    const phone = document.getElementById('loginPhone').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    startCountdown(document.getElementById('loginSmsBtn')); generateDevCode(); alert('验证码已发送至 ' + phone + '（开发模式验证码：' + currentDevCode + '）'); });
-// 注册 - 获取验证码
-document.getElementById('regSmsBtn').addEventListener('click', ()=>{
-    const phone = document.getElementById('regPhone').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    startCountdown(document.getElementById('regSmsBtn')); generateDevCode(); alert('验证码已发送至 ' + phone + '（开发模式验证码：' + currentDevCode + '）'); });
-// 更新导航栏状态
-function updateNavUser(phone){
-    document.getElementById('btnLogin').style.display = 'none';
-    document.getElementById('userGreeting').style.display = 'flex';
-    document.getElementById('userAvatar').textContent = phone.slice(-2);
-    document.getElementById('userPhone').textContent = phone.slice(0,3) + '****' + phone.slice(-4);
-    checkVerifyStatus();
-}
-
-// 检查实名认证状态
-function checkVerifyStatus(){
-    const v = JSON.parse(sessionStorage.getItem('xiaoweimm_verify')||localStorage.getItem('xiaoweimm_verify')||'null');
-    const badgeWarn = document.getElementById('verifyBadgeWarn');
-    const badgeOk = document.getElementById('verifyBadgeOk');
-    if(v && v.status === 'approved'){
-        badgeWarn.style.display = 'none';
-        badgeOk.style.display = 'inline';
-    } else if(v && v.status === 'pending'){
-        badgeWarn.style.display = 'inline';
-        badgeWarn.textContent = '审核中';
-        badgeOk.style.display = 'none';
-    } else {
-        badgeWarn.style.display = 'inline';
-        badgeWarn.textContent = '未认证';
-        badgeOk.style.display = 'none';
-    }
-}
-
-// 登录提交
-document.getElementById('loginSubmit').addEventListener('click', ()=>{
-    const phone = document.getElementById('loginPhone').value.trim();
-    const code = document.getElementById('loginCode').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误，请重新获取"); return; }
-    overlay.classList.remove('show');
-    const users = JSON.parse(localStorage.getItem('xiaoweimm_users')||'{}');
-    const saved = users[phone];
-    const role = saved ? saved.role : '';
-    sessionStorage.setItem('xiaoweimm_user', JSON.stringify({phone, role, name: saved? saved.name : '', time:Date.now()}));
-    updateNavUser(phone);
-    window.location.href = role === 'admin' ? 'admin.html' : role === 'seller' ? 'seller.html' : role === 'buyer' ? 'buyer.html' : 'member.html'; });
-// 注册提交
-document.getElementById('regSubmit').addEventListener('click', ()=>{
-    const phone = document.getElementById('regPhone').value.trim();
-    const code = document.getElementById('regCode').value.trim();
-    const name = document.getElementById('regName').value.trim();
-    const role = document.getElementById('regRole').value;
-    const agree = document.getElementById('regAgree').checked;
-    if(!isValidPhone(phone)){ alert('手机号为必填项，请输入有效的手机号'); return; }
-    if(!code){ alert('请输入短信验证码'); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误，请重新获取"); return; }
-    if(!agree){ alert('请先同意服务协议和隐私政策'); return; }
-    overlay.classList.remove('show');
-    const user = {phone, name, role, time:Date.now()};
-    sessionStorage.setItem('xiaoweimm_user', JSON.stringify(user));
-    const users = JSON.parse(localStorage.getItem('xiaoweimm_users')||'{}');
-    users[phone] = user;
-    localStorage.setItem('xiaoweimm_users', JSON.stringify(users));
-    updateNavUser(phone);
-    window.location.href = role === 'seller' ? 'seller.html' : role === 'buyer' ? 'buyer.html' : 'verify.html'; });
-// 退出登录
-document.getElementById('btnLogout').addEventListener('click', ()=>{
-    document.getElementById('btnLogin').style.display = '';
-    document.getElementById('userGreeting').style.display = 'none';
-    document.getElementById('verifyBadgeWarn').style.display = 'none';
-    document.getElementById('verifyBadgeOk').style.display = 'none';
-    sessionStorage.removeItem('xiaoweimm_user');
-    alert('已退出登录'); });
-// 页面加载时检查登录状态
-(function initAuth(){
-    const user = JSON.parse(sessionStorage.getItem('xiaoweimm_user')||'null');
-    if(user && user.phone){
-        updateNavUser(user.phone);
-    }
-})();
-
-// 键盘ESC关闭弹窗
-document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') overlay.classList.remove('show');
-});
+XW.Auth.initPage();
 </script>
 
 <script>

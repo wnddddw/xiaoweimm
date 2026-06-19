@@ -141,8 +141,8 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         <a href="index.html" class="logo">xiaoweimm</a>
         <div class="menu-icon">&#9776;</div>
         <div class="nav-menu">
-            <a href="sell.html">企业转让</a>
-            <a href="buy.html">企业收购</a>
+            <a href="seller.html">企业转让</a>
+            <a href="buyer.html">企业收购</a>
             <a href="service.html">服务介绍</a>
             <a href="contact.html">咨询</a>
         </div>
@@ -365,108 +365,10 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 <div class="toast" id="toast"></div>
 
 
+<script src="js/auth.js"></script>
 <script>
-(function(){
-    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-    if(!users["13800000000"]){
-        users["13800000000"] = {phone:"13800000000",name:"管理员",role:"admin",time:"2026-05-01"};
-        users["13800138001"] = {phone:"13800138001",name:"张卖家",role:"seller",time:"2026-05-01"};
-        users["13800138002"] = {phone:"13800138002",name:"李买家",role:"buyer",time:"2026-05-02"};
-        localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
-    }
-})();
-function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
-var currentDevCode = "";
-function generateDevCode(){ currentDevCode = String(Math.floor(100000 + Math.random() * 900000)); return currentDevCode; }
-var overlay = document.getElementById("modalOverlay");
-var btnLogin = document.getElementById("btnLogin");
-var modalClose = document.getElementById("modalClose");
-if(btnLogin) btnLogin.addEventListener("click", function(){ if(overlay) overlay.classList.add("show"); });
-if(modalClose) modalClose.addEventListener("click", function(){ if(overlay) overlay.classList.remove("show"); });
-if(overlay) overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.classList.remove("show"); });
-var tabLogin = document.getElementById("tabLogin");
-var tabReg = document.getElementById("tabReg");
-var loginForm = document.getElementById("loginForm");
-var regForm = document.getElementById("regForm");
-function switchTab(toLoginTab){
-    if(!tabLogin) return;
-    if(toLoginTab){ tabLogin.classList.add("active"); if(tabReg) tabReg.classList.remove("active"); if(loginForm) loginForm.classList.add("active"); if(regForm) regForm.classList.remove("active"); }
-    else { if(tabReg) tabReg.classList.add("active"); tabLogin.classList.remove("active"); if(regForm) regForm.classList.add("active"); if(loginForm) loginForm.classList.remove("active"); }
-}
-if(tabLogin) tabLogin.addEventListener("click", function(){ switchTab(true); });
-if(tabReg) tabReg.addEventListener("click", function(){ switchTab(false); });
-var tR = document.getElementById("toRegister"); if(tR) tR.addEventListener("click", function(){ switchTab(false); });
-var tL = document.getElementById("toLogin"); if(tL) tL.addEventListener("click", function(){ switchTab(true); });
-function startCountdown(btn){
-    var sec = 60; btn.disabled = true; btn.textContent = sec + "秒后重发";
-    var timer = setInterval(function(){ sec--; btn.textContent = sec + "秒后重发";
-        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = "获取验证码"; }
-    }, 1000);
-}
-var lSms = document.getElementById("loginSmsBtn");
-if(lSms) lSms.addEventListener("click", function(){
-    var phone = document.getElementById("loginPhone").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    startCountdown(lSms); generateDevCode();
-    alert("验证码已发送至 " + phone + "（开发模式验证码：" + currentDevCode + "）");
-});
-var rSms = document.getElementById("regSmsBtn");
-if(rSms) rSms.addEventListener("click", function(){
-    var phone = document.getElementById("regPhone").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    startCountdown(rSms); generateDevCode();
-    alert("验证码已发送至 " + phone + "（开发模式验证码：" + currentDevCode + "）");
-});
-function updateNavUser(phone){
-    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "none";
-    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "flex";
-    var ua = document.getElementById("userAvatar"); if(ua) ua.textContent = phone.slice(-2);
-    var up = document.getElementById("userPhone"); if(up) up.textContent = phone.slice(0,3) + "****" + phone.slice(-4);
-}
-var lSub = document.getElementById("loginSubmit");
-if(lSub) lSub.addEventListener("click", function(){
-    var phone = document.getElementById("loginPhone").value.trim();
-    var code = document.getElementById("loginCode").value.trim();
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误"); return; }
-    if(overlay) overlay.classList.remove("show");
-    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-    var saved = users[phone]; var role = saved ? saved.role : "";
-    sessionStorage.setItem("xiaoweimm_user", JSON.stringify({phone:phone, role:role, name:saved?saved.name:"", time:Date.now()}));
-    updateNavUser(phone);
-    var target = getTargetAfterAuth(); if(!target){ target = role === "admin" ? "admin.html" : role === "seller" ? "seller.html" : role === "buyer" ? "buyer.html" : "member.html"; }
-    setTimeout(function(){ window.location.href = target; }, 800);
-});
-var rSub = document.getElementById("regSubmit");
-if(rSub) rSub.addEventListener("click", function(){
-    var phone = document.getElementById("regPhone").value.trim();
-    var code = document.getElementById("regCode").value.trim();
-    var name = document.getElementById("regName").value.trim();
-    var role = document.getElementById("regRole").value;
-    var agree = document.getElementById("regAgree");
-    if(!isValidPhone(phone)){ alert("请输入有效的手机号"); return; }
-    if(!code){ alert("请输入短信验证码"); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误"); return; }
-    if(agree && !agree.checked){ alert("请先同意服务协议和隐私政策"); return; }
-    if(overlay) overlay.classList.remove("show");
-    var user = {phone:phone, name:name, role:role, time:Date.now()};
-    sessionStorage.setItem("xiaoweimm_user", JSON.stringify(user));
-    var users = JSON.parse(localStorage.getItem("xiaoweimm_users")||"{}");
-    users[phone] = user; localStorage.setItem("xiaoweimm_users", JSON.stringify(users));
-    updateNavUser(phone);
-    var target = getTargetAfterAuth(); if(!target){ target = role === "seller" ? "seller.html" : role === "buyer" ? "buyer.html" : "verify.html"; }
-    setTimeout(function(){ window.location.href = target; }, 800);
-});
-var bLg = document.getElementById("btnLogout");
-if(bLg) bLg.addEventListener("click", function(){
-    var bL = document.getElementById("btnLogin"); if(bL) bL.style.display = "";
-    var uG = document.getElementById("userGreeting"); if(uG) uG.style.display = "none";
-    sessionStorage.removeItem("xiaoweimm_user"); alert("已退出登录");
-});
-(function initAuth(){
-    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
-    if(user && user.phone){ updateNavUser(user.phone); }
-})();
-if(overlay) document.addEventListener("keydown", function(e){ if(e.key === "Escape") overlay.classList.remove("show"); });
+XW.Auth.initPage();
 </script>
-function getTargetAfterAuth(){var r=sessionStorage.getItem("redirectAfterLogin");if(r){sessionStorage.removeItem("redirectAfterLogin");return r;}return null;}
+<script>
+XW.Auth.requireRole(['seller', 'buyer', 'admin'], 'member.html');
+</script>

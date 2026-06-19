@@ -136,19 +136,44 @@ router.post('/reset-password/verify', resetPwdVerifyLimiter, (req, res) => {
 
 // ── OAuth Third-Party Login ──────────────────────────────────────────
 
+// Validate redirect_uri against whitelist to prevent open redirect
+function validateOAuthRedirectUri(uri) {
+  try {
+    const parsed = new URL(uri);
+    // Only allow http/https
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    // In production, require https
+    if (process.env.NODE_ENV === 'production' && parsed.protocol !== 'https:') return false;
+    // Check against whitelist
+    const allowed = config.oauthAllowedRedirects || ['http://localhost:3001'];
+    return allowed.some(function(a) {
+      var allowedOrigin = a.replace(/\/$/, '');
+      return parsed.origin === allowedOrigin;
+    });
+  } catch(e) { return false; }
+}
+
 // GET /auth/oauth/wechat/url
 router.get('/oauth/wechat/url', (req, res) => {
-  const redirectUri = req.query.redirect_uri || 'http://localhost:3001/';
+  const redirectUri = req.query.redirect_uri;
+  if (redirectUri && !validateOAuthRedirectUri(redirectUri)) {
+    return res.status(400).json({ success: false, error: '非法的重定向地址' });
+  }
+  const safeUri = redirectUri || config.corsOrigin || 'http://localhost:3001/';
   const state = oauthService.generateState();
-  const url = oauthService.getWechatAuthUrl(redirectUri, state);
+  const url = oauthService.getWechatAuthUrl(safeUri, state);
   res.json({ success: true, data: { url, state } });
 });
 
 // GET /auth/oauth/alipay/url
 router.get('/oauth/alipay/url', (req, res) => {
-  const redirectUri = req.query.redirect_uri || 'http://localhost:3001/';
+  const redirectUri = req.query.redirect_uri;
+  if (redirectUri && !validateOAuthRedirectUri(redirectUri)) {
+    return res.status(400).json({ success: false, error: '非法的重定向地址' });
+  }
+  const safeUri = redirectUri || config.corsOrigin || 'http://localhost:3001/';
   const state = oauthService.generateState();
-  const url = oauthService.getAlipayAuthUrl(redirectUri, state);
+  const url = oauthService.getAlipayAuthUrl(safeUri, state);
   res.json({ success: true, data: { url, state } });
 });
 
@@ -231,11 +256,12 @@ router.post('/oauth/alipay/callback', async (req, res) => {
 module.exports = router;
 
 
-// POST /auth/dev-token - DEV ONLY: issue a long-lived JWT for an existing user.
-// Avoids SMS rate limits when local testing hits the rate limit too often.
-// Disabled in production. Token valid for 7 days.
-router.post('/dev-token', (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
+// POST /auth/dev-token - DEV ONLY: issue a dev JWT for the authenticated user.
+// Disabled unless DEV_TOKEN_ENABLED=true AND NODE_ENV is not production.
+// Requires authentication — user can only get token for themselves (or admin for anyone).
+const devTokenLimiter = createRateLimit({ windowMs: 60_000, max: 3, keyBy: 'ip' });
+router.post('/dev-token', auth, devTokenLimiter, (req, res) => {
+  if (process.env.NODE_ENV === 'production' || process.env.DEV_TOKEN_ENABLED !== 'true') {
     return res.status(404).json({ success: false, error: 'Not found' });
   }
   const { phone } = req.body || {};
@@ -243,7 +269,11 @@ router.post('/dev-token', (req, res) => {
     return res.json({ success: false, error: 'Invalid phone' });
   const u = get('SELECT id,phone,name,role,status FROM users WHERE phone = ?', [phone]);
   if (!u) return res.json({ success: false, error: 'Account not found' });
+  // Only allow own phone number unless admin
+  if (u.id !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Cannot issue token for another user' });
+  }
   if (u.status === 'disabled' || u.status === 'deleted') return res.json({ success: false, error: '账号已禁用或已注销' });
-  const token = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtSecret, { expiresIn: '7d' });
+  const token = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtSecret, { expiresIn: '1h' });
   res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, token, dev_mode: true } });
 });

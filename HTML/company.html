@@ -76,8 +76,8 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     <div class="container nav-inner">
         <a href="index.html" class="logo">xiaoweimm</a>
         <ul class="nav-menu">
-            <li><a href="sell.html">企业转让</a></li>
-            <li><a href="buy.html">企业收购</a></li>
+            <li><a href="seller.html">企业转让</a></li>
+            <li><a href="buyer.html">企业收购</a></li>
             <li><a href="service.html">服务介绍</a></li>
             <li><a href="case.html">成功案例</a></li>
             <li><a href="column.html">行业专栏</a></li>
@@ -141,7 +141,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 
 <footer>
     <div class="container footer-inner">
-        <div class="footer-col"><h4>服务</h4><ul><li><a href="sell.html">企业转让</a></li><li><a href="buy.html">企业收购</a></li></ul></div>
+        <div class="footer-col"><h4>服务</h4><ul><li><a href="seller.html">企业转让</a></li><li><a href="buyer.html">企业收购</a></li></ul></div>
         <div class="footer-col"><h4>实用信息</h4><ul><li><a href="case.html">成功案例</a></li><li><a href="column.html">行业专栏</a></li></ul></div>
         <div class="footer-col"><h4>公司信息</h4><ul><li><a href="company.html">公司简介</a></li></ul></div>
         <div class="footer-col"><h4>联系我们</h4><ul><li>TEL：400-888-6688</li><li><a href="contact.html">免费咨询</a></li></ul></div>
@@ -205,103 +205,9 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         </div>
     </div>
 </div>
+<script src="js/auth.js"></script>
 <script>
-
-
-
-
-
-
-
-
-
-// 登录/注册弹窗
-const overlay = document.getElementById('modalOverlay');
-const btnLogin = document.getElementById('btnLogin');
-const modalClose = document.getElementById('modalClose');
-btnLogin.addEventListener('click', ()=>{ overlay.classList.add('show'); });
-modalClose.addEventListener('click', ()=>{ overlay.classList.remove('show'); });
-overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.classList.remove('show'); });
-
-const tabLogin = document.getElementById('tabLogin');
-const tabReg = document.getElementById('tabReg');
-const loginForm = document.getElementById('loginForm');
-const regForm = document.getElementById('regForm');
-const toRegister = document.getElementById('toRegister');
-const toLogin = document.getElementById('toLogin');
-function switchTab(toLoginTab){
-    if(toLoginTab){
-        tabLogin.classList.add('active'); tabReg.classList.remove('active');
-        loginForm.classList.add('active'); regForm.classList.remove('active');
-    } else {
-        tabReg.classList.add('active'); tabLogin.classList.remove('active');
-        regForm.classList.add('active'); loginForm.classList.remove('active');
-    }
-}
-tabLogin.addEventListener('click', ()=>switchTab(true));
-tabReg.addEventListener('click', ()=>switchTab(false));
-toRegister.addEventListener('click', ()=>switchTab(false));
-toLogin.addEventListener('click', ()=>switchTab(true));
-
-function startCountdown(btn){
-    let sec = 60; btn.disabled = true; btn.textContent = sec + '秒后重发';
-    const timer = setInterval(()=>{ sec--; btn.textContent = sec + '秒后重发';
-        if(sec <= 0){ clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
-    }, 1000);
-}
-function isValidPhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }
-
-document.getElementById('loginSmsBtn').addEventListener('click', ()=>{
-    const phone = document.getElementById('loginPhone').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    startCountdown(document.getElementById('loginSmsBtn'));
-    generateDevCode(); alert('验证码已发送至 ' + phone + '（开发模式验证码：' + currentDevCode + '）');
-});
-
-document.getElementById('regSmsBtn').addEventListener('click', ()=>{
-    const phone = document.getElementById('regPhone').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    startCountdown(document.getElementById('regSmsBtn'));
-    generateDevCode(); alert('验证码已发送至 ' + phone + '（开发模式验证码：' + currentDevCode + '）');
-});
-
-function updateNavUser(phone){
-    document.getElementById('btnLogin').style.display = 'none';
-    document.getElementById('userGreeting').style.display = 'flex';
-    document.getElementById('userAvatar').textContent = phone.slice(-2);
-    document.getElementById('userPhone').textContent = phone.slice(0,3) + '****' + phone.slice(-4);
-}
-
-document.getElementById('loginSubmit').addEventListener('click', ()=>{
-    const phone = document.getElementById('loginPhone').value.trim();
-    const code = document.getElementById('loginCode').value.trim();
-    if(!isValidPhone(phone)){ alert('请输入有效的手机号'); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误，请重新获取"); return; }
-    overlay.classList.remove('show'); updateNavUser(phone); alert('登录成功！欢迎回来');
-});
-
-document.getElementById('regSubmit').addEventListener('click', ()=>{
-    const phone = document.getElementById('regPhone').value.trim();
-    const code = document.getElementById('regCode').value.trim();
-    const name = document.getElementById('regName').value.trim();
-    const role = document.getElementById('regRole').value;
-    const agree = document.getElementById('regAgree').checked;
-    if(!isValidPhone(phone)){ alert('手机号为必填项，请输入有效的手机号'); return; }
-    if(!code){ alert('请输入短信验证码'); return; }
-    if(code !== currentDevCode || !currentDevCode){ alert("验证码错误，请重新获取"); return; }
-    if(!agree){ alert('请先同意服务协议和隐私政策'); return; }
-    overlay.classList.remove('show'); updateNavUser(phone);
-    const roleLabel = role === 'seller' ? '卖家' : role === 'buyer' ? '买家' : '用户';
-    alert('注册成功！欢迎加入xiaoweimm，' + (name || '新' + roleLabel));
-});
-
-document.getElementById('btnLogout').addEventListener('click', ()=>{
-    document.getElementById('btnLogin').style.display = '';
-    document.getElementById('userGreeting').style.display = 'none';
-    alert('已退出登录');
-});
-
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') overlay.classList.remove('show'); });
+XW.Auth.initPage();
 </script>
 
 <script>

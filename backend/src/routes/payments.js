@@ -67,7 +67,7 @@ router.get('/order/:id', auth, (req, res) => {
 // ── Payment Callbacks (public — no auth, called by gateways) ───────
 
 // WeChat async notify — receives raw XML body
-router.post('/callback/wechat', (req, res) => {
+router.post('/callback/wechat', createRateLimit({ windowMs: 60_000, max: 30, keyBy: 'ip' }), (req, res) => {
   let rawBody;
   if (Buffer.isBuffer(req.body)) {
     rawBody = req.body.toString('utf8');
@@ -82,7 +82,7 @@ router.post('/callback/wechat', (req, res) => {
     return res.send('<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[Payload too large]]></return_msg></xml>');
   }
 
-  console.log('[WECHAT CB]', rawBody);
+  console.log('[WECHAT CB] callback received, length=' + (rawBody ? rawBody.length : 0));
   const result = paymentService.processPaymentCallback('wechat_h5', rawBody);
 
   const resp = result.success
@@ -93,8 +93,9 @@ router.post('/callback/wechat', (req, res) => {
 });
 
 // Alipay async notify — receives URL-encoded form data
-router.post('/callback/alipay', (req, res) => {
-  console.log('[ALIPAY CB]', req.body);
+router.post('/callback/alipay', createRateLimit({ windowMs: 60_000, max: 30, keyBy: 'ip' }), (req, res) => {
+  // Log minimal info — do NOT log full body which may contain PII
+  console.log('[ALIPAY CB] callback received');
   const result = paymentService.processPaymentCallback('alipay_h5', req.body);
   res.send(result.success ? 'success' : 'fail');
 });
@@ -114,13 +115,16 @@ router.get('/callback/alipay', (req, res) => {
 // ── Recharge (DEV ONLY — requires admin in production) ─────────────
 
 // POST /payments/recharge — manual balance recharge
-// In production: admin-only. In dev: any authenticated user (for testing).
+// Always requires admin unless ALLOW_USER_RECHARGE=true AND NODE_ENV is not production.
 router.post('/recharge', auth, rechargeLimiter, (req, res) => {
-  // Production guard: admin-only recharge
-  if (isProduction()) {
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Only admins can manually recharge in production' });
+  // Always require admin for manual recharge
+  if (!req.user || req.user.role !== 'admin') {
+    // Allow non-admin only if explicitly enabled for dev testing
+    const allowUserRecharge = process.env.ALLOW_USER_RECHARGE === 'true' && process.env.NODE_ENV !== 'production';
+    if (!allowUserRecharge) {
+      return res.status(403).json({ success: false, error: '仅管理员可充值' });
     }
+    console.warn('[DEV RECHARGE] Non-admin user ' + (req.user.phone || req.user.id) + ' recharging (ALLOW_USER_RECHARGE enabled)');
   }
 
   const { amount, pay_method } = req.body;

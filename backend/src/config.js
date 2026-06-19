@@ -43,6 +43,9 @@ module.exports = {
   // CORS
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3002',
 
+  // OAuth — allowed redirect URIs (comma-separated)
+  oauthAllowedRedirects: (process.env.OAUTH_ALLOWED_REDIRECTS || 'http://localhost:3001,http://localhost:3002').split(',').map(function(s) { return s.trim(); }),
+
   // Aliyun SMS
   smsAccessKeyId: process.env.SMS_ACCESS_KEY_ID || '',
   smsAccessKeySecret: process.env.SMS_ACCESS_KEY_SECRET || '',
