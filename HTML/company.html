@@ -155,22 +155,23 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     <div class="modal-box">
         <button class="modal-close" id="modalClose" type="button">&times;</button>
         <div class="modal-tabs">
-            <button class="modal-tab active" id="tabLogin" type="button">登录</button>
-            <button class="modal-tab" id="tabReg" type="button">注册</button>
+            <button class="modal-tab active" id="tabPhone" type="button">手机登录</button>
+            <button class="modal-tab" id="tabPwd" type="button">密码登录</button>
+            <button class="modal-tab" id="tabReg" type="button">注册</button>注册</button>
         </div>
-        <div class="tab-content active" id="loginForm">
+        <div class="tab-content active" id="phoneForm">
             <div class="form-group">
                 <label>手机号</label>
-                <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+                <input type="tel" id="phoneLoginPhone" placeholder="请输入手机号" maxlength="11">
             </div>
             <div class="form-group">
                 <label>验证码</label>
                 <div class="sms-row">
-                    <input type="text" id="loginCode" placeholder="短信验证码" maxlength="6">
-                    <button class="sms-btn" id="loginSmsBtn" type="button">获取验证码</button>
+                    <input type="text" id="phoneLoginCode" placeholder="短信验证码" maxlength="6">
+                    <button class="sms-btn" id="phoneSmsBtn" type="button">获取验证码</button>
                 </div>
             </div>
-            <button class="modal-submit" id="loginSubmit" type="button">登录</button>
+            <button class="modal-submit" id="phoneSubmit" type="button">登录</button>
             <div class="modal-extra"><a id="toRegister">没有账号？立即注册</a></div>
         </div>
         <div class="tab-content" id="regForm">
@@ -202,7 +203,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
                 <label for="regAgree">同意 <a href="javascript:void(0)">服务协议</a> 及 <a href="javascript:void(0)">隐私政策</a></label>
             </div>
             <button class="modal-submit" id="regSubmit" type="button">注册</button>
-            <div class="modal-extra"><a id="toLogin">已有账号？立即登录</a></div>
+            <div class="modal-extra"><a id="toPhone">已有账号？手机登录</a></div>
         </div>
     </div>
 </div>

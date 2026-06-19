@@ -280,47 +280,49 @@
       });
     }
 
-    // Tab switching
-    var tabLogin = document.getElementById('tabLogin');
-    var tabReg = document.getElementById('tabReg');
-    var loginForm = document.getElementById('loginForm');
-    var regForm = document.getElementById('regForm');
+    // Tab switching — 3 tabs: 手机登录 | 密码登录 | 注册
+    var tabPhone = document.getElementById('tabPhone') || document.getElementById('tabLogin');
+    var tabPwd  = document.getElementById('tabPwd');
+    var tabReg  = document.getElementById('tabReg');
+    var phoneForm = document.getElementById('phoneForm') || document.getElementById('loginForm');
+    var pwdForm   = document.getElementById('pwdForm');
+    var regForm   = document.getElementById('regForm');
 
-    function switchTab(toLoginTab) {
-      if (!tabLogin) return;
-      if (toLoginTab) {
-        tabLogin.classList.add('active');
-        if (tabReg) tabReg.classList.remove('active');
-        if (loginForm) loginForm.classList.add('active');
-        if (regForm) regForm.classList.remove('active');
-      } else {
-        if (tabReg) tabReg.classList.add('active');
-        tabLogin.classList.remove('active');
-        if (regForm) regForm.classList.add('active');
-        if (loginForm) loginForm.classList.remove('active');
-      }
+    var allTabs = [tabPhone, tabPwd, tabReg].filter(Boolean);
+    var allForms = [phoneForm, pwdForm, regForm].filter(Boolean);
+
+    function switchTab(tab) {
+      allTabs.forEach(function(t) { t.classList.remove('active'); });
+      allForms.forEach(function(f) { f.classList.remove('active'); });
+      tab.classList.add('active');
+      if (tab === tabPhone && phoneForm) phoneForm.classList.add('active');
+      if (tab === tabPwd  && pwdForm)   pwdForm.classList.add('active');
+      if (tab === tabReg  && regForm)   regForm.classList.add('active');
     }
 
-    if (tabLogin) tabLogin.addEventListener('click', function() { switchTab(true); });
-    if (tabReg) tabReg.addEventListener('click', function() { switchTab(false); });
+    if (tabPhone) tabPhone.addEventListener('click', function() { switchTab(tabPhone); });
+    if (tabPwd)   tabPwd.addEventListener('click', function() { switchTab(tabPwd); });
+    if (tabReg)   tabReg.addEventListener('click', function() { switchTab(tabReg); });
     var tR = document.getElementById('toRegister');
-    if (tR) tR.addEventListener('click', function() { switchTab(false); });
-    var tL = document.getElementById('toLogin');
-    if (tL) tL.addEventListener('click', function() { switchTab(true); });
+    if (tR) tR.addEventListener('click', function() { switchTab(tabReg); });
+    var tL = document.getElementById('toPhone') || document.getElementById('toLogin');
+    if (tL) tL.addEventListener('click', function() { switchTab(tabPhone); });
+    var tP = document.getElementById('toPwd');
+    if (tP) tP.addEventListener('click', function() { switchTab(tabPwd); });
 
-    // SMS button — Login
-    var lSms = document.getElementById('loginSmsBtn');
-    if (lSms) lSms.addEventListener('click', function() {
-      var phone = document.getElementById('loginPhone');
+    // SMS button — phone login
+    var phSms = document.getElementById('phoneSmsBtn') || document.getElementById('loginSmsBtn');
+    if (phSms) phSms.addEventListener('click', function() {
+      var phone = document.getElementById('phoneLoginPhone') || document.getElementById('loginPhone');
       if (!phone) return;
       var phoneVal = phone.value.trim();
-      var origText = lSms.textContent;
-      lSms.disabled = true;
+      var origText = phSms.textContent;
+      phSms.disabled = true;
       requestSmsCode(phoneVal, null, function() {
-        lSms.disabled = false;
-        lSms.textContent = origText;
+        phSms.disabled = false;
+        phSms.textContent = origText;
       });
-      startCountdown(lSms);
+      startCountdown(phSms);
     });
 
     // SMS button — Register
@@ -338,97 +340,52 @@
       startCountdown(rSms);
     });
 
-    // ── Password login toggle ──────────────────────────────────────
-    var loginMode = 'sms'; // 'sms' | 'password'
-    var codeGroup = document.getElementById('loginCode');
-    var smsBtn = document.getElementById('loginSmsBtn');
-    var pwdGroup = null;
-    var pwdInput = null;
-
-    // Inject password field into login form
-    if (loginForm && codeGroup) {
-      var codeParent = codeGroup.parentNode; // .sms-row or .form-group
-      if (codeParent && codeParent.classList.contains('sms-row')) {
-        codeParent = codeParent.parentNode; // .form-group
-      }
-      pwdGroup = document.createElement('div');
-      pwdGroup.className = 'form-group';
-      pwdGroup.style.display = 'none';
-      pwdGroup.innerHTML = '<label>密码</label><input type="password" id="loginPassword" placeholder="请输入登录密码" style="width:100%;padding:12px 14px;border:1px solid #bbb;border-radius:6px;font-size:15px;outline:none;">';
-      if (codeParent && codeParent.parentNode) {
-        codeParent.parentNode.insertBefore(pwdGroup, codeParent.nextSibling);
-      }
-      pwdInput = document.getElementById('loginPassword');
-
-      // Add toggle link
-      var toggleLink = document.createElement('a');
-      toggleLink.id = 'togglePwdLogin';
-      toggleLink.style.cssText = 'display:block;text-align:right;font-size:12px;color:var(--main);cursor:pointer;margin-top:-8px;margin-bottom:8px;';
-      toggleLink.textContent = '密码登录';
-      if (smsBtn) {
-        smsBtn.parentNode.parentNode.appendChild(toggleLink);
-      } else if (codeGroup.parentNode) {
-        codeGroup.parentNode.appendChild(toggleLink);
-      }
-
-      toggleLink.addEventListener('click', function() {
-        if (loginMode === 'sms') {
-          loginMode = 'password';
-          if (codeGroup) codeGroup.parentNode.style.display = 'none';
-          if (smsBtn) smsBtn.style.display = 'none';
-          if (pwdGroup) pwdGroup.style.display = 'block';
-          toggleLink.textContent = '短信登录';
-        } else {
-          loginMode = 'sms';
-          if (codeGroup) codeGroup.parentNode.style.display = '';
-          if (smsBtn) smsBtn.style.display = '';
-          if (pwdGroup) pwdGroup.style.display = 'none';
-          toggleLink.textContent = '密码登录';
-        }
-      });
-    }
-
-    // Login submit
-    var lSub = document.getElementById('loginSubmit');
-    if (lSub) lSub.addEventListener('click', function() {
-      var phoneEl = document.getElementById('loginPhone');
-      if (!phoneEl) return;
+    // Phone (SMS) login submit
+    var phSub = document.getElementById('phoneSubmit') || document.getElementById('loginSubmit');
+    if (phSub) phSub.addEventListener('click', function() {
+      var phoneEl = document.getElementById('phoneLoginPhone') || document.getElementById('loginPhone');
+      var codeEl  = document.getElementById('phoneLoginCode')  || document.getElementById('loginCode');
+      if (!phoneEl || !codeEl) return;
       var phone = phoneEl.value.trim();
+      var code = codeEl.value.trim();
       if (!isValidPhone(phone)) { alert('请输入有效的手机号'); return; }
+      if (!code) { alert('请先获取验证码'); return; }
+      var origText = phSub.textContent;
+      phSub.disabled = true; phSub.textContent = '登录中…';
+      login(phone, code, function(u) {
+        if (overlay) overlay.classList.remove('show');
+        var target = getTargetAfterAuth();
+        if (!target) {
+          target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
+        }
+        setTimeout(function() { window.location.href = target; }, 400);
+      }, function() {
+        phSub.disabled = false; phSub.textContent = origText;
+      });
+    });
 
-      var origText = lSub.textContent;
-      lSub.disabled = true; lSub.textContent = '登录中…';
-
-      if (loginMode === 'password') {
-        // Password login
-        var pwd = pwdInput ? pwdInput.value : '';
-        if (!pwd) { alert('请输入密码'); lSub.disabled = false; lSub.textContent = origText; return; }
-        passwordLogin(phone, pwd, function(u) {
-          if (overlay) overlay.classList.remove('show');
-          var target = getTargetAfterAuth();
-          if (!target) {
-            target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
-          }
-          setTimeout(function() { window.location.href = target; }, 400);
-        }, function() {
-          lSub.disabled = false; lSub.textContent = origText;
-        });
-      } else {
-        // SMS login
-        var codeEl = document.getElementById('loginCode');
-        var code = codeEl ? codeEl.value.trim() : '';
-        if (!code) { alert('请先获取验证码'); lSub.disabled = false; lSub.textContent = origText; return; }
-        login(phone, code, function(u) {
-          if (overlay) overlay.classList.remove('show');
-          var target = getTargetAfterAuth();
-          if (!target) {
-            target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
-          }
-          setTimeout(function() { window.location.href = target; }, 400);
-        }, function() {
-          lSub.disabled = false; lSub.textContent = origText;
-        });
-      }
+    // Password login submit
+    var pwSub = document.getElementById('pwdSubmit');
+    if (pwSub) pwSub.addEventListener('click', function() {
+      var phoneEl = document.getElementById('pwdLoginPhone');
+      var pwdEl   = document.getElementById('pwdLoginPassword');
+      if (!phoneEl || !pwdEl) return;
+      var phone = phoneEl.value.trim();
+      var pwd = pwdEl.value;
+      if (!isValidPhone(phone)) { alert('请输入有效的手机号'); return; }
+      if (!pwd) { alert('请输入密码'); return; }
+      var origText = pwSub.textContent;
+      pwSub.disabled = true; pwSub.textContent = '登录中…';
+      passwordLogin(phone, pwd, function(u) {
+        if (overlay) overlay.classList.remove('show');
+        var target = getTargetAfterAuth();
+        if (!target) {
+          target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
+        }
+        setTimeout(function() { window.location.href = target; }, 400);
+      }, function() {
+        pwSub.disabled = false; pwSub.textContent = origText;
+      });
     });
 
     // Register submit
