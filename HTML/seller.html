@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>卖家工作台｜xiaoweimm</title>
+    <link rel="stylesheet" href="css/common.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         button,input,select,textarea,.btn,a.nav-btn,[role="button"],.nav-login,.nav-btn,.menu-icon,.sidebar-toggle{min-height:44px;min-width:44px;touch-action:manipulation;}
@@ -28,8 +29,8 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         .main{flex:1;margin-left:220px;padding-top:60px;min-height:100vh;}
         .topbar{position:fixed;top:0;left:0;right:0;height:60px;background:var(--main);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,0.1);z-index:200;}
         .topbar .page-title{font-size:18px;font-weight:700;color:#fff;}
-        .topbar .top-nav-links{display:flex;gap:20px;font-size:14px;}`n        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;display:none;}
-        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;display:none;}
+        .topbar .top-nav-links{display:flex;gap:20px;font-size:14px;}
+        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;}
         .topbar .top-nav-links a:hover{color:#fff;}
         .topbar .top-nav-links a.active{color:#fff;font-weight:600;}
         .topbar .user-info{font-size:13px;color:var(--gray);}
@@ -260,11 +261,11 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         <div class="section" id="manage">
             <div class="card">
                 <div class="sub-tabs">
-                    <button class="sub-tab active" data-status="all">全部<span class="count" id="countAll">0</span>×</button>
-                    <button class="sub-tab" data-status="online">上线</span><span class="count" id="countOnline">0</span>×</button>
-                    <button class="sub-tab" data-status="pending">审核中</span><span class="count" id="countPending">0</span>×</button>
-                    <button class="sub-tab" data-status="offline">已下架</span><span class="count" id="countOffline">0</span>×</button>
-                    <button class="sub-tab" data-status="sold">已成交</span><span class="count" id="countSold">0</span>×</button>
+                    <button class="sub-tab active" data-status="all">全部<span class="count" id="countAll">0</span></button>
+                    <button class="sub-tab" data-status="online">上线<span class="count" id="countOnline">0</span></button>
+                    <button class="sub-tab" data-status="pending">审核中<span class="count" id="countPending">0</span></button>
+                    <button class="sub-tab" data-status="offline">已下架<span class="count" id="countOffline">0</span></button>
+                    <button class="sub-tab" data-status="sold">已成交<span class="count" id="countSold">0</span></button>
                 </div>
                 <table><thead><tr><th>编号</th><th>行业</th><th>细分</th><th>省份</th><th>城市</th><th>年营业额</th><th>期望价格</th><th>浏览</th><th>报价</th><th>状态</th><th>提交</th><th>操作</th></tr></thead><tbody id="projectTable"></tbody></table>
             </div>

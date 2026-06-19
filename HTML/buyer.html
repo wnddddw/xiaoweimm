@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>买家工作台｜xiaoweimm</title>
+    <link rel="stylesheet" href="css/common.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         button,input,select,textarea,.btn,a.nav-btn,[role="button"],.nav-login,.nav-btn,.menu-icon,.sidebar-toggle{min-height:44px;min-width:44px;touch-action:manipulation;}
@@ -500,7 +501,7 @@ function closeModal(id){
         return;
     }
     tbody.innerHTML = apps.map(function(a){
-        return '<tr><td>' + (a.project_id || "") + '</td><td>' + (a.status || "pending") + '</td><td>' + (a.note || "") + '</td><td>' + new Date(a.created_at).toLocaleDateString() + '</td></tr>';
+        return '<tr><td>' + (a.project_id || "") + '</td><td>' + (a.info || "") + '</td><td>' + new Date(a.created_at).toLocaleDateString() + '</td><td><span class="badge badge-' + (a.status === 'approved' ? 'ok' : a.status === 'rejected' ? 'bad' : 'warn') + '">' + (a.status === 'approved' ? '已通过' : a.status === 'rejected' ? '已拒绝' : '待审核') + '</span></td><td><button class="btn btn-sm btn-outline" onclick="viewApp(\'' + (a.id || '') + '\')">查看</button></td></tr>';
     }).join("");
 })();
 </script>
