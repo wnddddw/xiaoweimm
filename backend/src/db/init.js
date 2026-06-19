@@ -121,6 +121,7 @@ function createTables() {
     CREATE TABLE IF NOT EXISTS payment_orders (
       id TEXT PRIMARY KEY, user_id TEXT NOT NULL, channel TEXT NOT NULL,
       amount REAL NOT NULL, subject TEXT DEFAULT '',
+      business_type TEXT DEFAULT 'recharge', business_id TEXT DEFAULT '',
       status TEXT DEFAULT 'pending', out_trade_no TEXT, payment_url TEXT,
       callback_data TEXT, created_at TEXT NOT NULL, paid_at TEXT
     );
@@ -194,6 +195,8 @@ function createTables() {
     "ALTER TABLE verifications ADD COLUMN biz_type TEXT DEFAULT ''",
     "ALTER TABLE bills ADD COLUMN related_type TEXT DEFAULT ''",
     "ALTER TABLE bills ADD COLUMN related_id TEXT DEFAULT ''",
+    "ALTER TABLE payment_orders ADD COLUMN business_type TEXT DEFAULT 'recharge'",
+    "ALTER TABLE payment_orders ADD COLUMN business_id TEXT DEFAULT ''",
   ];
   migrations.forEach(sql => { try { db.run(sql); } catch(e) { /* column already exists */ } });
 
@@ -210,12 +213,12 @@ function createTables() {
       db.run(`INSERT INTO agreements (id,type,version,title,content,is_active,published_at,created_at)
         VALUES (?,?,?,?,?,1,?,?)`,
         [privacyId, 'privacy', '1.0', '隐私政策',
-         '<h2>隐私政策</h2><p>本隐私政策适用于xiaoweimm平台（以下简称"本平台"）提供的所有产品和服务。</p><h3>1. 信息收集</h3><p>我们收集您的手机号码、身份信息、企业信息等，仅用于提供并购撮合服务。</p><h3>2. 信息使用</h3><p>您的信息仅用于：实名认证、项目匹配、交易撮合、法律合规要求。</p><h3>3. 信息保护</h3><p>我们采用加密传输和存储技术保护您的数据安全。</p><h3>4. 信息共享</h3><p>未经您明确同意，我们不会向第三方共享您的个人信息，法律法规另有规定的除外。</p>',
+         '<h2>隐私政策</h2><p>本隐私政策适用于 xiaoweimm 平台提供的产品和服务。</p><h3>1. 信息收集</h3><p>我们会收集手机号、身份信息、企业信息等必要资料，用于实名认证、项目匹配和交易撮合。</p><h3>2. 信息使用</h3><p>您的信息仅用于平台服务、合规审核、交易沟通和安全风控。</p><h3>3. 信息保护</h3><p>我们采用访问控制、加密传输和必要的安全管理措施保护您的数据。</p><h3>4. 信息共享</h3><p>未经您的明确同意，我们不会向无关第三方共享个人信息，法律法规另有规定的除外。</p>',
          now, now]);
       db.run(`INSERT INTO agreements (id,type,version,title,content,is_active,published_at,created_at)
         VALUES (?,?,?,?,?,1,?,?)`,
         [termsId, 'terms', '1.0', '用户服务协议',
-         '<h2>用户服务协议</h2><p>欢迎使用xiaoweimm中小企业并购平台。</p><h3>1. 服务说明</h3><p>本平台提供中小企业股权/资产转让的信息撮合服务，不直接参与交易。</p><h3>2. 用户义务</h3><p>您应保证所提供信息的真实性、准确性和合法性。</p><h3>3. 收费规则</h3><p>买家成交佣金为成交额的2%，卖家免费发布项目。</p><h3>4. 免责声明</h3><p>本平台不对交易结果承担任何保证责任，交易风险由双方自行承担。</p>',
+         '<h2>用户服务协议</h2><p>欢迎使用 xiaoweimm 中小企业并购与转让服务平台。</p><h3>1. 服务说明</h3><p>平台提供企业转让、收购需求发布、信息展示、匹配撮合和相关增值服务，不直接参与交易定价或资金交割。</p><h3>2. 用户义务</h3><p>用户应保证所提交的信息真实、准确、完整、合法，并对自身交易决策负责。</p><h3>3. 收费规则</h3><p>卖家可免费发布项目；涉及会员、诊断、顾问或成交服务的费用以页面展示或双方确认的规则为准。</p><h3>4. 免责声明</h3><p>平台不对交易结果作出保证，交易风险由交易各方依法自行承担。</p>',
          now, now]);
     }
   } catch(e) { /* ignore seed errors on first run */ }

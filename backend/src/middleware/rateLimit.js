@@ -69,7 +69,7 @@ const loginLimiter = createRateLimit({
 
 const smsLimiter = createRateLimit({
   windowMs: 60_000,
-  max: 1,
+  max: process.env.SMS_DEV_MODE === 'true' ? 999 : 1,
   keyBy: 'ip+phone',
 });
 

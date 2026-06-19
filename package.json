@@ -5,10 +5,17 @@
   "description": "xiaoweimm M&A 企业并购平台",
   "main": "backend/src/index.js",
   "scripts": {
+<<<<<<< HEAD
     "start": "node backend/src/index.js",
     "dev": "node backend/src/index.js",
     "serve": "node serve.js",
     "test": "echo \"No tests configured yet\" && exit 0"
+=======
+    "start": "node serve.js",
+    "backend": "node backend/src/index.js",
+    "dev": "node serve.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+>>>>>>> dc52693080f9f3beafe74fddf33a1425c05bdeef
   },
   "keywords": ["m&a", "mergers", "acquisitions", "platform"],
   "author": "wnddddw",

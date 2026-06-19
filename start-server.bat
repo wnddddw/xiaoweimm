@@ -1,10 +1,13 @@
 @echo off
-title xiaoweimm Server :3001
+title xiaoweimm Server
 echo.
 echo   xiaoweimm M&A Platform
 echo   http://localhost:3001
+echo   API: http://localhost:3001/api/health
 echo.
-echo   ? Ctrl+C ??
+echo   Starting static site and backend...
 echo ==============================
-node "d:/xin/serve.js"
+call d:\xin\run-server.bat
+echo.
+echo   Services started in background.
 pause

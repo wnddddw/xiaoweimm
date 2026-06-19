@@ -25,6 +25,13 @@ function md5(str) {
   return crypto.createHash('md5').update(str, 'utf8').digest('hex').toUpperCase();
 }
 
+function safeEqual(a, b) {
+  if (!a || !b) return false;
+  const left = Buffer.from(String(a));
+  const right = Buffer.from(String(b));
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
 // ── XML Parser with size limit (prevents XML bomb attacks) ────────
 
 const XML_MAX_SIZE = 128 * 1024; // 128 KB max XML payload
@@ -142,7 +149,7 @@ function wechatVerifyCallback(xmlBody) {
   const receivedSign = data.sign;
   const computed = wechatSign(data, config.wechatApiKey);
 
-  if (receivedSign !== computed) {
+  if (!safeEqual(receivedSign, computed)) {
     console.error('[WECHAT CB] Sign mismatch');
     return null;
   }
@@ -225,19 +232,21 @@ const MAX_PAYMENT_AMOUNT = 500000; // 500K yuan per transaction
  * Create a payment order and get H5 payment URL.
  * @returns {{ success: boolean, orderId?: string, paymentUrl?: string, devPaid?: boolean, error?: string }}
  */
-async function createPaymentOrder(userId, amount, channel, ip, subject) {
+async function createPaymentOrder(userId, amount, channel, ip, subject, options = {}) {
   if (!amount || amount <= 0) return { success: false, error: 'Invalid amount' };
   if (amount > MAX_PAYMENT_AMOUNT) return { success: false, error: `单笔支付上限 ¥${MAX_PAYMENT_AMOUNT.toLocaleString()}` };
   if (!['wechat_h5', 'alipay_h5'].includes(channel)) return { success: false, error: 'Invalid channel' };
 
   const orderId = generateOrderId();
   const now = new Date().toISOString();
+  const businessType = options.businessType || 'recharge';
+  const businessId = options.businessId || '';
 
   // Insert pending order
   run(
-    `INSERT INTO payment_orders (id, user_id, channel, amount, subject, status, created_at)
-     VALUES (?,?,?,?,?,'pending',?)`,
-    [orderId, userId, channel, amount, subject || 'Recharge', now]
+    `INSERT INTO payment_orders (id, user_id, channel, amount, subject, business_type, business_id, status, created_at)
+     VALUES (?,?,?,?,?,?,?,'pending',?)`,
+    [orderId, userId, channel, amount, subject || 'Recharge', businessType, businessId, now]
   );
 
   // Call gateway
@@ -251,7 +260,7 @@ async function createPaymentOrder(userId, amount, channel, ip, subject) {
 
     if (result.devMode) {
       // Dev mode: ONLY auto-fund if explicit env var is set AND not in production
-      if (process.env.PAYMENT_DEV_AUTO_FUND === 'true' && !isProduction()) {
+      if (process.env.PAYMENT_DEV_AUTO_FUND === 'true' && !isProduction() && businessType === 'recharge') {
         const u = get('SELECT balance FROM users WHERE id = ?', [userId]);
         transaction(() => {
           run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [amount, now, userId]);
@@ -285,6 +294,63 @@ async function createPaymentOrder(userId, amount, channel, ip, subject) {
  * Verifies: signature, order existence, amount match, idempotency.
  * @returns {{ success: boolean, message?: string }}
  */
+function applyPaidOrder(order, verified, now) {
+  const businessType = order.business_type || 'recharge';
+  const businessId = order.business_id || '';
+
+  run(
+    'UPDATE payment_orders SET status = ?, paid_at = ?, callback_data = ? WHERE id = ?',
+    ['paid', now, JSON.stringify(verified.raw), order.id]
+  );
+
+  if (businessType === 'recharge') {
+    const u = get('SELECT balance FROM users WHERE id = ?', [order.user_id]);
+    if (!u) throw new Error('User not found');
+    run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [order.amount, now, order.user_id]);
+    run(
+      'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+      [uuidv4(), order.user_id, 'recharge', order.amount, u.balance, u.balance + order.amount, order.channel, 'completed', 'order', order.id, now]
+    );
+    return;
+  }
+
+  if (businessType === 'commission') {
+    const bill = get(
+      "SELECT id,status FROM bills WHERE user_id=? AND type='commission' AND related_type='deal' AND related_id=? ORDER BY created_at DESC LIMIT 1",
+      [order.user_id, businessId]
+    );
+    if (!bill) throw new Error('Commission bill not found');
+    if (bill.status !== 'paid') {
+      run('UPDATE bills SET status=?,pay_time=? WHERE id=?', ['paid', now, bill.id]);
+    }
+    run(
+      'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+      [uuidv4(), order.user_id, 'commission', order.amount, null, null, order.channel, 'completed', 'deal', businessId, now]
+    );
+    return;
+  }
+
+  if (businessType === 'diagnostic') {
+    run('UPDATE diagnostic_orders SET status=?, paid_at=? WHERE id=? AND user_id=?', ['paid', now, businessId, order.user_id]);
+    run(
+      'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+      [uuidv4(), order.user_id, 'diagnostic', order.amount, null, null, order.channel, 'completed', 'diagnostic', businessId, now]
+    );
+    return;
+  }
+
+  if (businessType === 'expert_service') {
+    run('UPDATE expert_services SET status=?, paid_at=? WHERE id=? AND user_id=?', ['paid', now, businessId, order.user_id]);
+    run(
+      'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+      [uuidv4(), order.user_id, 'expert_service', order.amount, null, null, order.channel, 'completed', 'expert_service', businessId, now]
+    );
+    return;
+  }
+
+  throw new Error('Unsupported business type: ' + businessType);
+}
+
 function processPaymentCallback(channel, rawData) {
   let verified;
 
@@ -325,21 +391,7 @@ function processPaymentCallback(channel, rawData) {
   // Use transaction for atomic balance update
   try {
     transaction(() => {
-      // Update order
-      run(
-        'UPDATE payment_orders SET status = ?, paid_at = ?, callback_data = ? WHERE id = ?',
-        ['paid', now, JSON.stringify(verified.raw), order.id]
-      );
-
-      // Update user balance atomically
-      const u = get('SELECT balance FROM users WHERE id = ?', [order.user_id]);
-      if (u) {
-        run('UPDATE users SET balance = balance + ?, updated_at = ? WHERE id = ?', [order.amount, now, order.user_id]);
-        run(
-          'INSERT INTO payments (id, user_id, type, amount, balance_before, balance_after, pay_method, status, related_type, related_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-          [uuidv4(), order.user_id, 'recharge', order.amount, u.balance, u.balance + order.amount, order.channel, 'completed', 'order', order.id, now]
-        );
-      }
+      applyPaidOrder(order, verified, now);
     });
 
     if (!isProduction()) console.log(`[PAY CB] Order ${order.id} paid via ${channel}, ¥${order.amount}`);
