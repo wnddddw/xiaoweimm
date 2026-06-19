@@ -313,3 +313,189 @@ XW.Auth.initPage();
 <script>
 XW.Auth.requireRole(['seller', 'buyer', 'admin'], 'payment.html');
 </script>
+<script>
+var token = XW.Auth.getToken();
+var _rechargeValue = 300;
+var _rechargeChannel = 'wechat';
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  var btn = document.querySelector('[data-tab="' + tab + '"]');
+  if (btn) btn.classList.add('active');
+  var panel = document.getElementById(tab);
+  if (panel) panel.classList.add('active');
+  if (tab === 'history') loadHistory();
+  if (tab === 'bills') loadBills();
+}
+
+function doRecharge() {
+  var amount = _rechargeValue;
+  var channel = _rechargeChannel;
+  if (!amount || amount <= 0) { alert('请输入有效的充值金额'); return; }
+
+  fetch('/api/payments/order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ amount: amount, channel: channel, subject: '账户充值' })
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        if (d.data.payment_url) {
+          window.open(d.data.payment_url, '_blank');
+        }
+        if (d.data.dev_paid) {
+          alert('充值成功！（开发模式自动到账）');
+          loadBalance();
+        } else {
+          alert('请在新窗口中完成支付');
+        }
+      } else {
+        alert('创建订单失败：' + ((d && d.error) || '未知错误'));
+      }
+    });
+}
+
+function setDefault(el, name) {
+  alert(name + ' 已设为默认支付方式（演示）');
+}
+
+function removeMethod(el) {
+  if (confirm('确定移除此支付方式？')) {
+    var item = el.closest('.saved-card');
+    if (item) item.remove();
+  }
+}
+
+function loadBalance() {
+  fetch('/api/payments/balance', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        var bal = document.getElementById('balanceDisplay');
+        if (bal) bal.textContent = d.data.balance.toFixed(2);
+      }
+    });
+}
+
+function loadHistory() {
+  fetch('/api/payments/history', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        var tbody = document.getElementById('historyTable');
+        if (tbody) {
+          tbody.innerHTML = d.data.map(function(p) {
+            return '<tr><td>' + p.id + '</td><td>' + p.type + '</td><td>¥' + p.amount + '</td><td>' + p.pay_method + '</td><td>' + new Date(p.created_at).toLocaleString() + '</td></tr>';
+          }).join('');
+        }
+      }
+    });
+}
+
+function loadBills() {
+  fetch('/api/payments/bills', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        var tbody = document.getElementById('billTable');
+        if (tbody) {
+          tbody.innerHTML = d.data.map(function(b) {
+            return '<tr><td>' + b.id + '</td><td>' + b.item + '</td><td>¥' + b.amount + '</td><td><span class="badge badge-' + (b.status === 'paid' ? 'ok' : 'warn') + '">' + b.status + '</span></td><td>' + new Date(b.created_at).toLocaleString() + '</td></tr>';
+          }).join('');
+        }
+      }
+    });
+}
+
+function filterBills() {
+  var typeEl = document.getElementById('billType');
+  var statusEl = document.getElementById('billStatus');
+  var typeVal = typeEl ? typeEl.value.toLowerCase() : '';
+  var statusVal = statusEl ? statusEl.value.toLowerCase() : '';
+  var rows = document.querySelectorAll('#billTable tr');
+  rows.forEach(function(row) {
+    var text = row.textContent.toLowerCase();
+    var show = true;
+    if (typeVal && text.indexOf(typeVal) === -1) show = false;
+    if (statusVal && text.indexOf(statusVal) === -1) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+
+function openAddCard(type) {
+  var modal = document.getElementById('addCardModal');
+  if (modal) modal.classList.add('show');
+}
+
+function confirmAddCard() {
+  alert('支付方式添加成功（演示）');
+  closeModal('addCardModal');
+}
+
+function closeModal(name) {
+  var modal = document.getElementById(name);
+  if (modal) modal.classList.remove('show');
+}
+
+function selectAmount(el, val) {
+  document.querySelectorAll('#amountGrid .amount-item').forEach(function(item) { item.classList.remove('selected'); });
+  el.classList.add('selected');
+  var customRow = document.getElementById('customRow');
+  if (val === 'custom') {
+    if (customRow) customRow.style.display = 'flex';
+    _rechargeValue = 0;
+    var customInput = document.getElementById('customAmount');
+    if (customInput) customInput.focus();
+  } else {
+    if (customRow) customRow.style.display = 'none';
+    _rechargeValue = parseFloat(val);
+    var display = document.getElementById('rechargeAmount');
+    if (display) display.textContent = '¥' + _rechargeValue.toFixed(2);
+  }
+}
+
+function selectPayMethod(el, channel) {
+  document.querySelectorAll('#recharge .pay-method').forEach(function(m) { m.classList.remove('selected'); });
+  el.classList.add('selected');
+  _rechargeChannel = channel;
+}
+
+function onCustomAmountChange() {
+  var input = document.getElementById('customAmount');
+  if (input) {
+    _rechargeValue = parseFloat(input.value) || 0;
+    var display = document.getElementById('rechargeAmount');
+    if (display) display.textContent = '¥' + _rechargeValue.toFixed(2);
+  }
+}
+
+(function() {
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      switchTab(btn.getAttribute('data-tab'));
+    });
+  });
+  document.querySelectorAll('#amountGrid .amount-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      selectAmount(item, item.getAttribute('data-amount'));
+    });
+  });
+  document.querySelectorAll('#recharge .pay-method').forEach(function(m) {
+    m.addEventListener('click', function() {
+      selectPayMethod(m, m.getAttribute('data-pay'));
+    });
+  });
+  var customInput = document.getElementById('customAmount');
+  if (customInput) {
+    customInput.addEventListener('input', onCustomAmountChange);
+  }
+})();
+
+loadBalance();
+</script>
+</body>
+</html>

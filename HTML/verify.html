@@ -258,3 +258,126 @@ XW.Auth.initPage();
 <script>
 XW.Auth.requireRole(['seller', 'buyer', 'admin'], 'verify.html');
 </script>
+<script>
+var token = XW.Auth.getToken();
+
+var currentType = 'personal';
+
+// Update progress steps UI
+function updateSteps(step) {
+  var steps = document.querySelectorAll('#progressSteps .step');
+  var lines = document.querySelectorAll('#progressSteps .step-line');
+  steps.forEach(function(s, i) {
+    s.classList.remove('active', 'done');
+    if (i + 1 < step) s.classList.add('done');
+    if (i + 1 === step) s.classList.add('active');
+  });
+  lines.forEach(function(l, i) {
+    if (i + 1 < step) { l.classList.add('done'); } else { l.classList.remove('done'); }
+  });
+}
+
+// Select verification type (personal/company)
+function selectType(type) {
+  currentType = type;
+  // Toggle visibility of personal vs company fields
+  document.getElementById('personalFields').style.display = type === 'personal' ? 'block' : 'none';
+  document.getElementById('companyFields').style.display = type === 'company' ? 'block' : 'none';
+  // Update form title
+  var title = document.getElementById('formTitle');
+  if (title) title.textContent = type === 'personal' ? '个人认证信息' : '法人认证信息';
+  // Show step 2
+  document.getElementById('step2').style.display = 'block';
+  // Update active state on type cards
+  document.querySelectorAll('.type-card').forEach(function(card) {
+    if (card.getAttribute('data-type') === type) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
+    }
+  });
+  // Update progress
+  updateSteps(2);
+}
+
+// Handle file selection — show filename and image preview
+function handleFile(input, boxId, nameId, previewId) {
+  var file = input.files[0];
+  if (!file) return;
+  // Update upload box styling
+  var box = document.getElementById(boxId);
+  if (box) box.classList.add('has-file');
+  // Show filename
+  var nameEl = document.getElementById(nameId);
+  if (nameEl) { nameEl.textContent = file.name; nameEl.style.display = 'block'; }
+  // Show preview if image
+  if (file.type.startsWith('image/')) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById(previewId);
+      if (preview) { preview.src = e.target.result; preview.style.display = 'block'; }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Submit verification
+function submitVerify() {
+  var formData = new FormData();
+  formData.append('type', currentType);
+
+  if (currentType === 'personal') {
+    formData.append('name', document.getElementById('pName').value.trim());
+    formData.append('phone', document.getElementById('pPhone').value.trim());
+    formData.append('address', document.getElementById('pAddress').value.trim());
+    var idFile = document.getElementById('idCardInput').files[0];
+    if (idFile) formData.append('id_card', idFile);
+  } else {
+    formData.append('company', document.getElementById('cCompany').value.trim());
+    formData.append('legal_person', document.getElementById('cLegalPerson').value.trim());
+    formData.append('phone', document.getElementById('cPhone').value.trim());
+    formData.append('biz_type', document.getElementById('cBizType').value);
+    formData.append('address', document.getElementById('cAddress').value.trim());
+    formData.append('description', document.getElementById('cDescription').value.trim());
+    var licenseFile = document.getElementById('licenseInput').files[0];
+    if (licenseFile) formData.append('license', licenseFile);
+  }
+
+  // Disable submit button while in flight
+  var btn = document.getElementById('btnSubmit');
+  if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
+
+  fetch('/api/verify/submit', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        // Show step 3 result
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'block';
+        updateSteps(3);
+        alert('认证提交成功！请等待审核。');
+      } else {
+        alert('提交失败：' + ((d && d.error) || '未知错误'));
+        if (btn) { btn.disabled = false; btn.textContent = '提交审核'; }
+      }
+    })
+    .catch(function(err) {
+      alert('请求失败：' + err.message);
+      if (btn) { btn.disabled = false; btn.textContent = '提交审核'; }
+    });
+}
+
+// Character counter for company description
+var descEl = document.getElementById('cDescription');
+var countEl = document.getElementById('descCount');
+if (descEl && countEl) {
+  descEl.addEventListener('input', function() {
+    countEl.textContent = descEl.value.length;
+  });
+}
+</script>
+</body>
+</html>

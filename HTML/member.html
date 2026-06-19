@@ -374,3 +374,116 @@ XW.Auth.initPage();
 XW.Auth.requireRole(['seller', 'buyer', 'admin'], 'member.html');
 </script>
 <script src="js/menu.js"></script>
+<script>
+var token = XW.Auth.getToken();
+
+// Open diagnosis modal (seller paid plan)
+function openPayDiag() {
+  var modal = document.getElementById('diagModal');
+  if (modal) modal.classList.add('show');
+}
+
+// Upgrade to a plan - opens upgrade modal
+function openUpgrade(plan) {
+  var modal = document.getElementById('upgradeModal');
+  if (!modal) return;
+  // Store selected plan on the modal
+  modal.setAttribute('data-plan', plan);
+  // Update modal title
+  var title = document.getElementById('upgradeTitle');
+  if (title) {
+    var names = { personal: '个人会员', company: '企业会员', vip: '企业高级会员' };
+    title.textContent = '开通' + (names[plan] || plan) + '会员';
+  }
+  // Update modal info
+  var info = document.getElementById('upgradeInfo');
+  if (info) {
+    var prices = { personal: '¥300/月', company: '¥600/月', vip: '¥1800/月' };
+    info.innerHTML = '<p>方案：' + (names[plan] || plan) + '</p><p>价格：' + (prices[plan] || '') + '</p>';
+  }
+  modal.classList.add('show');
+}
+
+// Confirm upgrade payment
+function confirmUpgrade() {
+  var modal = document.getElementById('upgradeModal');
+  var plan = modal ? modal.getAttribute('data-plan') : '';
+  var payEl = document.querySelector('#upgradeModal .pay-method.selected');
+  var payMethod = payEl ? payEl.getAttribute('data-pay') : 'wechat';
+
+  fetch('/api/memberships/upgrade', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ plan: plan, pay_method: payMethod })
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        closeModal('upgradeModal');
+        alert('升级成功！');
+        location.reload();
+      } else {
+        alert('升级失败：' + ((d && d.error) || '余额不足'));
+      }
+    })
+    .catch(function(err) {
+      alert('请求失败：' + err.message);
+    });
+}
+
+// Confirm diagnosis submission
+function confirmDiagnosis() {
+  fetch('/api/memberships/diagnosis', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ service: 'diagnosis' })
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        closeModal('diagModal');
+        alert('诊断申请已提交！专属顾问将在2个工作日内与您联系。');
+      } else {
+        alert('提交失败：' + ((d && d.error) || '请稍后重试'));
+      }
+    })
+    .catch(function(err) {
+      alert('请求失败：' + err.message);
+    });
+}
+
+// Toggle auto-renew
+function toggleAutoRenew() {
+  var checked = document.getElementById('autoRenewToggle') ? document.getElementById('autoRenewToggle').checked : false;
+  fetch('/api/memberships/auto-renew', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ auto_renew: checked })
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success) {
+        alert(checked ? '已开启自动续费' : '已关闭自动续费');
+      }
+    });
+}
+
+// Close modal — receives the full modal ID
+function closeModal(name) {
+  var modal = document.getElementById(name);
+  if (modal) modal.classList.remove('show');
+}
+
+// Scroll to plans section
+function scrollToPlans() {
+  var plans = document.getElementById('plansSection');
+  if (plans) plans.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Pay method selection inside upgrade modal
+document.querySelectorAll('#upgradeModal .pay-method').forEach(function(el) {
+  el.addEventListener('click', function() {
+    document.querySelectorAll('#upgradeModal .pay-method').forEach(function(m) { m.classList.remove('selected'); });
+    el.classList.add('selected');
+  });
+});
+</script>
+</body>
+</html>

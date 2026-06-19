@@ -132,3 +132,219 @@ XW.Auth.initPage();
 XW.Auth.requireRole(['seller', 'buyer', 'admin'], 'messages.html');
 </script>
 <script src="js/menu.js"></script>
+<script>
+(function() {
+  var token = XW.Auth.getToken();
+  var currentCategory = 'all';
+  var messagesData = [];
+  var selectedMsgId = null;
+
+  // Toast notification
+  function showToast(msg, type) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.className = 'toast ' + (type || '') + ' show';
+    setTimeout(function() { toast.className = 'toast'; }, 2000);
+  }
+
+  // Render messages to the DOM
+  function renderMessages(messages) {
+    messagesData = messages || [];
+    var list = document.getElementById('msgList');
+    if (!list) return;
+
+    if (!messagesData.length) {
+      list.innerHTML = '<div class="empty-state">暂无消息</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < messagesData.length; i++) {
+      var m = messagesData[i];
+      var unreadClass = m.isRead ? '' : ' unread';
+      var avatarColor = m.avatarColor || '#1a44aa';
+      var avatarText = (m.senderName || m.category || '系').charAt(0);
+      var timeStr = m.createdAt ? new Date(m.createdAt).toLocaleDateString('zh-CN') : '';
+      var subject = m.subject || m.title || '(无主题)';
+      var preview = m.preview || m.content || '';
+
+      html += '<div class="msg-item' + unreadClass + '" data-id="' + m.id + '" onclick="window._selectMessage(' + m.id + ')">';
+      html += '<div class="avatar" style="background:' + avatarColor + '">' + avatarText + '</div>';
+      html += '<div class="content"><div class="subject">' + subject + '</div><div class="preview">' + preview + '</div></div>';
+      html += '<div class="meta"><div class="time">' + timeStr + '</div><div class="dot"></div></div>';
+      html += '</div>';
+    }
+    list.innerHTML = html;
+
+    if (selectedMsgId !== null) {
+      window._selectMessage(selectedMsgId);
+    }
+  }
+
+  // Select a message and show detail panel
+  window._selectMessage = function(id) {
+    selectedMsgId = id;
+
+    var items = document.querySelectorAll('.msg-item');
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].getAttribute('data-id') == id) {
+        items[i].classList.add('selected');
+      } else {
+        items[i].classList.remove('selected');
+      }
+    }
+
+    var detail = document.getElementById('msgDetail');
+    if (!detail) return;
+
+    if (id === null) {
+      detail.style.display = 'none';
+      return;
+    }
+
+    var msg = null;
+    for (var j = 0; j < messagesData.length; j++) {
+      if (messagesData[j].id == id) { msg = messagesData[j]; break; }
+    }
+    if (!msg) {
+      detail.style.display = 'none';
+      return;
+    }
+
+    var sender = msg.senderName || '系统';
+    var time = msg.createdAt ? new Date(msg.createdAt).toLocaleString('zh-CN') : '';
+    var body = msg.content || msg.body || '';
+    var title = msg.subject || msg.title || '';
+
+    detail.style.display = 'block';
+    detail.innerHTML =
+      '<h3>' + title + '</h3>' +
+      '<div class="meta-row"><span>发件人：' + sender + '</span><span>' + time + '</span></div>' +
+      '<div class="body">' + body + '</div>' +
+      '<div class="actions"><button class="btn btn-outline btn-sm" onclick="window._selectMessage(null)">关闭</button></div>';
+  };
+
+  // Load messages from API
+  function loadMessages(category) {
+    currentCategory = category || 'all';
+    var url = '/api/messages';
+    if (currentCategory && currentCategory !== 'all') {
+      url += '?category=' + encodeURIComponent(currentCategory);
+    }
+
+    fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.success) {
+          renderMessages(d.data);
+        }
+      })
+      .catch(function(err) {
+        console.error('Load messages failed:', err);
+        document.getElementById('msgList').innerHTML = '<div class="empty-state">加载失败，请稍后重试</div>';
+      });
+  }
+
+  // Mark all messages as read (global for onclick handler)
+  window.markAllRead = function() {
+    var btn = document.querySelector('.msg-toolbar .btn-outline');
+    var originalText = btn ? btn.textContent : '全部已读';
+    if (btn) { btn.disabled = true; btn.textContent = '处理中...'; }
+
+    fetch('/api/messages/read-all', {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.success) {
+          loadMessages(currentCategory);
+          loadUnreadCount();
+          showToast('已全部标为已读', 'success');
+        }
+      })
+      .catch(function(err) {
+        console.error('Mark all read failed:', err);
+        showToast('操作失败，请稍后重试');
+      })
+      .finally(function() {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      });
+  };
+
+  // Load unread count
+  function loadUnreadCount() {
+    fetch('/api/messages/unread-count', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.success && d.data) {
+          updateSidebarCounts(d.data);
+        }
+      })
+      .catch(function(err) {
+        console.error('Load unread count failed:', err);
+      });
+  }
+
+  // Update sidebar category count badges
+  function updateSidebarCounts(counts) {
+    updateCountEl('countAll', counts.total || 0);
+    updateCountEl('countProject', counts.project || 0);
+    updateCountEl('countIntent', counts.intent || 0);
+    updateCountEl('countNda', counts.nda || 0);
+    updateCountEl('countAdvisor', counts.advisor || 0);
+    updateCountEl('countSystem', counts.system || 0);
+  }
+
+  function updateCountEl(id, count) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = count;
+    if (count > 0) {
+      el.classList.add('has-unread');
+    } else {
+      el.classList.remove('has-unread');
+    }
+  }
+
+  // Sidebar category click handlers
+  var categoryLabels = {
+    all: '全部消息',
+    project: '项目通知',
+    intent: '意向消息',
+    nda: '保密协议',
+    advisor: '顾问消息',
+    system: '系统通知'
+  };
+
+  var cats = document.querySelectorAll('.msg-cat');
+  for (var i = 0; i < cats.length; i++) {
+    cats[i].addEventListener('click', function() {
+      var cat = this.getAttribute('data-cat');
+
+      for (var j = 0; j < cats.length; j++) {
+        cats[j].classList.remove('active');
+      }
+      this.classList.add('active');
+
+      var title = document.getElementById('toolbarTitle');
+      if (title) {
+        title.textContent = categoryLabels[cat] || cat;
+      }
+
+      selectedMsgId = null;
+      var detail = document.getElementById('msgDetail');
+      if (detail) detail.style.display = 'none';
+
+      loadMessages(cat);
+    });
+  }
+
+  // Initial load
+  loadMessages('all');
+  loadUnreadCount();
+})();
+</script>

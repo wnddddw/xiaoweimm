@@ -213,6 +213,56 @@ XW.Auth.initPage();
 
 <script src="js/menu.js"></script>
 
+<script>
+(function() {
+  var submitBtn = document.querySelector('.submit-btn');
+  if (!submitBtn) return;
+
+  submitBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    var nameInput = document.querySelector('.form-box input[type="text"]');
+    var phoneInput = document.querySelector('.form-box input[type="tel"]');
+    var messageTextarea = document.querySelector('.form-box textarea');
+
+    var name = nameInput ? nameInput.value.trim() : '';
+    var phone = phoneInput ? phoneInput.value.trim() : '';
+    var message = messageTextarea ? messageTextarea.value.trim() : '';
+
+    // Validate name (required)
+    if (!name) {
+      alert('请输入您的姓名');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+
+    // Validate phone (required, valid Chinese phone number)
+    if (!phone) {
+      alert('请输入联系电话号码');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
+      alert('请输入有效的手机号码');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+
+    // Validate message (at least 10 characters)
+    if (message.length < 10) {
+      alert('咨询内容至少需要10个字符');
+      if (messageTextarea) messageTextarea.focus();
+      return;
+    }
+
+    // Success
+    alert('提交成功，我们会尽快与您联系！');
+    var form = document.querySelector('.form-box form');
+    if (form) form.reset();
+  });
+})();
+</script>
+
 </body>
 </html>
 
