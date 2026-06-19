@@ -484,7 +484,7 @@ function addAssetRow(bodyId){
         '<td><input type="text" name="year" placeholder="2023" style="width:60px;"></td>' +
         '<td><input type="number" name="value" min="0" placeholder="0" style="width:70px;"></td>' +
         '<td class="img-cell"><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload">上传</button><input type="hidden" name="imageUrl" value=""></td>' +
-        '<td><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">×</button></td>';
+        '<td><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">删除</button></td>';
     body.appendChild(tr);
 }
 
@@ -584,7 +584,7 @@ uploadAssetImage.openPicker = function(btn, token){
                     var url = data.data.url;
                     td.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener">' +
                         '<img src="' + url + '" alt="资产图片" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #ddd;vertical-align:middle;"></a>' +
-                        '<button type="button" class="btn btn-sm btn-red" data-asset-action="clearImg" style="margin-left:4px;padding:1px 6px;font-size:11px;line-height:1;">×</button>' +
+                        '<button type="button" class="btn btn-sm btn-red" data-asset-action="clearImg">清除</button>' +
                         '<input type="hidden" name="imageUrl" value="' + url + '">';
                 } else {
                     btn.textContent = origText;
