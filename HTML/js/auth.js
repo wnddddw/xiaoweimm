@@ -100,6 +100,30 @@
 
   // ── Login / Register (server-side) ─────────────────────────────────
 
+  // ── Password login (server-side) ───────────────────────────────────
+
+  function passwordLogin(phone, password, onSuccess, onError) {
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: phone, password: password })
+    }).then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.success && d.data && d.data.token) {
+          var u = d.data;
+          setToken(u.token, u);
+          updateNavUser(u.phone, u.name);
+          if (onSuccess) onSuccess(u);
+        } else {
+          alert('登录失败：' + ((d && d.error) || '密码错误'));
+          if (onError) onError();
+        }
+      }).catch(function(e) {
+        alert('网络错误：' + (e.message || '无法连接服务器'));
+        if (onError) onError();
+      });
+  }
+
   function login(phone, code, onSuccess, onError) {
     fetch('/api/auth/login-sms', {
       method: 'POST',
@@ -314,28 +338,97 @@
       startCountdown(rSms);
     });
 
+    // ── Password login toggle ──────────────────────────────────────
+    var loginMode = 'sms'; // 'sms' | 'password'
+    var codeGroup = document.getElementById('loginCode');
+    var smsBtn = document.getElementById('loginSmsBtn');
+    var pwdGroup = null;
+    var pwdInput = null;
+
+    // Inject password field into login form
+    if (loginForm && codeGroup) {
+      var codeParent = codeGroup.parentNode; // .sms-row or .form-group
+      if (codeParent && codeParent.classList.contains('sms-row')) {
+        codeParent = codeParent.parentNode; // .form-group
+      }
+      pwdGroup = document.createElement('div');
+      pwdGroup.className = 'form-group';
+      pwdGroup.style.display = 'none';
+      pwdGroup.innerHTML = '<label>密码</label><input type="password" id="loginPassword" placeholder="请输入登录密码" style="width:100%;padding:12px 14px;border:1px solid #bbb;border-radius:6px;font-size:15px;outline:none;">';
+      if (codeParent && codeParent.parentNode) {
+        codeParent.parentNode.insertBefore(pwdGroup, codeParent.nextSibling);
+      }
+      pwdInput = document.getElementById('loginPassword');
+
+      // Add toggle link
+      var toggleLink = document.createElement('a');
+      toggleLink.id = 'togglePwdLogin';
+      toggleLink.style.cssText = 'display:block;text-align:right;font-size:12px;color:var(--main);cursor:pointer;margin-top:-8px;margin-bottom:8px;';
+      toggleLink.textContent = '密码登录';
+      if (smsBtn) {
+        smsBtn.parentNode.parentNode.appendChild(toggleLink);
+      } else if (codeGroup.parentNode) {
+        codeGroup.parentNode.appendChild(toggleLink);
+      }
+
+      toggleLink.addEventListener('click', function() {
+        if (loginMode === 'sms') {
+          loginMode = 'password';
+          if (codeGroup) codeGroup.parentNode.style.display = 'none';
+          if (smsBtn) smsBtn.style.display = 'none';
+          if (pwdGroup) pwdGroup.style.display = 'block';
+          toggleLink.textContent = '短信登录';
+        } else {
+          loginMode = 'sms';
+          if (codeGroup) codeGroup.parentNode.style.display = '';
+          if (smsBtn) smsBtn.style.display = '';
+          if (pwdGroup) pwdGroup.style.display = 'none';
+          toggleLink.textContent = '密码登录';
+        }
+      });
+    }
+
     // Login submit
     var lSub = document.getElementById('loginSubmit');
     if (lSub) lSub.addEventListener('click', function() {
       var phoneEl = document.getElementById('loginPhone');
-      var codeEl = document.getElementById('loginCode');
-      if (!phoneEl || !codeEl) return;
+      if (!phoneEl) return;
       var phone = phoneEl.value.trim();
-      var code = codeEl.value.trim();
       if (!isValidPhone(phone)) { alert('请输入有效的手机号'); return; }
-      if (!code) { alert('请先获取验证码'); return; }
+
       var origText = lSub.textContent;
       lSub.disabled = true; lSub.textContent = '登录中…';
-      login(phone, code, function(u) {
-        if (overlay) overlay.classList.remove('show');
-        var target = getTargetAfterAuth();
-        if (!target) {
-          target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
-        }
-        setTimeout(function() { window.location.href = target; }, 400);
-      }, function() {
-        lSub.disabled = false; lSub.textContent = origText;
-      });
+
+      if (loginMode === 'password') {
+        // Password login
+        var pwd = pwdInput ? pwdInput.value : '';
+        if (!pwd) { alert('请输入密码'); lSub.disabled = false; lSub.textContent = origText; return; }
+        passwordLogin(phone, pwd, function(u) {
+          if (overlay) overlay.classList.remove('show');
+          var target = getTargetAfterAuth();
+          if (!target) {
+            target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
+          }
+          setTimeout(function() { window.location.href = target; }, 400);
+        }, function() {
+          lSub.disabled = false; lSub.textContent = origText;
+        });
+      } else {
+        // SMS login
+        var codeEl = document.getElementById('loginCode');
+        var code = codeEl ? codeEl.value.trim() : '';
+        if (!code) { alert('请先获取验证码'); lSub.disabled = false; lSub.textContent = origText; return; }
+        login(phone, code, function(u) {
+          if (overlay) overlay.classList.remove('show');
+          var target = getTargetAfterAuth();
+          if (!target) {
+            target = u.role === 'admin' ? 'admin.html' : u.role === 'seller' ? 'seller.html' : u.role === 'buyer' ? 'buyer.html' : 'member.html';
+          }
+          setTimeout(function() { window.location.href = target; }, 400);
+        }, function() {
+          lSub.disabled = false; lSub.textContent = origText;
+        });
+      }
     });
 
     // Register submit
@@ -396,6 +489,7 @@
       startCountdown: startCountdown,
       requestSmsCode: requestSmsCode,
       login: login,
+      passwordLogin: passwordLogin,
       register: register,
       logout: logout,
       updateNavUser: updateNavUser,
