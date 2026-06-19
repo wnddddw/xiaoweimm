@@ -108,6 +108,10 @@ img, video, iframe { max-width: 100%; height: auto; }
   border-left: none; border-right: none;
 }
 .modal-tab.active { color: var(--main); border-bottom-color: var(--main); }
+@media (max-width: 480px) {
+  .modal-tab { font-size: 14px; padding: 10px 4px; }
+  .modal-tabs { margin-bottom: 20px; }
+}
 .form-group { margin-bottom: 18px; }
 .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #333; }
 .form-group label .required { color: var(--red); }
