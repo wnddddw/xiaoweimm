@@ -236,11 +236,11 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
                 </div>
                 <div class="card"><h3>资产清单</h3>
                     <h4>设备清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="equipTable"><thead><tr><th style="width:30px;">#</th><th>设备名称</th><th>型号/规格</th><th style="width:64px;">数量</th><th style="width:72px;">年份</th><th style="width:80px;">价格(万</th><th style="width:52px;">图片</th><th style="width:40px;"></th></tr></thead><tbody id="equipBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('equip')" style="margin-top:6px;">+ 添加设备</button></div>
+                    <div class="asset-table-wrap"><table class="asset-table" id="equipTable"><thead><tr><th style="width:30px;">#</th><th>设备名称</th><th style="width:80px;">型号/规格</th><th style="width:64px;">数量</th><th style="width:72px;">年份</th><th style="width:80px;">价格(万</th><th style="width:120px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="equipBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('equip')" style="margin-top:6px;">+ 添加设备</button></div>
                     <h4>原材料清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="materialTable"><thead><tr><th style="width:30px;">#</th><th>原料名称</th><th>规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">价格(万</th><th style="width:52px;">图片</th><th style="width:40px;"></th></tr></thead><tbody id="materialBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('material')" style="margin-top:6px;">+ 添加原料</button></div>
+                    <div class="asset-table-wrap"><table class="asset-table" id="materialTable"><thead><tr><th style="width:30px;">#</th><th>原料名称</th><th style="width:80px;">规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">价格(万</th><th style="width:120px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="materialBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('material')" style="margin-top:6px;">+ 添加原料</button></div>
                     <h4>成品库存清单</h4>
-                    <div class="asset-table-wrap"><table class="asset-table" id="stockTable"><thead><tr><th style="width:30px;">#</th><th>产品名称</th><th>规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">单价(万</th><th style="width:52px;">图片</th><th style="width:40px;"></th></tr></thead><tbody id="stockBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('stock')" style="margin-top:6px;">+ 添加库存</button></div>
+                    <div class="asset-table-wrap"><table class="asset-table" id="stockTable"><thead><tr><th style="width:30px;">#</th><th>产品名称</th><th style="width:80px;">规格</th><th style="width:72px;">库存量</th><th style="width:60px;">单位</th><th style="width:80px;">单价(万</th><th style="width:120px;">图片</th><th style="width:50px;"></th></tr></thead><tbody id="stockBody"></tbody></table><button class="btn btn-sm btn-outline" type="button" onclick="addAssetRow('stock')" style="margin-top:6px;">+ 添加库存</button></div>
                 </div>
                 <div class="card"><h3>项目描述</h3>
                     <div class="form-group"><label><span class="req">*</span> 项目简介</label><textarea id="description" placeholder="请简要描述项目情况、优势特点、客户群体、发展前景等" rows="5" required></textarea><div class="hint"><span id="descLen">0</span> 字</div></div>
@@ -483,9 +483,24 @@ function addAssetRow(bodyId){
         '<td><input type="number" name="qty" min="1" value="1" style="width:50px;"></td>' +
         '<td><input type="text" name="year" placeholder="2023" style="width:60px;"></td>' +
         '<td><input type="number" name="value" min="0" placeholder="0" style="width:70px;"></td>' +
-        '<td class="img-cell"><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload">上传</button><input type="hidden" name="imageUrl" value=""></td>' +
+        '<td class="img-cell"><div class="img-thumbs" style="display:flex;flex-wrap:wrap;gap:4px;"></div><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload" style="margin-top:4px;">上传</button><input type="hidden" name="imageUrl" value="[]"></td>' +
         '<td><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">删除</button></td>';
     body.appendChild(tr);
+}
+
+// 渲染缩略图
+function renderThumbs(container, images) {
+    if (!container) return;
+    var html = '';
+    for (var i = 0; i < images.length; i++) {
+        html += '<div style="position:relative;display:inline-block;">' +
+            '<a href="' + images[i] + '" target="_blank" rel="noopener">' +
+            '<img src="' + images[i] + '" alt="图片' + (i+1) + '" style="width:44px;height:44px;object-fit:cover;border-radius:4px;border:1px solid #ddd;display:block;">' +
+            '</a>' +
+            '<button type="button" class="btn btn-sm btn-red" data-asset-action="delImg" data-img-idx="' + i + '" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;padding:0;font-size:10px;line-height:1;border-radius:50%;min-width:18px;min-height:18px;">×</button>' +
+            '</div>';
+    }
+    container.innerHTML = html;
 }
 
 // 资产行事件委托：删除 / 上传 / 清除图片
@@ -503,7 +518,20 @@ function addAssetRow(bodyId){
             uploadAssetImage(btn);
         } else if(action === "clearImg"){
             var td = btn.parentNode;
-            td.innerHTML = '<button type="button" class="btn btn-sm btn-outline" data-asset-action="upload">上传</button><input type="hidden" name="imageUrl" value="">';
+            var hidden = td.querySelector('input[name="imageUrl"]');
+            var thumbs = td.querySelector('.img-thumbs');
+            if (hidden) hidden.value = '[]';
+            if (thumbs) thumbs.innerHTML = '';
+        } else if(action === "delImg"){
+            var idx = parseInt(btn.getAttribute('data-img-idx'));
+            var td = btn.closest('td');
+            var hidden = td.querySelector('input[name="imageUrl"]');
+            var thumbs = td.querySelector('.img-thumbs');
+            var images = [];
+            try { images = JSON.parse(hidden.value || '[]'); } catch(e) { images = []; }
+            if (idx >= 0 && idx < images.length) { images.splice(idx, 1); }
+            hidden.value = JSON.stringify(images);
+            if (thumbs) { renderThumbs(thumbs, images); }
         }
     });
 });
@@ -582,10 +610,19 @@ uploadAssetImage.openPicker = function(btn, token){
                 var data = JSON.parse(xhr.responseText);
                 if(xhr.status === 200 && data.success && data.data && data.data.url){
                     var url = data.data.url;
-                    td.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener">' +
-                        '<img src="' + url + '" alt="资产图片" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #ddd;vertical-align:middle;"></a>' +
-                        '<button type="button" class="btn btn-sm btn-red" data-asset-action="clearImg">清除</button>' +
-                        '<input type="hidden" name="imageUrl" value="' + url + '">';
+                    var td = btn.parentNode;
+                    var hidden = td.querySelector('input[name="imageUrl"]');
+                    var thumbs = td.querySelector('.img-thumbs');
+                    // Parse existing images
+                    var images = [];
+                    if (hidden) {
+                      try { images = JSON.parse(hidden.value || '[]'); } catch(e) { images = []; }
+                    }
+                    images.push(url);
+                    if (hidden) hidden.value = JSON.stringify(images);
+                    // Render all thumbnails
+                    if (thumbs) { renderThumbs(thumbs, images); }
+                    btn.textContent = '上传';
                 } else {
                     btn.textContent = origText;
                     alert("上传失败：" + (data.error || ("HTTP " + xhr.status)));
