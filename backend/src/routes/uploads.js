@@ -11,7 +11,7 @@ router.post('/', auth, upload.single('file'), (req, res) => {
   res.json({ success: true, data: { url, filename: req.file.originalname } });
 });
 
-// Serve uploaded files
-router.use('/', express.static(path.resolve(config.uploadDir)));
+// Serve uploaded files — require auth for sensitive documents
+router.use('/', auth, express.static(path.resolve(config.uploadDir)));
 
 module.exports = router;

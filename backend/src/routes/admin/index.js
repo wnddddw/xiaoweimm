@@ -17,7 +17,7 @@ router.get('/projects', (req, res) => {
   let sql = 'SELECT * FROM projects WHERE 1=1'; const p = [];
   if (status) { sql += ' AND status=?'; p.push(status); }
   if (industry) { sql += ' AND industry=?'; p.push(industry); }
-  const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as total');
+  const countSql = sql.replace(/SELECT\s.+\sFROM/, 'SELECT COUNT(*) as total FROM');
   const total = all(countSql, p)[0]?.total || 0;
   sql += ' ORDER BY created_at DESC';
   const pg = Math.max(1, parseInt(page) || 1);
@@ -90,7 +90,7 @@ router.get('/users', (req, res) => {
   let sql = "SELECT id,phone,name,role,member_level,verify_status,status,created_at FROM users WHERE role!='admin'"; const p = [];
   if (req.query.role) { sql += ' AND role=?'; p.push(req.query.role); }
   if (req.query.status) { sql += ' AND status=?'; p.push(req.query.status); }
-  const countSql = sql.replace(/SELECT .+ FROM/, 'SELECT COUNT(*) as total FROM');
+  const countSql = sql.replace(/SELECT\s.+\sFROM/, 'SELECT COUNT(*) as total FROM');
   const total = all(countSql, p)[0]?.total || 0;
   sql += ' ORDER BY created_at DESC';
   const page = Math.max(1, parseInt(req.query.page) || 1);

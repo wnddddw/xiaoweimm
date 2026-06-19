@@ -107,7 +107,7 @@ router.get('/admin/all', auth, (req, res) => {
   let sql = 'SELECT es.*, u.phone, u.name as user_name FROM expert_services es JOIN users u ON es.user_id=u.id WHERE 1=1';
   const params = [];
   if (status) { sql += ' AND es.status=?'; params.push(status); }
-  const countSql = sql.replace(/SELECT es\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
+  const countSql = sql.replace(/SELECT\s.+\sFROM/, 'SELECT COUNT(*) as total FROM').replace(/\sORDER\s+BY.+/, '').replace(/\sLIMIT\s.+/, '');
   const total = all(countSql, params)[0]?.total || 0;
   const pg = Math.max(1, parseInt(page) || 1);
   const ps = Math.min(100, Math.max(1, parseInt(pageSize) || 50));

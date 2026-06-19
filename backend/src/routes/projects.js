@@ -17,7 +17,7 @@ router.get('/', optionalAuth, (req, res) => {
   if (sort === 'price_asc') sql += ' ORDER BY price ASC';
   else if (sort === 'price_desc') sql += ' ORDER BY price DESC';
   else sql += ' ORDER BY is_top DESC, submit_time DESC';
-  const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as total');
+  const countSql = sql.replace(/SELECT\s.+\sFROM/, 'SELECT COUNT(*) as total FROM').replace(/\sORDER\s+BY.+/, '');
   const total = all(countSql, params)[0]?.total || 0;
   sql += ' LIMIT ? OFFSET ?';
   params.push(pageSize, (page - 1) * pageSize);
