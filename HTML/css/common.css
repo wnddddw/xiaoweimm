@@ -90,7 +90,7 @@ img, video, iframe { max-width: 100%; height: auto; }
 }
 .modal-overlay.show { display: flex; }
 .modal-box {
-  background: #fff; border-radius: 12px; width: auto; max-width: 95vw;
+  background: #fff; border-radius: 12px; width: 420px; max-width: 95vw;
   padding: 40px 35px 30px; position: relative;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
@@ -143,6 +143,7 @@ img, video, iframe { max-width: 100%; height: auto; }
 .modal-extra a { color: var(--main); cursor: pointer; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
+.modal-box { min-height: 380px; }
 
 /* User greeting (in nav bar) */
 .user-greeting {
