@@ -176,6 +176,19 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             <button class="modal-submit" id="phoneSubmit" type="button">登录</button>
             <div class="modal-extra"><a id="toRegister">没有账号？立即注册</a></div>
         </div>
+        <!-- 密码登录表单 -->
+        <div class="tab-content" id="pwdForm">
+            <div class="form-group">
+                <label>手机号</label>
+                <input type="tel" id="pwdLoginPhone" placeholder="请输入手机号" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="pwdLoginPassword" placeholder="请输入登录密码">
+            </div>
+            <button class="modal-submit" id="pwdSubmit" type="button">登录</button>
+            <div class="modal-extra"><a id="toPhone">手机验证码登录</a></div>
+        </div>
         <div class="tab-content" id="regForm">
             <div class="form-group">
                 <label><span class="required">*</span> 手机号</label>
