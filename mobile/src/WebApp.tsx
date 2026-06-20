@@ -13,7 +13,7 @@ import {
 import { WebView, WebViewNavigation } from 'react-native-webview';
 
 const LOCAL_WEB_URL = Platform.select({
-  android: 'http://10.0.2.2:3001/index.html',
+  android: 'http://127.0.0.1:3001/index.html',
   default: 'http://localhost:3001/index.html',
 });
 
@@ -67,7 +67,7 @@ export default function WebApp() {
         <View style={styles.errorPanel}>
           <Text style={styles.errorTitle}>页面暂时无法打开</Text>
           <Text style={styles.errorText}>
-            请确认本地服务已启动，安卓模拟器访问地址为 10.0.2.2:3001。
+            请确认本地服务已启动，并已执行 adb reverse tcp:3001 tcp:3001。
           </Text>
           <TouchableOpacity style={styles.primaryButton} activeOpacity={0.85} onPress={retry}>
             <Text style={styles.primaryButtonText}>重新加载</Text>

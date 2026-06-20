@@ -9,6 +9,7 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
@@ -31,22 +32,7 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
-    SoLoader.init(this, false)
-
-    // Pre-load all native libraries that SoLoader will need but that
-    // are only available as merged OBJECT targets inside libreactnative.so
-    // and libhermestooling.so in the prebuilt AAR.
-    //
-    // Once the parent .so is loaded, System.loadLibrary can find the
-    // symbols via the dynamic linker's global symbol table.
-    val preloadLibs = arrayOf(
-      "reactnative",      // contains: fabricjni, mapbufferjni, react_*, rninstance, turbomodulejsijni, uimanagerjni, yoga
-      "hermestooling",    // contains: hermes_executor, hermesinstancejni, jsijniprofiler
-      "jsctooling"        // contains: jscexecutor, jscinstance
-    )
-    for (lib in preloadLibs) {
-      try { System.loadLibrary(lib) } catch (_: Exception) { }
-    }
+    SoLoader.init(this, OpenSourceMergedSoMapping)
 
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       load()

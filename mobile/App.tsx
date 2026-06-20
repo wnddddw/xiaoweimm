@@ -1,14 +1,11 @@
 import React from 'react';
-import { AuthProvider } from './src/store/AuthContext';
-import RootNavigator from './src/navigation/RootNavigator';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import WebApp from './src/WebApp';
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
+      <WebApp />
     </ErrorBoundary>
   );
 }
