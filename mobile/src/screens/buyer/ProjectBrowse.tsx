@@ -41,7 +41,7 @@ export default function ProjectBrowse({ navigation }: any) {
       if (sort) params.sort = sort;
       const [pRes, fRes] = await Promise.all([projectsApi.list(params), demandsApi.getFavorites()]);
       if (pRes.data.success && pRes.data.data) setProjects(pRes.data.data);
-      if (fRes.data.success && fRes.data.data) setFavorites(fRes.data.data.map((f: any) => f.project_id));
+      if (fRes.data.success && Array.isArray(fRes.data.data)) setFavorites(fRes.data.data.map((f: any) => f.project_id));
     } catch (e: any) {
       setToast({ visible: true, message: e.message || 'Load failed', type: 'error' });
     }

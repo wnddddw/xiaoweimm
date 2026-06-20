@@ -47,7 +47,8 @@ export default function DealDetail({ route }: any) {
 
   if (!deal) return <ScrollView style={styles.container}><Card><Text>Loading...</Text></Card></ScrollView>;
 
-  const stageTime = deal.stage_time ? (typeof deal.stage_time === 'string' ? JSON.parse(deal.stage_time) : deal.stage_time) : {};
+  let stageTime = {};
+  try { stageTime = deal.stage_time ? (typeof deal.stage_time === 'string' ? JSON.parse(deal.stage_time) : deal.stage_time) : {}; } catch(e) { stageTime = {}; }
 
   return (
     <ScrollView style={styles.container}>

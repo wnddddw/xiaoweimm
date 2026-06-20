@@ -27,6 +27,9 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     isNetworkAvailable = true;
+    if (!response.data || typeof response.data !== 'object') {
+      response.data = {} as any;
+    }
     return response;
   },
   async (error: AxiosError) => {
