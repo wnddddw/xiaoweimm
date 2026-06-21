@@ -190,6 +190,28 @@ footer {
   .copyright { padding-top: 24px; margin-top: 20px; font-size: 12px; }
 }
 
+@media (max-width: 768px) {
+  .top-nav .nav-inner{height:60px!important;gap:8px!important;padding:0 12px!important;}
+  .top-nav .logo{font-size:22px!important;white-space:nowrap!important;flex-shrink:0!important;}
+  .top-nav .nav-menu,.top-nav .nav-links{display:none!important;}
+  .top-nav .nav-menu.mobile-menu-open,.top-nav .nav-links.mobile-menu-open{display:flex!important;position:fixed!important;top:60px!important;left:0!important;right:0!important;width:100%!important;background:#fff!important;flex-direction:column!important;gap:0!important;padding:12px 20px 18px!important;box-shadow:0 14px 30px rgba(0,0,0,0.16)!important;z-index:1001!important;}
+  .top-nav .nav-menu.mobile-menu-open li,.top-nav .nav-links.mobile-menu-open a{width:100%!important;}
+  .top-nav .nav-menu.mobile-menu-open a,.top-nav .nav-links.mobile-menu-open a{display:block!important;padding:12px 4px!important;border-bottom:1px solid #eef0f3!important;font-size:15px!important;color:#222!important;}
+  .top-nav .mobile-menu-backdrop{display:none;position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(10,18,32,0.42);z-index:1000;}
+  .top-nav .mobile-menu-backdrop.show{display:block;}
+  .top-nav .menu-icon{display:block!important;flex-shrink:0!important;}
+  .top-nav .nav-right{gap:6px!important;min-width:0!important;max-width:calc(100vw - 150px)!important;margin-left:auto!important;overflow:hidden!important;}
+  .top-nav .nav-login{font-size:13px!important;padding:7px 12px!important;white-space:nowrap!important;}
+  .top-nav .nav-btn,.top-nav .nav-role-btn{display:none!important;}
+  .top-nav .user-greeting{gap:4px!important;min-width:44px!important;max-width:44px!important;overflow:hidden!important;flex-shrink:0!important;}
+  .top-nav .user-greeting #userPhone,.top-nav .user-greeting .verify-badge,.top-nav .user-greeting a,.top-nav .user-greeting .logout-link{display:none!important;}
+  .top-nav .user-greeting .user-avatar{width:34px!important;height:34px!important;font-size:13px!important;flex-shrink:0!important;}
+  .top-nav .user-info{gap:4px!important;min-width:44px!important;max-width:44px!important;overflow:hidden!important;margin-left:auto!important;}
+  .top-nav .user-info #navPhone,.top-nav .user-info a{display:none!important;}
+  .top-nav .user-info .avatar{width:34px!important;height:34px!important;font-size:13px!important;flex-shrink:0!important;}
+  .top-nav .nav-back,.top-nav .nav-inner>a:not(.logo){font-size:13px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:calc(100vw - 160px)!important;}
+}
+
 /* ── Tier 3: Dashboard/Workbench Pages ──────────────────────── */
 
 /* Sidebar */

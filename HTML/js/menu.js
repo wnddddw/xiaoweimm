@@ -1,66 +1,51 @@
 /**
- * xiaoweimm — Shared Mobile Navigation Menu
- * Included by all public-facing pages. Handles hamburger toggle,
- * backdrop overlay, and auto-close on link click.
+ * xiaoweimm shared mobile navigation menu.
+ * Opens public-page nav menus without inline layout styles.
  */
 (function() {
   'use strict';
 
   document.addEventListener('DOMContentLoaded', function() {
-    var icon = document.querySelector('.menu-icon');
-    var menu = document.querySelector('.nav-menu') || document.querySelector('.nav-links');
-    if (!icon || !menu) return;
+    var icon = document.querySelector('.top-nav .menu-icon');
+    var menu = document.querySelector('.top-nav .nav-menu') || document.querySelector('.top-nav .nav-links');
+    var topNav = document.querySelector('.top-nav');
+    if (!icon || !menu || !topNav) return;
 
-    // Create backdrop overlay
-    var bd = document.createElement('div');
-    bd.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:998;';
-    document.body.appendChild(bd);
+    var backdrop = document.createElement('div');
+    backdrop.className = 'mobile-menu-backdrop';
+    topNav.appendChild(backdrop);
 
-    function openM() {
-      menu.style.display = 'flex';
-      menu.style.position = 'absolute';
-      menu.style.top = '75px';
-      menu.style.left = '0';
-      menu.style.width = '100%';
-      menu.style.background = '#fff';
-      menu.style.flexDirection = 'column';
-      menu.style.padding = '20px';
-      menu.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
-      menu.style.zIndex = '999';
-      bd.style.display = 'block';
-      icon.textContent = '✕'; // ✕
+    function setOpen(open) {
+      menu.classList.toggle('mobile-menu-open', open);
+      backdrop.classList.toggle('show', open);
+      icon.textContent = open ? '×' : '≡';
+      icon.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
-    function closeM() {
-      menu.style.display = '';
-      menu.style.position = '';
-      menu.style.top = '';
-      menu.style.left = '';
-      menu.style.width = '';
-      menu.style.background = '';
-      menu.style.flexDirection = '';
-      menu.style.padding = '';
-      menu.style.boxShadow = '';
-      menu.style.zIndex = '';
-      bd.style.display = 'none';
-      icon.textContent = '≡'; // ≡
-    }
+    icon.setAttribute('role', 'button');
+    icon.setAttribute('aria-label', '打开导航菜单');
+    icon.setAttribute('aria-expanded', 'false');
 
     icon.addEventListener('click', function() {
-      if (menu.style.display === 'flex') {
-        closeM();
-      } else {
-        openM();
-      }
+      setOpen(!menu.classList.contains('mobile-menu-open'));
     });
 
-    bd.addEventListener('click', closeM);
+    backdrop.addEventListener('click', function() {
+      setOpen(false);
+    });
 
-    // Close on any nav link click
-    var links = menu.querySelectorAll('a');
-    for (var i = 0; i < links.length; i++) {
-      links[i].addEventListener('click', closeM);
-    }
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') setOpen(false);
+    });
+
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) setOpen(false);
+    });
+
+    Array.prototype.forEach.call(menu.querySelectorAll('a'), function(link) {
+      link.addEventListener('click', function() {
+        setOpen(false);
+      });
+    });
   });
-
 })();
