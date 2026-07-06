@@ -33,8 +33,8 @@ router.get('/', auth, (req, res) => {
 // POST /expert-services — create expert service order
 router.post('/', auth, (req, res) => {
   const { deal_id, service_type, description, price } = req.body;
-  if (!service_type || !SERVICE_TYPES[service_type]) return res.json({ success: false, error: '请选择服务类型' });
-  if (!price || price < 6000 || price > 60000) return res.json({ success: false, error: '服务费用需在 ¥6,000 ~ ¥60,000 之间' });
+  if (!service_type || !SERVICE_TYPES[service_type]) return res.status(400).json({ success: false, error: '请选择服务类型' });
+  if (!price || price < 6000 || price > 60000) return res.status(400).json({ success: false, error: '服务费用需在 ¥6,000 ~ ¥60,000 之间' });
 
   const platformFee = Math.round(price * PLATFORM_FEE_RATE * 100) / 100; // 15% platform fee
   const id = 'ES' + Date.now().toString(36) + require('crypto').randomBytes(2).toString('hex');
@@ -49,12 +49,12 @@ router.post('/', auth, (req, res) => {
 // POST /expert-services/:id/pay — pay from balance
 router.post('/:id/pay', auth, (req, res) => {
   const order = get('SELECT * FROM expert_services WHERE id=? AND user_id=?', [req.params.id, req.user.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
-  if (order.status !== 'pending') return res.json({ success: false, error: '订单状态不正确' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
+  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '订单状态不正确' });
 
   const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
   if (!u || u.balance < order.price) {
-    return res.json({ success: false, error: '余额不足，需要 ¥' + order.price.toFixed(2), need_amount: order.price, balance: u ? u.balance : 0 });
+    return res.status(400).json({ success: false, error: '余额不足，需要 ¥' + order.price.toFixed(2), need_amount: order.price, balance: u ? u.balance : 0 });
   }
 
   const now = new Date().toISOString();
@@ -74,12 +74,12 @@ router.post('/:id/pay', auth, (req, res) => {
 // POST /expert-services/:id/pay/order — pay via WeChat/Alipay
 router.post('/:id/pay/order', auth, async (req, res) => {
   const order = get('SELECT * FROM expert_services WHERE id=? AND user_id=?', [req.params.id, req.user.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
-  if (order.status !== 'pending') return res.json({ success: false, error: '订单状态不正确' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
+  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '订单状态不正确' });
 
   const { channel } = req.body;
   if (!['wechat_h5', 'alipay_h5'].includes(channel))
-    return res.json({ success: false, error: 'Invalid channel' });
+    return res.status(400).json({ success: false, error: '无效的支付渠道' });
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const paymentService = require('../services/payment');
@@ -92,7 +92,7 @@ router.post('/:id/pay/order', auth, async (req, res) => {
     { businessType: 'expert_service', businessId: order.id }
   );
 
-  if (!result.success) return res.json({ success: false, error: result.error });
+  if (!result.success) return res.status(500).json({ success: false, error: result.error });
   if (result.devPaid) {
     const now = new Date().toISOString();
     run('UPDATE expert_services SET status=?,pay_method=?,paid_at=? WHERE id=?', ['paid', channel, now, order.id]);
@@ -102,7 +102,7 @@ router.post('/:id/pay/order', auth, async (req, res) => {
 
 // Admin: GET /expert-services/admin/all — all orders
 router.get('/admin/all', auth, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: '仅管理员可操作' });
   const { status, page, pageSize } = req.query;
   let sql = 'SELECT es.*, u.phone, u.name as user_name FROM expert_services es JOIN users u ON es.user_id=u.id WHERE 1=1';
   const params = [];
@@ -118,13 +118,13 @@ router.get('/admin/all', auth, (req, res) => {
 
 // Admin: PUT /expert-services/:id/assign — assign expert
 router.put('/:id/assign', auth, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: '仅管理员可操作' });
   const { expert_name, expert_phone } = req.body;
-  if (!expert_name || !expert_phone) return res.json({ success: false, error: '请填写专家信息' });
+  if (!expert_name || !expert_phone) return res.status(400).json({ success: false, error: '请填写专家信息' });
 
   const order = get('SELECT * FROM expert_services WHERE id=?', [req.params.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
-  if (order.status !== 'paid') return res.json({ success: false, error: '需先完成支付' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
+  if (order.status !== 'paid') return res.status(400).json({ success: false, error: '需先完成支付' });
 
   const now = new Date().toISOString();
   run('UPDATE expert_services SET expert_name=?,expert_phone=?,status=? WHERE id=?',
@@ -140,7 +140,7 @@ router.put('/:id/assign', auth, (req, res) => {
 
 // Admin: PUT /expert-services/:id/complete — mark as completed
 router.put('/:id/complete', auth, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: '仅管理员可操作' });
   const now = new Date().toISOString();
   run('UPDATE expert_services SET status=?,completed_at=? WHERE id=?', ['completed', now, req.params.id]);
 

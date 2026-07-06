@@ -30,7 +30,7 @@ router.get('/my', auth, (req, res) => {
 
 router.post('/', auth, (req, res) => {
   const b = req.body;
-  if (!b.industry || !b.sub_industry || !b.province || !b.city) return res.json({ success: false, error: 'Fill industry and region' });
+  if (!b.industry || !b.sub_industry || !b.province || !b.city) return res.status(400).json({ success: false, error: '请填写行业和地区' });
   const id = 'P' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + require('crypto').randomBytes(3).toString('hex');
   const now = new Date().toISOString();
   run('INSERT INTO projects (id,user_id,industry,sub_industry,province,city,revenue,employees,transfer_reason,profit_rate,price,description,equipment,raw_material,inventory,hide_company,hide_address,hide_customers,hide_partners,hide_financial,status,submit_time,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id, req.user.id, b.industry, b.sub_industry, b.province, b.city, b.revenue || 0, b.employees || '', b.transfer_reason || '', b.profit_rate || 0, b.price || 0, b.description || '', JSON.stringify(b.equipment || []), JSON.stringify(b.raw_material || []), JSON.stringify(b.inventory || []), b.hide_company ? 1 : 0, b.hide_address ? 1 : 0, b.hide_customers ? 1 : 0, b.hide_partners ? 1 : 0, b.hide_financial ? 1 : 0, 'pending', now, now, now]);
@@ -39,7 +39,7 @@ router.post('/', auth, (req, res) => {
 
 router.get('/:id', optionalAuth, (req, res) => {
   const p = get('SELECT * FROM projects WHERE id = ?', [req.params.id]);
-  if (!p) return res.json({ success: false, error: 'Not found' });
+  if (!p) return res.status(404).json({ success: false, error: '项目不存在' });
   p.views = (p.views || 0) + 1;
   run('UPDATE projects SET views = views + 1 WHERE id = ?', [req.params.id]);
   res.json({ success: true, data: p });
@@ -47,7 +47,7 @@ router.get('/:id', optionalAuth, (req, res) => {
 
 router.put('/:id', auth, (req, res) => {
   const p = get('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!p) return res.json({ success: false, error: 'Not found' });
+  if (!p) return res.status(404).json({ success: false, error: '项目不存在' });
   const b = req.body, now = new Date().toISOString();
   let pEquip = []; try { pEquip = JSON.parse(p.equipment || '[]'); } catch(e) {}
   let pRaw = []; try { pRaw = JSON.parse(p.raw_material || '[]'); } catch(e) {}
@@ -58,9 +58,9 @@ router.put('/:id', auth, (req, res) => {
 
 router.patch('/:id/status', auth, (req, res) => {
   const p = get('SELECT * FROM projects WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-  if (!p) return res.json({ success: false, error: 'Not found' });
+  if (!p) return res.status(404).json({ success: false, error: '项目不存在' });
   const { status } = req.body;
-  if (!['online', 'offline'].includes(status)) return res.json({ success: false, error: 'Invalid status' });
+  if (!['online', 'offline'].includes(status)) return res.status(400).json({ success: false, error: '无效的状态值' });
   run('UPDATE projects SET status=?,updated_at=? WHERE id=?', [status, new Date().toISOString(), req.params.id]);
   res.json({ success: true });
 });

@@ -39,7 +39,7 @@
     });
 
     window.addEventListener('resize', function() {
-      if (window.innerWidth > 768) setOpen(false);
+      if (window.innerWidth > 1500) setOpen(false);
     });
 
     Array.prototype.forEach.call(menu.querySelectorAll('a'), function(link) {

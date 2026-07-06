@@ -15,5 +15,6 @@ assert('buyer sidebar opens by class', /\.sidebar\.open\{transform:translateX\(0
 assert('buyer sidebar overlay is class controlled', /\.sidebar-overlay\.show\{display:block;\}/.test(html));
 assert('buyer has no stray 180px sidebar override', !/}\s*\.sidebar\{width:180px;\}/.test(html));
 assert('buyer toggle uses readable hamburger', /btn\.textContent = open \? "×" : "☰"/.test(html));
+assert('buyer top nav does not expose inaccessible seller workbench', !/<div class=["']top-nav-links["']>[\s\S]*<a href=["']seller\.html["']>卖家工作台<\/a>/.test(html));
 
 console.log('buyer page checks passed');

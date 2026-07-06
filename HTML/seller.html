@@ -134,6 +134,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
         .asset-table tbody tr:hover td{background:#f4f6fa;}
         .asset-table input[type="text"],.asset-table input[type="number"]{width:100%;padding:7px 9px;border:1px solid #bbb;border-radius:6px;font-size:12px;outline:none;box-sizing:border-box;}
         .asset-table input:focus{border-color:var(--main);}
+        .asset-table input.asset-input-error{border-color:#d93025;box-shadow:0 0 0 2px rgba(217,48,37,0.12);}
         .asset-table .img-cell{text-align:center;}
         .asset-table .img-btn{position:relative;display:inline-block;width:34px;height:34px;border:1px dashed #bbb;border-radius:4px;cursor:pointer;background:#fafbfc;transition:0.15s;overflow:hidden;}
         .asset-table .img-btn:hover{border-color:var(--main);background:#f0f4ff;}
@@ -203,7 +204,6 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
     <span class="page-title" id="pageTitle">发布项目</span>
     <div class="top-nav-links">
         <a href="seller.html" class="active">卖家工作台</a>
-        <a href="buyer.html">买家工作台</a>
             <a href="deal.html">交易管理</a>
         <a href="messages.html">消息</a>
         <a href="member.html">会员中心</a>
@@ -236,7 +236,6 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
                         </div>
                         <div class="form-group unit"><label><span class="req">*</span> 年营业额（万元）</label><input type="number" id="revenue" placeholder="例如：200" required min="0"><span class="unit-text">万</span></div>
                         <div class="form-group"><label><span class="req">*</span> 员工数</label><select id="employees" required><option value="">请选择</option><option value="1-5">1-5人</option><option value="6-20">6-20人</option><option value="21-50">21-50人</option><option value="51-100">51-100人</option><option value="101-300">101-300人</option><option value="300+">300人以上</option></select></div>
-                        <div class="form-group full"><label><span class="req">*</span> 转让原因</label><select id="reason" required><option value="">请选择</option><option value="无人接班">无人接班/继承人不明</option><option value="经营者高龄>经营者高龄</option><option value="事业转型">事业转型/战略调整</option><option value="经营困难">经营困难</option><option value="其他">其他原因</option></select></div>
                     </div>
                 </div>
                 <div class="card"><h3>财务信息</h3>
@@ -493,11 +492,11 @@ function addAssetRow(bodyId){
     var idx = body.children.length + 1;
     var tr = document.createElement("tr");
     tr.innerHTML = '<td data-label="序号">' + idx + '</td>' +
-        '<td data-label="名称"><input type="text" name="name" placeholder="名称"></td>' +
-        '<td data-label="规格"><input type="text" name="spec" placeholder="型号/规格"></td>' +
-        '<td data-label="数量"><input type="number" name="qty" min="0" value="1"></td>' +
-        '<td data-label="年份/单位"><input type="text" name="year" placeholder="2023 / 件"></td>' +
-        '<td data-label="估值(万)"><input type="number" name="value" min="0" placeholder="0"></td>' +
+        '<td data-label="名称"><input type="text" name="name" data-required="true" placeholder="名称"></td>' +
+        '<td data-label="规格"><input type="text" name="spec" data-required="true" placeholder="型号/规格"></td>' +
+        '<td data-label="数量"><input type="number" name="qty" data-required="true" min="0" value="1"></td>' +
+        '<td data-label="年份/单位"><input type="text" name="year" data-required="true" placeholder="2023 / 件"></td>' +
+        '<td data-label="估值(万)"><input type="number" name="value" data-required="true" min="0" placeholder="0"></td>' +
         '<td data-label="图片" class="img-cell"><div class="img-thumbs" style="display:flex;flex-wrap:wrap;gap:4px;"></div><button type="button" class="btn btn-sm btn-outline" data-asset-action="upload" style="margin-top:4px;">上传</button><input type="hidden" name="imageUrl" value="[]"></td>' +
         '<td data-label="操作"><button type="button" class="btn btn-sm btn-red" data-asset-action="delete">删除</button></td>';
     body.appendChild(tr);
@@ -754,11 +753,49 @@ function collectAssets(bodyId){
     });
 }
 
+function clearAssetFieldError(input){
+    if(input) input.classList.remove("asset-input-error");
+}
+
+function markAssetFieldError(input){
+    if(input) input.classList.add("asset-input-error");
+}
+
+function validateAssetRows(){
+    var groups = [
+        { bodyId: "equipBody", label: "设备清单" },
+        { bodyId: "materialBody", label: "原材料清单" },
+        { bodyId: "stockBody", label: "成品库存清单" }
+    ];
+    for(var g = 0; g < groups.length; g++){
+        var body = document.getElementById(groups[g].bodyId);
+        if(!body) continue;
+        var rows = body.querySelectorAll("tr");
+        for(var r = 0; r < rows.length; r++){
+            var row = rows[r];
+            var requiredInputs = row.querySelectorAll('input[data-required="true"]');
+            for(var c = 0; c < requiredInputs.length; c++){
+                clearAssetFieldError(requiredInputs[c]);
+            }
+            for(var i = 0; i < requiredInputs.length; i++){
+                var input = requiredInputs[i];
+                if(!String(input.value || "").trim()){
+                    markAssetFieldError(input);
+                    showToast(groups[g].label + "第" + (r + 1) + "行请填写完整", "error");
+                    input.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(function(target){ target.focus(); }, 250, input);
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 function validateProjectForm(){
     var fields = [
         { id: "revenue", name: "年营业额" },
         { id: "employees", name: "员工数" },
-        { id: "reason", name: "转让原因" },
         { id: "profitRate", name: "营业利润率" },
         { id: "price", name: "期望转让价格" },
         { id: "description", name: "项目简介" }
@@ -775,6 +812,7 @@ function validateProjectForm(){
             return false;
         }
     }
+    if(!validateAssetRows()) return false;
     var profitRate = Number(readInput("profitRate"));
     if(profitRate < 0 || profitRate > 100){
         showToast("营业利润率需填写 0 到 100 之间的数字", "error");
@@ -801,7 +839,7 @@ function submitProject(){
         city: region.secondary,
         revenue: Number(readInput("revenue")) || 0,
         employees: readInput("employees"),
-        transfer_reason: readInput("reason"),
+        transfer_reason: "",
         profit_rate: Number(readInput("profitRate")) || 0,
         price: Number(readInput("price")) || 0,
         description: readInput("description"),

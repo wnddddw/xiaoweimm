@@ -106,12 +106,10 @@ function runAutoRenewal() {
   }
 }
 
-// Initialize DB then start server
-getDb().then(() => {
-  app.listen(config.port, () => {
-    console.log(`xiaoweimm API Server running on http://localhost:${config.port}`);
-    // Run auto-renewal check on startup + every 24 hours
-    runAutoRenewal();
-    setInterval(runAutoRenewal, 24 * 60 * 60 * 1000);
-  });
+// DB initialized synchronously by db/init.js — start server immediately
+app.listen(config.port, () => {
+  console.log(`xiaoweimm API Server running on http://localhost:${config.port}`);
+  // Run auto-renewal check on startup + every 24 hours
+  runAutoRenewal();
+  setInterval(runAutoRenewal, 24 * 60 * 60 * 1000);
 });

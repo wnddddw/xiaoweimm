@@ -33,12 +33,12 @@ router.get('/prices', (req, res) => {
 // POST /diagnostics — create diagnostic order
 router.post('/', auth, (req, res) => {
   const { project_id, plan_type, pay_method } = req.body;
-  if (!project_id) return res.json({ success: false, error: '请选择关联项目' });
-  if (!plan_type || !DIAGNOSTIC_PRICES[plan_type]) return res.json({ success: false, error: '请选择诊断方案' });
+  if (!project_id) return res.status(400).json({ success: false, error: '请选择关联项目' });
+  if (!plan_type || !DIAGNOSTIC_PRICES[plan_type]) return res.status(400).json({ success: false, error: '请选择诊断方案' });
 
   // Verify project belongs to user
   const project = get('SELECT id FROM projects WHERE id=? AND user_id=?', [project_id, req.user.id]);
-  if (!project) return res.json({ success: false, error: '项目不存在' });
+  if (!project) return res.status(404).json({ success: false, error: '项目不存在' });
 
   const amount = DIAGNOSTIC_PRICES[plan_type];
   const id = 'DG' + Date.now().toString(36) + require('crypto').randomBytes(2).toString('hex');
@@ -46,7 +46,7 @@ router.post('/', auth, (req, res) => {
 
   // Check for duplicate pending
   const existing = get("SELECT id FROM diagnostic_orders WHERE user_id=? AND project_id=? AND status='pending'", [req.user.id, project_id]);
-  if (existing) return res.json({ success: false, error: '该项目已有待支付的诊断订单' });
+  if (existing) return res.status(409).json({ success: false, error: '该项目已有待支付的诊断订单' });
 
   run('INSERT INTO diagnostic_orders (id,user_id,project_id,amount,status,pay_method,created_at) VALUES (?,?,?,?,?,?,?)',
     [id, req.user.id, project_id, amount, 'pending', pay_method || 'Balance', now]);
@@ -57,12 +57,12 @@ router.post('/', auth, (req, res) => {
 // POST /diagnostics/:id/pay — pay diagnostic order from balance
 router.post('/:id/pay', auth, (req, res) => {
   const order = get('SELECT * FROM diagnostic_orders WHERE id=? AND user_id=?', [req.params.id, req.user.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
-  if (order.status !== 'pending') return res.json({ success: false, error: '订单状态不正确' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
+  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '订单状态不正确' });
 
   const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
   if (!u || u.balance < order.amount) {
-    return res.json({ success: false, error: '余额不足，需要 ¥' + order.amount.toFixed(2), need_amount: order.amount, balance: u ? u.balance : 0 });
+    return res.status(400).json({ success: false, error: '余额不足，需要 ¥' + order.amount.toFixed(2), need_amount: order.amount, balance: u ? u.balance : 0 });
   }
 
   const now = new Date().toISOString();
@@ -82,12 +82,12 @@ router.post('/:id/pay', auth, (req, res) => {
 // POST /diagnostics/:id/pay/order — pay via WeChat/Alipay
 router.post('/:id/pay/order', auth, async (req, res) => {
   const order = get('SELECT * FROM diagnostic_orders WHERE id=? AND user_id=?', [req.params.id, req.user.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
-  if (order.status !== 'pending') return res.json({ success: false, error: '订单状态不正确' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
+  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '订单状态不正确' });
 
   const { channel } = req.body;
   if (!['wechat_h5', 'alipay_h5'].includes(channel))
-    return res.json({ success: false, error: 'Invalid channel' });
+    return res.status(400).json({ success: false, error: '无效的支付渠道' });
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const paymentService = require('../services/payment');
@@ -100,7 +100,7 @@ router.post('/:id/pay/order', auth, async (req, res) => {
     { businessType: 'diagnostic', businessId: order.id }
   );
 
-  if (!result.success) return res.json({ success: false, error: result.error });
+  if (!result.success) return res.status(500).json({ success: false, error: result.error });
   if (result.devPaid) {
     // Auto-complete diagnostic payment in dev mode
     const now = new Date().toISOString();
@@ -112,7 +112,7 @@ router.post('/:id/pay/order', auth, async (req, res) => {
 // Admin: GET /diagnostics/admin/all — all diagnostic orders (admin only)
 // (registered in admin routes or separate mount)
 router.get('/admin/all', auth, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: '仅管理员可操作' });
   const { status, page, pageSize } = req.query;
   let sql = 'SELECT d.*, u.phone, u.name as user_name, p.industry, p.province FROM diagnostic_orders d JOIN users u ON d.user_id=u.id LEFT JOIN projects p ON d.project_id=p.id WHERE 1=1';
   const params = [];
@@ -128,13 +128,13 @@ router.get('/admin/all', auth, (req, res) => {
 
 // Admin: PUT /diagnostics/:id/assign — assign expert
 router.put('/:id/assign', auth, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: '仅管理员可操作' });
   const { expert_name, expert_phone } = req.body;
-  if (!expert_name || !expert_phone) return res.json({ success: false, error: '请填写专家信息' });
+  if (!expert_name || !expert_phone) return res.status(400).json({ success: false, error: '请填写专家信息' });
 
   const order = get('SELECT * FROM diagnostic_orders WHERE id=?', [req.params.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
-  if (order.status !== 'paid') return res.json({ success: false, error: '需先完成支付' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
+  if (order.status !== 'paid') return res.status(400).json({ success: false, error: '需先完成支付' });
 
   const now = new Date().toISOString();
   run('UPDATE diagnostic_orders SET expert_name=?,expert_phone=?,status=?,assigned_at=? WHERE id=?',
@@ -151,9 +151,9 @@ router.put('/:id/assign', auth, (req, res) => {
 
 // Admin: PUT /diagnostics/:id/complete — upload report
 router.put('/:id/complete', auth, (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: '仅管理员可操作' });
   const order = get('SELECT * FROM diagnostic_orders WHERE id=?', [req.params.id]);
-  if (!order) return res.json({ success: false, error: '订单不存在' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
 
   const { report_url, report_summary } = req.body;
   const now = new Date().toISOString();

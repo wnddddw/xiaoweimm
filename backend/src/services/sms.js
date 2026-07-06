@@ -1,8 +1,9 @@
 /**
  * SMS Service — Aliyun SMS with rate limiting & dev fallback
  */
+const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const { run, get } = require('../db/init');
+const { run, get, all } = require('../db/init');
 const config = require('../config');
 
 // ── In-memory rate limiter ──────────────────────────────────────────
@@ -20,13 +21,13 @@ function checkRateLimit(phone, ip) {
   // 60s cooldown
   if (entry && (now - entry.lastSent) < RATE_COOLDOWN_MS) {
     const remain = Math.ceil((RATE_COOLDOWN_MS - (now - entry.lastSent)) / 1000);
-    return { ok: false, error: `Please wait ${remain}s` };
+    return { ok: false, error: `请 ${remain} 秒后重试` };
   }
 
   // hourly limit
   if (entry && entry.hourWindow === Math.floor(now / 3_600_000)) {
     if (entry.hourCount >= RATE_HOUR_LIMIT) {
-      return { ok: false, error: 'Too many attempts, try later' };
+      return { ok: false, error: '请求过于频繁，请稍后重试' };
     }
   }
 
@@ -34,7 +35,7 @@ function checkRateLimit(phone, ip) {
   const today = new Date().toDateString();
   const ipEntry = ipDaily.get(ip);
   if (ipEntry && ipEntry.date === today && ipEntry.count >= RATE_IP_DAILY_LIMIT) {
-    return { ok: false, error: 'IP limit reached, try tomorrow' };
+    return { ok: false, error: '今日请求次数已达上限，请明天再试' };
   }
 
   return { ok: true };
@@ -110,7 +111,7 @@ async function sendAliyunSms(phone, code) {
 async function sendSmsCode(phone, ip) {
   // Validate
   if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
-    return { success: false, error: 'Invalid phone number' };
+    return { success: false, error: '无效的手机号' };
   }
 
   // Rate limit
@@ -122,11 +123,12 @@ async function sendSmsCode(phone, ip) {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 5 * 60_000); // 5 min
 
-  // Store in DB (synchronous wrapper)
+  // Store hashed code in DB — never store plaintext
   const id = uuidv4();
+  const codeHash = bcrypt.hashSync(code, 10);
   run(
     'INSERT INTO sms_codes (id, phone, code, expires_at, used, created_at) VALUES (?,?,?,?,0,?)',
-    [id, phone, code, expiresAt.toISOString(), now.toISOString()]
+    [id, phone, codeHash, expiresAt.toISOString(), now.toISOString()]
   );
 
   // Send via Aliyun (or console fallback)
@@ -149,14 +151,19 @@ async function sendSmsCode(phone, ip) {
 function verifySmsCode(phone, code) {
   if (!phone || !code) return false;
   const now = new Date().toISOString();
-  const row = get(
-    'SELECT id FROM sms_codes WHERE phone = ? AND code = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1',
-    [phone, code, now]
+  // Codes are hashed — retrieve all unexpired codes and compare with bcrypt
+  const rows = all(
+    'SELECT id, code FROM sms_codes WHERE phone = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC',
+    [phone, now]
   );
-  if (!row) return false;
-  // Mark as used
-  run('UPDATE sms_codes SET used = 1 WHERE id = ?', [row.id]);
-  return true;
+  for (const row of rows) {
+    if (bcrypt.compareSync(code, row.code)) {
+      // Mark as used
+      run('UPDATE sms_codes SET used = 1 WHERE id = ?', [row.id]);
+      return true;
+    }
+  }
+  return false;
 }
 
 /**

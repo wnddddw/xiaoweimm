@@ -40,9 +40,9 @@ router.get('/benefits', (req, res) => {
 router.get('/', auth, (req, res) => { const u = get('SELECT member_level,member_expire,auto_renew FROM users WHERE id=?', [req.user.id]); res.json({ success: true, data: u }); });
 router.post('/upgrade', auth, (req, res) => {
   const { plan_type, pay_method } = req.body;
-  if (!prices[plan_type]) return res.json({ success: false, error: 'Invalid plan' });
+  if (!prices[plan_type]) return res.status(400).json({ success: false, error: '无效的会员方案' });
   const amount = prices[plan_type], u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
-  if (u.balance < amount) return res.json({ success: false, error: 'Insufficient balance' });
+  if (u.balance < amount) return res.status(400).json({ success: false, error: '余额不足' });
   const now = new Date().toISOString(), expire = new Date(); expire.setMonth(expire.getMonth() + 1);
   try {
     transaction(() => {
@@ -52,7 +52,7 @@ router.post('/upgrade', auth, (req, res) => {
     });
     res.json({ success: true, data: { plan_type, amount } });
   } catch (e) {
-    res.status(500).json({ success: false, error: 'Transaction failed' });
+    res.status(500).json({ success: false, error: '交易失败，请重试' });
   }
 });
 router.put('/auto-renew', auth, (req, res) => { run('UPDATE users SET auto_renew=?,updated_at=? WHERE id=?', [req.body.auto_renew ? 1 : 0, new Date().toISOString(), req.user.id]); res.json({ success: true }); });
@@ -63,7 +63,7 @@ router.get('/orders', auth, (req, res) => { res.json({ success: true, data: all(
 // GET /subscription — detailed subscription status
 router.get('/subscription', auth, (req, res) => {
   const u = get('SELECT member_level, member_expire, auto_renew, balance FROM users WHERE id=?', [req.user.id]);
-  if (!u) return res.json({ success: false, error: '用户不存在' });
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
 
   const now = new Date();
   const expireDate = u.member_expire ? new Date(u.member_expire) : null;
@@ -87,7 +87,7 @@ router.get('/subscription', auth, (req, res) => {
 // POST /cancel — cancel auto-renewal subscription
 router.post('/cancel', auth, (req, res) => {
   const u = get('SELECT member_level, auto_renew FROM users WHERE id=?', [req.user.id]);
-  if (!u.auto_renew) return res.json({ success: false, error: '未开启自动续费' });
+  if (!u.auto_renew) return res.status(400).json({ success: false, error: '未开启自动续费' });
 
   const now = new Date().toISOString();
   run('UPDATE users SET auto_renew=0, updated_at=? WHERE id=?', [now, req.user.id]);

@@ -6,7 +6,7 @@ const config = require('../config');
 const router = express.Router();
 
 router.post('/', auth, upload.single('file'), (req, res) => {
-  if (!req.file) return res.json({ success: false, error: '请选择文件' });
+  if (!req.file) return res.status(400).json({ success: false, error: '请选择文件' });
   const url = '/uploads/' + req.file.filename;
   res.json({ success: true, data: { url, filename: req.file.originalname } });
 });

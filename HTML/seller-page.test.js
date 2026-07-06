@@ -21,9 +21,21 @@ assert('mobile sidebar overlay is class controlled', /\.sidebar-overlay\.show/.t
 assert('asset rows provide mobile data labels', /data-label=["']名称["']/.test(html));
 assert('asset index uses readable mobile label', /data-label=["']序号["']/.test(html));
 assert('asset index no longer renders hash label', !/data-label=["']#["']/.test(html));
+assert('asset row builder marks name as required', /name="name"[^>]*data-required="true"/.test(html));
+assert('asset row builder marks spec as required', /name="spec"[^>]*data-required="true"/.test(html));
+assert('asset row builder marks qty as required', /name="qty"[^>]*data-required="true"/.test(html));
+assert('asset row builder marks year as required', /name="year"[^>]*data-required="true"/.test(html));
+assert('asset row builder marks value as required', /name="value"[^>]*data-required="true"/.test(html));
+assert('asset row image stays optional', !/name="imageUrl"[^>]*data-required="true"/.test(html));
 assert('asset table becomes cards on mobile', /\.asset-table\s+tr\{display:grid/.test(html));
 assert('broken 180px sidebar override is gone', !/}\s*\.sidebar\{width:180px;\}/.test(html));
 assert('asset rows can be renumbered after delete', /function\s+renumberAssetRows\s*\(/.test(html));
 assert('delete handler renumbers current asset body', /renumberAssetRows\(body\)/.test(html));
+assert('asset row validator exists', /function\s+validateAssetRows\s*\(/.test(html));
+assert('project form validation calls asset row validation', /if\s*\(!validateAssetRows\(\)\)\s*return false;/.test(html));
+assert('transfer reason field is not shown in active form UI', !/<label><span class="req">\*<\/span>\s*转让原因<\/label>/.test(html));
+assert('project payload preserves transfer reason as empty string', /transfer_reason:\s*""/.test(html));
+assert('base required-field loop no longer depends on reason field', !/id:\s*"reason"/.test(html));
+assert('seller top nav does not expose inaccessible buyer workbench', !/<div class=["']top-nav-links["']>[\s\S]*<a href=["']buyer\.html["']>买家工作台<\/a>/.test(html));
 
 console.log('seller page checks passed');

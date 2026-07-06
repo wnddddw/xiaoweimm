@@ -17,7 +17,7 @@ router.get('/profile', auth, (req, res) => {
     'FROM users WHERE id=?',
     [req.user.id]
   );
-  if (!u) return res.json({ success: false, error: '用户不存在' });
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
   res.json({ success: true, data: u });
 });
 
@@ -26,7 +26,7 @@ router.put('/profile', auth, (req, res) => {
   const { name, email, company_name, wechat_id } = req.body;
   const now = new Date().toISOString();
   const u = get('SELECT name,email,company_name,wechat_id FROM users WHERE id=?', [req.user.id]);
-  if (!u) return res.json({ success: false, error: '用户不存在' });
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
 
   const updatable = { name, email, company_name, wechat_id };
   const sets = [];
@@ -56,11 +56,11 @@ router.put('/profile', auth, (req, res) => {
 router.put('/password', auth, (req, res) => {
   const { old_password, new_password } = req.body;
   if (!old_password || !new_password || new_password.length < 6) {
-    return res.json({ success: false, error: '新密码至少6位' });
+    return res.status(400).json({ success: false, error: '新密码至少6位' });
   }
   const u = get('SELECT password_hash FROM users WHERE id=?', [req.user.id]);
   if (!bcrypt.compareSync(old_password, u.password_hash)) {
-    return res.json({ success: false, error: '原密码错误' });
+    return res.status(401).json({ success: false, error: '原密码错误' });
   }
   const now = new Date().toISOString();
   run('UPDATE users SET password_hash=?,updated_at=? WHERE id=?',
@@ -73,8 +73,8 @@ router.put('/password', auth, (req, res) => {
 // POST /avatar — upload avatar image
 router.post('/avatar', auth, (req, res) => {
   upload.single('avatar')(req, res, (err) => {
-    if (err) return res.json({ success: false, error: err.message });
-    if (!req.file) return res.json({ success: false, error: '请选择图片' });
+    if (err) return res.status(400).json({ success: false, error: err.message });
+    if (!req.file) return res.status(400).json({ success: false, error: '请选择图片' });
 
     const url = '/uploads/' + req.file.filename;
     const now = new Date().toISOString();
@@ -89,13 +89,13 @@ router.post('/avatar', auth, (req, res) => {
 router.put('/phone', auth, (req, res) => {
   const { phone, code } = req.body;
   if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
-    return res.json({ success: false, error: '无效的手机号' });
+    return res.status(400).json({ success: false, error: '无效的手机号' });
   }
   if (!smsService.verifySmsCode(phone, code)) {
-    return res.json({ success: false, error: '验证码错误或已过期' });
+    return res.status(400).json({ success: false, error: '验证码错误或已过期' });
   }
   if (get('SELECT id FROM users WHERE phone=? AND id!=?', [phone, req.user.id])) {
-    return res.json({ success: false, error: '手机号已被其他账号使用' });
+    return res.status(409).json({ success: false, error: '手机号已被其他账号使用' });
   }
   const now = new Date().toISOString();
   const old = get('SELECT phone FROM users WHERE id=?', [req.user.id]);
@@ -125,13 +125,13 @@ router.get('/change-logs', auth, (req, res) => {
 router.put('/role', auth, (req, res) => {
   const { role } = req.body;
   if (!role || !['buyer', 'seller'].includes(role)) {
-    return res.json({ success: false, error: '角色必须是 buyer 或 seller' });
+    return res.status(400).json({ success: false, error: '角色必须是 buyer 或 seller' });
   }
 
   const u = get('SELECT role, status FROM users WHERE id=?', [req.user.id]);
-  if (!u) return res.json({ success: false, error: '用户不存在' });
-  if (u.role === 'admin') return res.json({ success: false, error: '管理员账号不能切换角色' });
-  if (u.role === role) return res.json({ success: false, error: '当前已是该角色，无需切换' });
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
+  if (u.role === 'admin') return res.status(403).json({ success: false, error: '管理员账号不能切换角色' });
+  if (u.role === role) return res.status(400).json({ success: false, error: '当前已是该角色，无需切换' });
 
   const now = new Date().toISOString();
   const warnings = [];
@@ -170,15 +170,15 @@ router.put('/role', auth, (req, res) => {
 // DELETE /account — soft delete account
 router.delete('/account', auth, (req, res) => {
   const { password } = req.body;
-  if (!password) return res.json({ success: false, error: '请输入密码以确认注销' });
+  if (!password) return res.status(400).json({ success: false, error: '请输入密码以确认注销' });
 
   const u = get('SELECT phone, password_hash, role, status FROM users WHERE id=?', [req.user.id]);
-  if (!u) return res.json({ success: false, error: '用户不存在' });
-  if (u.role === 'admin') return res.json({ success: false, error: '管理员账号不能注销' });
-  if (u.status === 'deleted') return res.json({ success: false, error: '账号已注销' });
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
+  if (u.role === 'admin') return res.status(403).json({ success: false, error: '管理员账号不能注销' });
+  if (u.status === 'deleted') return res.status(400).json({ success: false, error: '账号已注销' });
 
   if (!bcrypt.compareSync(password, u.password_hash)) {
-    return res.json({ success: false, error: '密码错误' });
+    return res.status(401).json({ success: false, error: '密码错误' });
   }
 
   const now = new Date().toISOString();
@@ -223,7 +223,7 @@ router.get('/oauth/accounts', auth, (req, res) => {
 router.delete('/oauth/unlink/:provider', auth, (req, res) => {
   const { provider } = req.params;
   if (!['wechat', 'alipay'].includes(provider)) {
-    return res.json({ success: false, error: '无效的第三方登录类型' });
+    return res.status(400).json({ success: false, error: '无效的第三方登录类型' });
   }
 
   // Ensure user has a password set (can't unlink all auth methods)
@@ -232,7 +232,7 @@ router.delete('/oauth/unlink/:provider', auth, (req, res) => {
   // Just ensure user still has at least one way to log in
   const oauthCount = all('SELECT COUNT(*) as c FROM oauth_accounts WHERE user_id=?', [req.user.id]);
   if (oauthCount[0]?.c <= 1) {
-    return res.json({ success: false, error: '至少需要保留一种登录方式，请先设置密码后再解除绑定' });
+    return res.status(400).json({ success: false, error: '至少需要保留一种登录方式，请先设置密码后再解除绑定' });
   }
 
   run('DELETE FROM oauth_accounts WHERE user_id=? AND provider=?', [req.user.id, provider]);

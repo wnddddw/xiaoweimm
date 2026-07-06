@@ -36,17 +36,17 @@ router.get('/bills', auth, (req, res) => {
 // POST /payments/order — Create a payment order (WeChat H5 / Alipay H5)
 router.post('/order', auth, async (req, res) => {
   const { amount, channel, subject } = req.body;
-  if (!amount || amount <= 0) return res.json({ success: false, error: 'Invalid amount' });
-  if (amount > MAX_RECHARGE_AMOUNT) return res.json({ success: false, error: `单笔上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
+  if (!amount || amount <= 0) return res.status(400).json({ success: false, error: '无效的金额' });
+  if (amount > MAX_RECHARGE_AMOUNT) return res.status(400).json({ success: false, error: `单笔上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
   if (!['wechat_h5', 'alipay_h5'].includes(channel))
-    return res.json({ success: false, error: 'Invalid channel' });
+    return res.status(400).json({ success: false, error: '无效的支付渠道' });
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const result = await paymentService.createPaymentOrder(
     req.user.id, Number(amount), channel, ip, subject || 'Balance Recharge'
   );
 
-  if (!result.success) return res.json({ success: false, error: result.error });
+  if (!result.success) return res.status(500).json({ success: false, error: result.error });
   res.json({ success: true, data: {
     order_id: result.orderId,
     payment_url: result.paymentUrl,
@@ -60,7 +60,7 @@ router.get('/order/:id', auth, (req, res) => {
     'SELECT id, channel, amount, subject, status, out_trade_no, created_at, paid_at FROM payment_orders WHERE id = ? AND user_id = ?',
     [req.params.id, req.user.id]
   );
-  if (!order) return res.json({ success: false, error: 'Order not found' });
+  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
   res.json({ success: true, data: order });
 });
 
@@ -128,15 +128,15 @@ router.post('/recharge', auth, rechargeLimiter, (req, res) => {
   }
 
   const { amount, pay_method } = req.body;
-  if (!amount || amount <= 0) return res.json({ success: false, error: 'Invalid amount' });
-  if (amount > MAX_RECHARGE_AMOUNT) return res.json({ success: false, error: `单笔充值上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
+  if (!amount || amount <= 0) return res.status(400).json({ success: false, error: '无效的金额' });
+  if (amount > MAX_RECHARGE_AMOUNT) return res.status(400).json({ success: false, error: `单笔充值上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
 
   const now = new Date().toISOString();
 
   try {
     transaction(() => {
       const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
-      if (!u) return res.json({ success: false, error: '用户不存在' });
+      if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
 
       run('UPDATE users SET balance=balance+?,updated_at=? WHERE id=?', [amount, now, req.user.id]);
       run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',

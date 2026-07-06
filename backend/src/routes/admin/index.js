@@ -30,7 +30,7 @@ router.patch('/projects/:id/approve', (req, res) => {
   const now = new Date().toISOString();
   run("UPDATE projects SET status='online',review_time=?,updated_at=? WHERE id=?", [now, now, req.params.id]);
   const pr = get('SELECT user_id FROM projects WHERE id=?', [req.params.id]);
-  if (pr) run('INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)', [uuidv4(), pr.user_id, 'project', 'Approved', 'Project approved.', now]);
+  if (pr) run('INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)', [uuidv4(), pr.user_id, 'project', '审核通过', '项目已通过审核', now]);
   res.json({ success: true });
 });
 router.patch('/projects/:id/reject', (req, res) => {
