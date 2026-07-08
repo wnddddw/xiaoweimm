@@ -7,7 +7,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
 
-export default function ProjectReview() {
+export default function ProjectReview({ navigation }: any) {
   const [projects, setProjects] = useState<any[]>([]);
   const [filter, setFilter] = useState('pending');
   const [refreshing, setRefreshing] = useState(false);
@@ -18,7 +18,7 @@ export default function ProjectReview() {
       const res = await adminApi.getProjects({ status: filter });
       if (res.data.success && res.data.data) setProjects(res.data.data);
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Load failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '加载失败', type: 'error' });
     }
   }, [filter]);
 
@@ -28,26 +28,32 @@ export default function ProjectReview() {
   const approve = async (id: string) => {
     try {
       await adminApi.approveProject(id);
-      setToast({ visible: true, message: 'Approved', type: 'success' });
+      setToast({ visible: true, message: '已通过', type: 'success' });
       fetchData();
-    } catch (e: any) { setToast({ visible: true, message: e.message || 'Failed', type: 'error' }); }
+    } catch (e: any) { setToast({ visible: true, message: e.message || '失败', type: 'error' }); }
   };
 
   const reject = async (id: string) => {
     try {
       await adminApi.rejectProject(id);
-      setToast({ visible: true, message: 'Rejected', type: 'success' });
+      setToast({ visible: true, message: '已拒绝', type: 'success' });
       fetchData();
-    } catch (e: any) { setToast({ visible: true, message: e.message || 'Failed', type: 'error' }); }
+    } catch (e: any) { setToast({ visible: true, message: e.message || '失败', type: 'error' }); }
   };
 
   const statusBadge = (s: string) => {
     switch (s) {
-      case 'pending': return <Badge text="Pending" variant="warn" />;
-      case 'online': return <Badge text="Online" variant="ok" />;
-      case 'rejected': return <Badge text="Rejected" variant="err" />;
+      case 'pending': return <Badge text="待审" variant="warn" />;
+      case 'online': return <Badge text="已上线" variant="ok" />;
+      case 'rejected': return <Badge text="已拒绝" variant="err" />;
+      case 'offline': return <Badge text="已下线" variant="gray" />;
       default: return <Badge text={s} variant="gray" />;
     }
+  };
+
+
+  const statusLabels: Record<string, string> = {
+    pending: '待审', online: '已上线', rejected: '已拒绝', offline: '已下线'
   };
 
   return (
@@ -55,22 +61,22 @@ export default function ProjectReview() {
       <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
       <View style={styles.filterRow}>
         {['pending','online','rejected','offline'].map(s => (
-          <Button key={s} title={s} onPress={() => setFilter(s)} variant={filter === s ? 'main' : 'gray'} size="sm" />
+          <Button key={s} title={statusLabels[s] || s} onPress={() => setFilter(s)} variant={filter === s ? 'main' : 'gray'} size="sm" />
         ))}
       </View>
       {projects.map(p => (
-        <Card key={p.id}>
+        <Card key={p.id} onPress={() => navigation.navigate('ProjectDetail', { projectId: p.id })}>
           <View style={styles.row}>
             <Text style={styles.pid}>{p.id}</Text>
             {statusBadge(p.status)}
           </View>
           <Text style={styles.title}>{p.industry} / {p.sub_industry}</Text>
           <Text style={styles.loc}>{p.province} {p.city}</Text>
-          <Text style={styles.detail}>Rev: ¥{(p.revenue || 0).toLocaleString()}万 | Price: ¥{(p.price || 0).toLocaleString()}万</Text>
+          <Text style={styles.detail}>营收: ¥{(p.revenue || 0).toLocaleString()}万 | 价格: ¥{(p.price || 0).toLocaleString()}万</Text>
           {p.status === 'pending' && (
             <View style={styles.btnRow}>
-              <Button title="Approve" onPress={() => approve(p.id)} variant="green" size="sm" />
-              <Button title="Reject" onPress={() => reject(p.id)} variant="red" size="sm" />
+              <Button title="通过" onPress={() => approve(p.id)} variant="green" size="sm" />
+              <Button title="拒绝" onPress={() => reject(p.id)} variant="red" size="sm" />
             </View>
           )}
         </Card>
@@ -89,4 +95,5 @@ const styles = StyleSheet.create({
   loc: { fontSize: 13, color: '#555' },
   detail: { fontSize: 12, color: '#555', marginTop: 4 },
   btnRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  tapHint: { fontSize: 12, color: '#1a44aa', marginTop: 6 },
 });
