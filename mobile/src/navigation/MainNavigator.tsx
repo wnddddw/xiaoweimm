@@ -1,59 +1,80 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text } from 'react-native';
-import { useAuth } from '../store/AuthContext';
-import HomeScreen from '../screens/home/HomeScreen';
-import SellerNavigator from './SellerNavigator';
+import AdminNavigator from './AdminNavigator';
 import BuyerNavigator from './BuyerNavigator';
 import DealNavigator from './DealNavigator';
+import SellerNavigator from './SellerNavigator';
 import { MessagesScreen } from '../screens/messages/MessageList';
+import HomeScreen from '../screens/home/HomeScreen';
 import MembershipScreen from '../screens/member/MembershipScreen';
-import ProfileScreen from '../screens/profile/ProfileScreen';
-import VerifyScreen from '../screens/verify/VerifyScreen';
 import PaymentScreen from '../screens/payment/PaymentScreen';
-import AdminNavigator from './AdminNavigator';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import PublicContentScreen, { getPublicPageTitle } from '../screens/public/PublicContentScreen';
+import CaseDetailScreen from '../screens/case/CaseDetailScreen';
+import VerifyScreen from '../screens/verify/VerifyScreen';
+import { useAuth } from '../store/AuthContext';
 
 const Tab = createBottomTabNavigator();
+const AppStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = { Home: '🏠', Seller: '📝', Buyer: '🔍', Deals: '🤝', Messages: '💬', Member: '👤', Profile: '⚙' };
-  return <Text style={{ fontSize: 20 }}>{icons[label] || '📌'}</Text>;
+function TabIcon({ label }: { label: string; focused: boolean }) {
+  const icons: Record<string, string> = {
+    Home: '🏠', Seller: '💵', Buyer: '🔍',
+    Deals: '🤝', Messages: '💬', Member: '👥', Profile: '⚙️',
+  };
+  return <Text style={{ fontSize: 20 }}>{icons[label] || '🌐'}</Text>;
 }
 
 function ProfileNavigator() {
   return (
     <ProfileStack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff' }}>
-      <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: 'Me' }} />
-      <ProfileStack.Screen name="Verify" component={VerifyScreen} options={{ title: 'Verification' }} />
-      <ProfileStack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Wallet' }} />
+      <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: '我的' }} />
+      <ProfileStack.Screen name="Verify" component={VerifyScreen} options={{ title: '企业认证' }} />
+      <ProfileStack.Screen name="Payment" component={PaymentScreen} options={{ title: '钱包' }} />
     </ProfileStack.Navigator>
   );
 }
 
-export default function MainNavigator() {
-  const { user } = useAuth();
+function MainTabs() {
+  const { user, isAuthenticated } = useAuth();
   const isSeller = user?.role === 'seller';
   const isAdmin = user?.role === 'admin';
 
   return (
-    <Tab.Navigator screenOptions={({ route }) => ({
-      headerStyle: { backgroundColor: '#1a44aa' },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: '700' },
-      tabBarActiveTintColor: '#1a44aa',
-      tabBarIcon: ({ focused }) => <TabIcon label={route.name} focused={focused} />,
-    })}>
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'xiaoweimm' }} />
-      {isSeller && <Tab.Screen name="Seller" component={SellerNavigator} options={{ headerShown: false, title: 'Sell' }} />}
-      {!isSeller && !isAdmin && <Tab.Screen name="Buyer" component={BuyerNavigator} options={{ headerShown: false, title: 'Buy' }} />}
-      {isAdmin && <Tab.Screen name="Admin" component={AdminNavigator} options={{ headerShown: false, title: 'Admin' }} />}
-      {!isAdmin && <Tab.Screen name="Deals" component={DealNavigator} options={{ headerShown: false, title: 'Deals' }} />}
-      {isAdmin && <Tab.Screen name="Deals" component={DealNavigator} options={{ headerShown: false, title: 'Deals' }} />}
-      <Tab.Screen name="Messages" component={MessagesScreen} options={{ title: 'Messages' }} />
-      <Tab.Screen name="Member" component={MembershipScreen} options={{ title: 'VIP' }} />
-      <Tab.Screen name="Profile" component={ProfileNavigator} options={{ headerShown: false, title: 'Me' }} />
+    <Tab.Navigator
+      initialRouteName="Home"
+      detachInactiveScreens={false}
+      sceneContainerStyle={{ backgroundColor: '#fff' }}
+      screenOptions={({ route }) => ({
+        headerStyle: { backgroundColor: '#1a44aa' },
+        headerTintColor: '#fff',
+        headerTitleStyle: { fontWeight: '700' },
+        tabBarActiveTintColor: '#1a44aa',
+        freezeOnBlur: false,
+        tabBarIcon: ({ focused }) => <TabIcon label={route.name} focused={focused} />,
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: '首页' }} />
+      {isAuthenticated && isSeller && <Tab.Screen name="Seller" component={SellerNavigator} options={{ headerShown: false, title: '卖家' }} />}
+      {isAuthenticated && !isSeller && !isAdmin && <Tab.Screen name="Buyer" component={BuyerNavigator} options={{ headerShown: false, title: '买家' }} />}
+      {isAuthenticated && isAdmin && <Tab.Screen name="Admin" component={AdminNavigator} options={{ headerShown: false, title: '管理' }} />}
+      {isAuthenticated && <Tab.Screen name="Deals" component={DealNavigator} options={{ headerShown: false, title: '交易' }} />}
+      {isAuthenticated && <Tab.Screen name="Messages" component={MessagesScreen} options={{ title: '消息' }} />}
+      {isAuthenticated && <Tab.Screen name="Member" component={MembershipScreen} options={{ title: '会员' }} />}
+      {isAuthenticated && <Tab.Screen name="Profile" component={ProfileNavigator} options={{ headerShown: false, title: '我的' }} />}
     </Tab.Navigator>
+  );
+}
+
+export default function MainNavigator() {
+  return (
+    <AppStack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '700' } }}>
+      <AppStack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+      <AppStack.Screen name="PublicContent" component={PublicContentScreen} options={({ route }: any) => ({ title: getPublicPageTitle(route.params?.page) })} />
+      <AppStack.Screen name="CaseDetail" component={CaseDetailScreen} options={{ title: '案例详情' }} />
+    </AppStack.Navigator>
   );
 }
