@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const config = require('./config');
@@ -6,10 +6,10 @@ const { getDb, run, get, all } = require('./db/init');
 
 const app = express();
 
-// CORS — validate origin, reject '*' in production
+// CORS 鈥?validate origin, reject '*' in production
 const corsOrigin = config.corsOrigin;
 if (corsOrigin === '*') {
-  console.warn('[SECURITY] CORS_ORIGIN is set to "*" — restrict to specific origin in production!');
+  console.warn('[SECURITY] CORS_ORIGIN is set to "*" 鈥?restrict to specific origin in production!');
 }
 app.use(cors({
   origin: corsOrigin === '*' ? true : corsOrigin,
@@ -49,9 +49,6 @@ app.use('/api/admin', require('./routes/admin/index'));
 // Serve uploaded files
 app.use('/uploads', express.static(path.resolve(config.uploadDir)));
 
-// Serve HTML frontend with cache — 1h for production, 0 for dev
-const staticOpts = { maxAge: process.env.NODE_ENV === 'production' ? 3600000 : 0 };
-app.use(express.static(path.resolve(__dirname, '../../HTML'), staticOpts));
 
 // Constants
 const { industryData, regionData, dealStages } = require('./utils/constants');
@@ -66,11 +63,11 @@ app.use((err, req, res, next) => {
   const isProd = process.env.NODE_ENV === 'production';
   res.status(500).json({
     success: false,
-    error: isProd ? '服务器内部错误' : (err.message || '服务器错误'),
+    error: isProd ? "Internal server error" : (err.message || "Server error"),
   });
 });
 
-// ── Auto-Renewal Cron ─────────────────────────────────────────────────
+// 鈹€鈹€ Auto-Renewal Cron 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 function runAutoRenewal() {
   try {
@@ -90,26 +87,24 @@ function runAutoRenewal() {
           [amount, expire.toISOString(), now, u.id]);
         run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',
           [require('uuid').v4(), u.id, 'membership_renew', amount, u.balance, u.balance - amount, 'Auto', now]);
-        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} renewed ${u.member_level} for ¥${amount}`);
+        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} renewed ${u.member_level} for 楼${amount}`);
       } else {
         // Insufficient balance: downgrade to free
         run("UPDATE users SET member_level='free', member_expire=NULL, auto_renew=0, updated_at=? WHERE id=?",
           [now, u.id]);
         run('INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)',
-          [require('uuid').v4(), u.id, 'system', '会员续费失败',
-           `余额不足（当前 ¥${u.balance.toFixed(2)}，需 ¥${amount}），会员已自动降级为免费。请充值后重新升级。`, now]);
-        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} downgraded to free (balance ¥${u.balance} < ¥${amount})`);
+          [require('uuid').v4(), u.id, 'system', 'Renewal failed',
+           `Balance insufficient (current: ${u.balance.toFixed(2)}, need: ${amount}), membership downgraded to free. Please recharge.`, now]);
       }
     }
   } catch (e) {
     console.error('[AUTO-RENEW ERROR]', e.message);
   }
 }
-
-// DB initialized synchronously by db/init.js — start server immediately
 app.listen(config.port, () => {
   console.log(`xiaoweimm API Server running on http://localhost:${config.port}`);
   // Run auto-renewal check on startup + every 24 hours
   runAutoRenewal();
   setInterval(runAutoRenewal, 24 * 60 * 60 * 1000);
 });
+
