@@ -42,3 +42,6 @@ backend/uploads/*
 # 调试与测试临时目录
 pw-tmp/
 docs/pw-tmp/
+
+# 内置 JS bundle 为构建产物，构建时生成
+index.android.bundle
