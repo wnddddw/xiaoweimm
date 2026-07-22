@@ -1,4 +1,4 @@
-export { default as api } from './client';
+export { default as api, getApiErrorMessage } from './client';
 export { authApi } from './auth';
 export { projectsApi } from './projects';
 

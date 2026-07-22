@@ -9,10 +9,20 @@ import { membershipsApi, paymentsApi } from '../../api';
 import { useAuth } from '../../store/AuthContext';
 
 const PLANS = [
-  { key: 'personal', name: 'Personal', price: 300, features: ['View non-public projects', '1h early notification', 'Direct contact seller', 'Event registration'] },
-  { key: 'company', name: 'Company', price: 600, features: ['All Personal features', 'Priority matching', 'Dedicated advisor', 'API access'] },
-  { key: 'vip', name: 'Enterprise VIP', price: 1800, features: ['All Company features', 'White-glove service', 'Custom deal flow', 'Unlimited everything'] },
+  { key: 'personal', name: '个人会员', price: 300, features: ['查看非公开项目', '提前 1 小时接收提醒', '直连卖方沟通', '可报名线下活动'] },
+  { key: 'company', name: '企业会员', price: 600, features: ['包含个人会员权益', '优先智能匹配', '专属顾问跟进', '开放接口对接'] },
+  { key: 'vip', name: '企业 VIP', price: 1800, features: ['包含企业会员权益', '全流程顾问服务', '定制交易流程', '不限量使用核心权益'] },
 ];
+
+const planLabel = (level: string) => {
+  switch (level) {
+    case 'personal': return '个人会员';
+    case 'company': return '企业会员';
+    case 'vip': return '企业 VIP';
+    case 'free':
+    default: return '免费版';
+  }
+};
 
 export default function MembershipScreen() {
   const { user } = useAuth();
@@ -23,65 +33,67 @@ export default function MembershipScreen() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [mRes, bRes, oRes] = await Promise.all([membershipsApi.get(), paymentsApi.getBalance(), membershipsApi.getOrders()]);
-      if (mRes.data.success && mRes.data.data) setMemberInfo(mRes.data.data);
-      if (bRes.data.success && bRes.data.data) setBalance(bRes.data.data.balance || 0);
-      if (oRes.data.success && oRes.data.data) setOrders(oRes.data.data);
+      const [memberRes, balanceRes, orderRes] = await Promise.all([membershipsApi.get(), paymentsApi.getBalance(), membershipsApi.getOrders()]);
+      if (memberRes.data.success && memberRes.data.data) setMemberInfo(memberRes.data.data);
+      if (balanceRes.data.success && balanceRes.data.data) setBalance(balanceRes.data.data.balance || 0);
+      if (orderRes.data.success && orderRes.data.data) setOrders(orderRes.data.data);
     } catch (e: any) { /* ignore */ }
   }, []);
 
   useFocusEffect(useCallback(() => { fetchData(); }, [fetchData]));
 
   const upgrade = async (planType: string) => {
-    const plan = PLANS.find(p => p.key === planType);
+    const plan = PLANS.find(item => item.key === planType);
     if (!plan) return;
     if (balance < plan.price) {
-      setToast({ visible: true, message: `Insufficient balance. Need ¥${plan.price}`, type: 'error' }); return;
+      setToast({ visible: true, message: `余额不足，需要 ¥${plan.price}`, type: 'error' }); return;
     }
     try {
       const res = await membershipsApi.upgrade(planType);
       if (res.data.success) {
-        setToast({ visible: true, message: `Upgraded to ${plan.name}!`, type: 'success' });
+        setToast({ visible: true, message: `已升级为${plan.name}`, type: 'success' });
         fetchData();
       }
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Upgrade failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '升级失败', type: 'error' });
     }
   };
 
-  const toggleAutoRenew = async (val: boolean) => {
+  const toggleAutoRenew = async (value: boolean) => {
     try {
-      await membershipsApi.toggleAutoRenew(val);
-      setToast({ visible: true, message: val ? 'Auto-renew ON' : 'Auto-renew OFF', type: 'success' });
+      await membershipsApi.toggleAutoRenew(value);
+      setToast({ visible: true, message: value ? '自动续费已开启' : '自动续费已关闭', type: 'success' });
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '操作失败', type: 'error' });
     }
   };
 
-  const levelBadge = (l: string) => {
-    switch (l) {
-      case 'free': return <Badge text="Free" variant="gray" />;
-      case 'personal': return <Badge text="Personal" variant="info" />;
-      case 'company': return <Badge text="Company" variant="warn" />;
-      case 'vip': return <Badge text="VIP" variant="ok" />;
-      default: return <Badge text={l || 'Free'} variant="gray" />;
+  const levelBadge = (level: string) => {
+    switch (level) {
+      case 'personal': return <Badge text="个人会员" variant="info" />;
+      case 'company': return <Badge text="企业会员" variant="warn" />;
+      case 'vip': return <Badge text="企业 VIP" variant="ok" />;
+      case 'free':
+      default: return <Badge text="免费版" variant="gray" />;
     }
   };
+
+  const currentLevel = memberInfo?.member_level || user?.member_level || 'free';
 
   return (
     <ScrollView style={styles.container}>
-      <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+      <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
       <Card>
-        <Text style={styles.sectionTitle}>Current Plan</Text>
+        <Text style={styles.sectionTitle}>当前方案</Text>
         <View style={styles.row}>
-          {levelBadge(memberInfo?.member_level || user?.member_level || 'free')}
-          <Text style={styles.balance}>Balance: ¥{balance}</Text>
+          {levelBadge(currentLevel)}
+          <Text style={styles.balance}>余额：¥{balance}</Text>
         </View>
         {memberInfo?.member_expire && (
-          <Text style={styles.expire}>Expires: {memberInfo.member_expire.slice(0, 10)}</Text>
+          <Text style={styles.expire}>到期时间：{memberInfo.member_expire.slice(0, 10)}</Text>
         )}
         <View style={styles.autoRow}>
-          <Text style={styles.autoLabel}>Auto-renew</Text>
+          <Text style={styles.autoLabel}>自动续费</Text>
           <Switch
             value={!!memberInfo?.auto_renew}
             onValueChange={toggleAutoRenew}
@@ -91,21 +103,21 @@ export default function MembershipScreen() {
       </Card>
 
       <Card>
-        <Text style={styles.sectionTitle}>Upgrade Plan</Text>
-        {PLANS.map(p => (
-          <View key={p.key} style={styles.planCard}>
+        <Text style={styles.sectionTitle}>升级方案</Text>
+        {PLANS.map(plan => (
+          <View key={plan.key} style={styles.planCard}>
             <View style={styles.planHeader}>
-              <Text style={styles.planName}>{p.name}</Text>
-              <Text style={styles.planPrice}>¥{p.price}/mo</Text>
+              <Text style={styles.planName}>{plan.name}</Text>
+              <Text style={styles.planPrice}>¥{plan.price}/月</Text>
             </View>
-            {p.features.map((f, i) => (
-              <Text key={i} style={styles.feature}>✓ {f}</Text>
+            {plan.features.map((feature, index) => (
+              <Text key={index} style={styles.feature}>✓ {feature}</Text>
             ))}
             <Button
-              title={memberInfo?.member_level === p.key ? 'Current Plan' : 'Upgrade'}
-              onPress={() => upgrade(p.key)}
-              variant={memberInfo?.member_level === p.key ? 'gray' : 'main'}
-              disabled={memberInfo?.member_level === p.key}
+              title={currentLevel === plan.key ? '当前方案' : '立即升级'}
+              onPress={() => upgrade(plan.key)}
+              variant={currentLevel === plan.key ? 'gray' : 'main'}
+              disabled={currentLevel === plan.key}
               size="block"
             />
           </View>
@@ -114,12 +126,12 @@ export default function MembershipScreen() {
 
       {orders.length > 0 && (
         <Card>
-          <Text style={styles.sectionTitle}>Order History</Text>
-          {orders.map(o => (
-            <View key={o.id} style={styles.orderRow}>
-              <Badge text={o.plan_type || 'order'} variant="info" />
-              <Text style={styles.orderAmt}>¥{o.amount}</Text>
-              <Text style={styles.orderTime}>{o.created_at?.slice(0, 10)}</Text>
+          <Text style={styles.sectionTitle}>订单记录</Text>
+          {orders.map(order => (
+            <View key={order.id} style={styles.orderRow}>
+              <Badge text={planLabel(order.plan_type || 'free')} variant="info" />
+              <Text style={styles.orderAmt}>¥{order.amount}</Text>
+              <Text style={styles.orderTime}>{order.created_at?.slice(0, 10)}</Text>
             </View>
           ))}
         </Card>

@@ -1,38 +1,127 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { useAuth } from '../../store/AuthContext';
+import React, { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { authApi, getApiErrorMessage } from '../../api';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
+import { useAuth } from '../../store/AuthContext';
+
+type LoginMode = 'password' | 'sms';
 
 export default function LoginScreen({ navigation }: any) {
+  const [mode, setMode] = useState<LoginMode>('password');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const [toast, setToast] = useState({ visible: false, message: '', type: '' as '' | 'success' | 'error' });
-  const { login } = useAuth();
+  const { login, loginSms } = useAuth();
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const showError = (message: string) => {
+    setToast({ visible: true, message, type: 'error' });
+  };
+
+  const isValidPhone = () => /^1[3-9]\d{9}$/.test(phone);
+
+  const startCountdown = () => {
+    setCountdown(60);
+    timerRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleGetCode = async () => {
+    if (!isValidPhone()) {
+      showError('请输入有效手机号');
+      return;
+    }
+    if (countdown > 0) return;
+
+    try {
+      const res = await authApi.requestSmsCode(phone);
+      if (!res.data.success) {
+        showError(res.data.error || '验证码发送失败');
+        return;
+      }
+      setToast({ visible: true, message: res.data.data?.message || '验证码已发送', type: 'success' });
+      startCountdown();
+    } catch (error: any) {
+      showError(getApiErrorMessage(error, '网络错误，请稍后重试'));
+    }
+  };
 
   const handleLogin = async () => {
-    if (!/^1[3-9]\d{9}$/.test(phone)) { setToast({ visible: true, message: 'Please enter valid phone', type: 'error' }); return; }
-    if (!password) { setToast({ visible: true, message: 'Please enter password', type: 'error' }); return; }
+    if (!isValidPhone()) {
+      showError('请输入有效手机号');
+      return;
+    }
+    if (mode === 'password' && !password) {
+      showError('请输入登录密码');
+      return;
+    }
+    if (mode === 'sms' && code.length < 4) {
+      showError('请输入短信验证码');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(phone, password);
-    } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Login failed', type: 'error' });
-    } finally { setLoading(false); }
+      if (mode === 'password') {
+        await login(phone, password);
+      } else {
+        await loginSms(phone, code);
+      }
+    } catch (error: any) {
+      showError(getApiErrorMessage(error, '登录失败'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+      <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
       <View style={styles.card}>
         <Text style={styles.logo}>xiaoweimm</Text>
-        <Text style={styles.subtitle}>企业并购平台</Text>
-        <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={11} />
-        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
-        <Button title="Login" onPress={handleLogin} loading={loading} size="block" />
+        <Text style={styles.subtitle}>中小企业并购服务平台</Text>
+
+        <View style={styles.modeRow}>
+          <TouchableOpacity style={[styles.modeBtn, mode === 'password' && styles.modeActive]} onPress={() => setMode('password')}>
+            <Text style={[styles.modeText, mode === 'password' && styles.modeTextActive]}>密码登录</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.modeBtn, mode === 'sms' && styles.modeActive]} onPress={() => setMode('sms')}>
+            <Text style={[styles.modeText, mode === 'sms' && styles.modeTextActive]}>短信登录</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput style={styles.input} placeholder="请输入手机号" value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={11} />
+        {mode === 'password' ? (
+          <TextInput style={styles.input} placeholder="请输入登录密码" value={password} onChangeText={setPassword} secureTextEntry />
+        ) : (
+          <View style={styles.smsRow}>
+            <TextInput style={[styles.input, styles.smsInput]} placeholder="请输入短信验证码" value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} />
+            <TouchableOpacity style={[styles.smsBtn, countdown > 0 && styles.smsBtnDisabled]} onPress={handleGetCode} disabled={countdown > 0}>
+              <Text style={styles.smsBtnText}>{countdown > 0 ? `${countdown}s` : '获取验证码'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <Button title="登录" onPress={handleLogin} loading={loading} size="block" />
         <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.link}>
-          <Text style={styles.linkText}>No account? Register</Text>
+          <Text style={styles.linkText}>没有账号？立即注册</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -41,10 +130,20 @@ export default function LoginScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', backgroundColor: '#f4f6fa', padding: 24 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 32, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 5 },
+  card: { backgroundColor: '#fff', borderRadius: 16, padding: 28, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 5 },
   logo: { fontSize: 32, fontWeight: '700', color: '#1a44aa', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#555', textAlign: 'center', marginBottom: 28, marginTop: 4 },
+  subtitle: { fontSize: 14, color: '#555', textAlign: 'center', marginBottom: 24, marginTop: 4 },
+  modeRow: { flexDirection: 'row', backgroundColor: '#eef2f8', borderRadius: 10, padding: 4, marginBottom: 16 },
+  modeBtn: { flex: 1, borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
+  modeActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
+  modeText: { color: '#667085', fontSize: 14, fontWeight: '600' },
+  modeTextActive: { color: '#1a44aa' },
   input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 14, fontSize: 16, marginBottom: 14, color: '#222' },
+  smsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
+  smsInput: { flex: 1, marginBottom: 0 },
+  smsBtn: { backgroundColor: '#1a44aa', paddingHorizontal: 14, borderRadius: 8, justifyContent: 'center', minWidth: 106 },
+  smsBtnDisabled: { backgroundColor: '#999' },
+  smsBtnText: { color: '#fff', fontSize: 13, fontWeight: '600', textAlign: 'center' },
   link: { marginTop: 16, alignItems: 'center' },
   linkText: { color: '#1a44aa', fontSize: 14 },
 });

@@ -8,9 +8,9 @@ const Stack = createNativeStackNavigator();
 export default function DealNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff' }}>
-      <Stack.Screen name="DealList" component={DealList} options={{ title: 'Deals' }} />
-      <Stack.Screen name="DealCreate" component={DealCreate} options={{ title: 'New Deal' }} />
-      <Stack.Screen name="DealDetail" component={DealDetail} options={{ title: 'Deal Detail' }} />
+      <Stack.Screen name="DealList" component={DealList} options={{ title: '交易列表' }} />
+      <Stack.Screen name="DealCreate" component={DealCreate} options={{ title: '新建交易' }} />
+      <Stack.Screen name="DealDetail" component={DealDetail} options={{ title: '交易详情' }} />
     </Stack.Navigator>
   );
 }

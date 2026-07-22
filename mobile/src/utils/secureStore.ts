@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // import * as Keychain from 'react-native-keychain';
 
 const TOKEN_KEY = 'xiaoweimm_token';
+const REFRESH_TOKEN_KEY = 'xiaoweimm_refresh_token';
 const USER_KEY = 'xiaoweimm_user';
 
 export const secureStore = {
@@ -32,6 +33,18 @@ export const secureStore = {
   async removeToken(): Promise<void> {
     // Production: await Keychain.resetGenericPassword({ service: TOKEN_KEY });
     await AsyncStorage.removeItem(TOKEN_KEY);
+  },
+
+  async setRefreshToken(token: string): Promise<void> {
+    await AsyncStorage.setItem(REFRESH_TOKEN_KEY, token);
+  },
+
+  async getRefreshToken(): Promise<string | null> {
+    return AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+  },
+
+  async removeRefreshToken(): Promise<void> {
+    await AsyncStorage.removeItem(REFRESH_TOKEN_KEY);
   },
 
   async setUser(user: object): Promise<void> {
@@ -55,6 +68,7 @@ export const secureStore = {
 
   async clear(): Promise<void> {
     await this.removeToken();
+    await this.removeRefreshToken();
     await this.removeUser();
   },
 };

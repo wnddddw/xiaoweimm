@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Platform, Linking } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
@@ -20,8 +20,6 @@ export default function PaymentScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<'recharge' | 'history' | 'bills'>('recharge');
   const [toast, setToast] = useState({ visible: false, message: '', type: '' as '' | 'success' | 'error' });
-
-  // Payment WebView state
   const [webViewVisible, setWebViewVisible] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState('');
   const [currentOrderId, setCurrentOrderId] = useState('');
@@ -29,14 +27,14 @@ export default function PaymentScreen() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [bRes, hRes, blRes] = await Promise.all([
+      const [balanceRes, historyRes, billsRes] = await Promise.all([
         paymentsApi.getBalance(),
         paymentsApi.getHistory(),
         paymentsApi.getBills(),
       ]);
-      if (bRes.data.success && bRes.data.data) setBalance(bRes.data.data.balance || 0);
-      if (hRes.data.success && hRes.data.data) setHistory(hRes.data.data);
-      if (blRes.data.success && blRes.data.data) setBills(blRes.data.data);
+      if (balanceRes.data.success && balanceRes.data.data) setBalance(balanceRes.data.data.balance || 0);
+      if (historyRes.data.success && historyRes.data.data) setHistory(historyRes.data.data);
+      if (billsRes.data.success && billsRes.data.data) setBills(billsRes.data.data);
     } catch (e: any) { /* ignore */ }
   }, []);
 
@@ -44,10 +42,9 @@ export default function PaymentScreen() {
 
   const onRefresh = async () => { setRefreshing(true); await fetchData(); setRefreshing(false); };
 
-  // Poll order status after WebView closes
   const startPollOrder = (orderId: string) => {
     let attempts = 0;
-    const maxAttempts = 30; // 30 * 2s = 60s timeout
+    const maxAttempts = 30;
     pollTimerRef.current = setInterval(async () => {
       attempts++;
       try {
@@ -55,7 +52,7 @@ export default function PaymentScreen() {
         if (res.data.success && res.data.data?.status === 'paid') {
           clearInterval(pollTimerRef.current!);
           pollTimerRef.current = null;
-          setToast({ visible: true, message: '支付成功！', type: 'success' });
+          setToast({ visible: true, message: '支付成功', type: 'success' });
           fetchData();
           return;
         }
@@ -63,31 +60,29 @@ export default function PaymentScreen() {
       if (attempts >= maxAttempts) {
         clearInterval(pollTimerRef.current!);
         pollTimerRef.current = null;
-        setToast({ visible: true, message: '支付超时，请在历史记录中查看', type: 'error' });
+        setToast({ visible: true, message: '支付超时，请在交易记录中查看', type: 'error' });
       }
     }, 2000);
   };
 
   const handleRecharge = async () => {
-    const amt = +amount;
-    if (!amt || amt <= 0) {
+    const rechargeAmount = +amount;
+    if (!rechargeAmount || rechargeAmount <= 0) {
       setToast({ visible: true, message: '请输入有效金额', type: 'error' });
       return;
     }
     setLoading(true);
     try {
-      const res = await paymentsApi.createOrder(amt, payMethod, '余额充值');
+      const res = await paymentsApi.createOrder(rechargeAmount, payMethod, '余额充值');
       if (res.data.success && res.data.data) {
         const { order_id, payment_url, dev_paid } = res.data.data;
-        // Dev mode: payment processed directly, no WebView needed
         if (dev_paid) {
           setAmount('');
-          setToast({ visible: true, message: `充值成功 ¥${amt}`, type: 'success' });
+          setToast({ visible: true, message: `充值成功 ¥${rechargeAmount}`, type: 'success' });
           fetchData();
           setLoading(false);
           return;
         }
-        // Production: open payment URL
         setCurrentOrderId(order_id);
         setPaymentUrl(payment_url);
         setWebViewVisible(true);
@@ -104,7 +99,6 @@ export default function PaymentScreen() {
 
   const handleWebViewClose = () => {
     setWebViewVisible(false);
-    // Start polling for payment result
     if (currentOrderId) {
       startPollOrder(currentOrderId);
     }
@@ -123,7 +117,7 @@ export default function PaymentScreen() {
         style={styles.container}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+        <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
 
         <Card>
           <Text style={styles.balanceLabel}>我的余额</Text>
@@ -131,12 +125,12 @@ export default function PaymentScreen() {
         </Card>
 
         <View style={styles.tabs}>
-          {(['recharge', 'history', 'bills'] as const).map(t => (
+          {(['recharge', 'history', 'bills'] as const).map(item => (
             <Button
-              key={t}
-              title={t === 'recharge' ? '充值' : t === 'history' ? '记录' : '账单'}
-              onPress={() => setTab(t)}
-              variant={tab === t ? 'main' : 'gray'}
+              key={item}
+              title={item === 'recharge' ? '充值' : item === 'history' ? '记录' : '账单'}
+              onPress={() => setTab(item)}
+              variant={tab === item ? 'main' : 'gray'}
               size="sm"
             />
           ))}
@@ -144,7 +138,6 @@ export default function PaymentScreen() {
 
         {tab === 'recharge' && (
           <>
-            {/* Payment method selector */}
             <Card>
               <Text style={styles.sectionTitle}>支付方式</Text>
               <View style={styles.payMethods}>
@@ -167,7 +160,6 @@ export default function PaymentScreen() {
               </View>
             </Card>
 
-            {/* Amount + quick select */}
             <Card>
               <Text style={styles.sectionTitle}>充值金额</Text>
               <TextInput
@@ -178,11 +170,11 @@ export default function PaymentScreen() {
                 keyboardType="numeric"
               />
               <View style={styles.quickAmts}>
-                {QUICK_AMOUNTS.map(a => (
+                {QUICK_AMOUNTS.map(item => (
                   <Button
-                    key={a}
-                    title={`¥${a}`}
-                    onPress={() => setAmount(String(a))}
+                    key={item}
+                    title={`¥${item}`}
+                    onPress={() => setAmount(String(item))}
                     variant="outline"
                     size="sm"
                   />
@@ -199,13 +191,13 @@ export default function PaymentScreen() {
             {history.length === 0 ? (
               <Text style={styles.empty}>暂无交易</Text>
             ) : (
-              history.map((h: any) => (
-                <View key={h.id} style={styles.row}>
-                  <Badge text={h.type === 'recharge' ? '充值' : '消费'} variant={h.type === 'recharge' ? 'ok' : 'info'} />
-                  <Text style={h.type === 'recharge' ? styles.green : styles.red}>
-                    {h.type === 'recharge' ? '+' : '-'}¥{h.amount}
+              history.map((item: any) => (
+                <View key={item.id} style={styles.row}>
+                  <Badge text={item.type === 'recharge' ? '充值' : '消费'} variant={item.type === 'recharge' ? 'ok' : 'info'} />
+                  <Text style={item.type === 'recharge' ? styles.green : styles.red}>
+                    {item.type === 'recharge' ? '+' : '-'}¥{item.amount}
                   </Text>
-                  <Text style={styles.time}>{h.created_at?.slice(0, 10)}</Text>
+                  <Text style={styles.time}>{item.created_at?.slice(0, 10)}</Text>
                 </View>
               ))
             )}
@@ -218,14 +210,14 @@ export default function PaymentScreen() {
             {bills.length === 0 ? (
               <Text style={styles.empty}>暂无账单</Text>
             ) : (
-              bills.map((b: any) => (
-                <View key={b.id} style={styles.row}>
+              bills.map((item: any) => (
+                <View key={item.id} style={styles.row}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.billItem}>{b.item || b.type}</Text>
-                    <Text style={styles.time}>{b.created_at?.slice(0, 10)}</Text>
+                    <Text style={styles.billItem}>{item.item || item.type}</Text>
+                    <Text style={styles.time}>{item.created_at?.slice(0, 10)}</Text>
                   </View>
-                  <Badge text={b.status === 'paid' ? '已付' : '未付'} variant={b.status === 'paid' ? 'ok' : 'warn'} />
-                  <Text style={styles.billAmt}>¥{b.amount}</Text>
+                  <Badge text={item.status === 'paid' ? '已付' : '未付'} variant={item.status === 'paid' ? 'ok' : 'warn'} />
+                  <Text style={styles.billAmt}>¥{item.amount}</Text>
                 </View>
               ))
             )}
@@ -234,7 +226,6 @@ export default function PaymentScreen() {
         <View style={{ height: 20 }} />
       </ScrollView>
 
-      {/* Payment WebView modal */}
       <PaymentWebView
         visible={webViewVisible}
         url={paymentUrl}

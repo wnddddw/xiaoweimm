@@ -3,7 +3,6 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
-import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import Pipeline from '../../components/deal/Pipeline';
 import { dealsApi } from '../../api';
@@ -18,11 +17,11 @@ export default function DealDetail({ route }: any) {
 
   const fetchData = useCallback(async () => {
     try {
-      const [dRes, tRes] = await Promise.all([dealsApi.getById(dealId), dealsApi.getTimeline(dealId)]);
-      if (dRes.data.success && dRes.data.data) setDeal(dRes.data.data);
-      if (tRes.data.success && tRes.data.data) setEvents(tRes.data.data);
+      const [dealRes, timelineRes] = await Promise.all([dealsApi.getById(dealId), dealsApi.getTimeline(dealId)]);
+      if (dealRes.data.success && dealRes.data.data) setDeal(dealRes.data.data);
+      if (timelineRes.data.success && timelineRes.data.data) setEvents(timelineRes.data.data);
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Load failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '加载失败', type: 'error' });
     }
   }, [dealId]);
 
@@ -30,57 +29,57 @@ export default function DealDetail({ route }: any) {
 
   const advanceStage = async () => {
     if (!deal) return;
-    const currentIdx = dealStages.findIndex(s => s.id === deal.stage);
-    if (currentIdx >= dealStages.length - 1) {
-      setToast({ visible: true, message: 'Already at final stage', type: 'error' }); return;
+    const currentIndex = dealStages.findIndex(stage => stage.id === deal.stage);
+    if (currentIndex >= dealStages.length - 1) {
+      setToast({ visible: true, message: '已处于最终阶段', type: 'error' }); return;
     }
-    const nextStage = dealStages[currentIdx + 1].id;
+    const nextStage = dealStages[currentIndex + 1].id;
     setLoading(true);
     try {
       await dealsApi.advanceStage(dealId, nextStage);
-      setToast({ visible: true, message: `Advanced to ${dealStages[currentIdx + 1].label}`, type: 'success' });
+      setToast({ visible: true, message: `已推进至${dealStages[currentIndex + 1].label}`, type: 'success' });
       fetchData();
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '操作失败', type: 'error' });
     } finally { setLoading(false); }
   };
 
-  if (!deal) return <ScrollView style={styles.container}><Card><Text>Loading...</Text></Card></ScrollView>;
+  if (!deal) return <ScrollView style={styles.container}><Card><Text>加载中...</Text></Card></ScrollView>;
 
   let stageTime = {};
-  try { stageTime = deal.stage_time ? (typeof deal.stage_time === 'string' ? JSON.parse(deal.stage_time) : deal.stage_time) : {}; } catch(e) { stageTime = {}; }
+  try { stageTime = deal.stage_time ? (typeof deal.stage_time === 'string' ? JSON.parse(deal.stage_time) : deal.stage_time) : {}; } catch (e) { stageTime = {}; }
 
   return (
     <ScrollView style={styles.container}>
-      <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+      <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
       <Card>
         <Text style={styles.pid}>{deal.id}</Text>
-        <Text style={styles.title}>{deal.seller_name} ⟷ {deal.buyer_name}</Text>
+        <Text style={styles.title}>{deal.seller_name} → {deal.buyer_name}</Text>
         <View style={styles.row}>
           <Text style={styles.price}>¥{(deal.price || 0).toLocaleString()}万</Text>
-          <Text style={styles.advisor}>Advisor: {deal.advisor || 'Auto'}</Text>
+          <Text style={styles.advisor}>顾问：{deal.advisor || '系统分配'}</Text>
         </View>
         {deal.note ? <Text style={styles.note}>{deal.note}</Text> : null}
         <View style={{ marginTop: 12 }}>
           <Pipeline currentStage={deal.stage} stageTime={stageTime} />
         </View>
         {deal.stage !== 'complete' && (
-          <Button title="Advance to Next Stage ›" onPress={advanceStage} loading={loading} size="block" />
+          <Button title="推进到下一阶段 →" onPress={advanceStage} loading={loading} size="block" />
         )}
       </Card>
 
       <Card>
-        <Text style={styles.sectionTitle}>Timeline</Text>
+        <Text style={styles.sectionTitle}>交易动态</Text>
         {events.length === 0 ? (
-          <Text style={styles.empty}>No events yet</Text>
+          <Text style={styles.empty}>暂无动态</Text>
         ) : (
-          events.map((e, i) => (
-            <View key={e.id} style={styles.event}>
+          events.map(event => (
+            <View key={event.id} style={styles.event}>
               <View style={styles.eventDot} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.eventAction}>{e.action}</Text>
-                <Text style={styles.eventDetail}>{e.detail}</Text>
-                <Text style={styles.eventTime}>{e.created_at?.slice(0, 19).replace('T', ' ')}</Text>
+                <Text style={styles.eventAction}>{event.action}</Text>
+                <Text style={styles.eventDetail}>{event.detail}</Text>
+                <Text style={styles.eventTime}>{event.created_at?.slice(0, 19).replace('T', ' ')}</Text>
               </View>
             </View>
           ))

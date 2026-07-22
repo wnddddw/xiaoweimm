@@ -1,79 +1,71 @@
 import { Platform } from 'react-native';
 
-// Auto-detect API base URL:
-//   Android emulator → 10.0.2.2 (maps to host localhost)
-//   iOS simulator    → localhost
-//   Physical device  → configure API_HOST in your environment
-//
-// IMPORTANT: Production must use HTTPS. Set API_HOST env var when building release.
+export const PRODUCTION_API_BASE_URL = 'https://api.xiaoweimm.com/api';
+
 const getApiBaseUrl = (): string => {
-  // Allow override via environment / global variable
   const override = (globalThis as any).__API_HOST;
   if (override) {
-    // Force HTTPS for non-localhost, non-LAN IPs
     const host = override.includes('://') ? override : `https://${override}`;
     return host.endsWith('/api') ? host : `${host}/api`;
   }
 
   if (__DEV__) {
     if (Platform.OS === 'android') {
-      return 'http://10.0.2.2:3001/api'; // Android emulator → host localhost
+      // Physical Android device local testing uses `adb reverse tcp:3001 tcp:3001`.
+      // Android emulator can use `http://10.0.2.2:3001/api` if needed.
+      return 'http://127.0.0.1:3001/api';
     }
-    return 'http://localhost:3001/api'; // iOS simulator
+    return 'http://localhost:3001/api';
   }
 
-  // Production: MUST configure API_HOST via env/build config
-  throw new Error(
-    'API_HOST not configured for production build. ' +
-    'Set it in your environment or via globalThis.__API_HOST before app init.'
-  );
+  return PRODUCTION_API_BASE_URL;
 };
 
 export const API_BASE_URL = getApiBaseUrl();
 
 export const industryData: Record<string, string[]> = {
-  'Catering': ['Chinese Restaurant','Western Restaurant','Hotpot/BBQ','Fast Food','Cafe/Tea','Bakery/Dessert','Japanese/Korean','Other Catering'],
-  'Retail': ['Supermarket','Convenience Store','Clothing/Shoes','Beauty/Cosmetics','Home/Furniture','Electronics','Maternity/Baby','Other Retail'],
-  'Manufacturing': ['Precision Machinery','Heavy Equipment','Auto Parts','Electronics/PCB','Home Appliances','Chemical','Food Processing','Textile','Metal Products','Medical Devices','New Energy','Other Manufacturing'],
-  'IT/Internet': ['SaaS/ERP','Mobile App','Web Development','IoT/Embedded','E-commerce','Social/Community','EdTech','FinTech','AI/ML','Big Data','Cloud/DevOps','Cybersecurity','Gaming','Blockchain/Web3','VR/AR','IT Outsourcing','Other IT'],
-  'Life Services': ['Beauty/Salon','Housekeeping','Wedding/Photography','Auto Repair','Pet Services','Laundry','Appliance Repair','Moving/Delivery','Other Services'],
-  'Construction': ['Building Construction','Municipal Engineering','Renovation/Interior','Landscape/Garden','Steel Structure','Other Construction'],
-  'Trade/Wholesale': ['Import/Export','Clothing Wholesale','Food Wholesale','Industrial Wholesale','Cross-border E-commerce','Other Trade'],
-  'Logistics': ['Express/Delivery','Freight Transport','Cold Chain','Warehousing','International Shipping','Other Logistics'],
-  'Education': ['Preschool/Daycare','K-12 School','Higher Education','Test Prep','IT Training','Vocational Training','Language Training','Art/Sports Training','Online Education','Driving School','Other Education'],
-  'Healthcare': ['Hospital','Community Clinic','Dental','Cosmetic Surgery','Ophthalmology','OB/GYN','Pediatrics','Orthopedics','TCM/Acupuncture','Health Checkup','Elderly Care','Pharmacy','Medical Devices','Telemedicine','Mental Health','Other Healthcare'],
-  'Finance': ['Banking','Insurance','Securities','Fund Management','Trust','Microfinance','Payment/FinTech','Financial Advisory','Wealth Management','Other Finance'],
-  'Agriculture': ['Crop Farming','Vegetable/Fruit','Herbal Medicine','Forestry','Poultry','Livestock','Aquaculture','Leisure Agriculture','Agricultural Products Processing','Other Agriculture'],
-  'Culture/Media': ['Advertising','Film/TV','Short Video/MCN','Anime/Gaming','Publishing','Printing/Packaging','Entertainment','Artist Management','Museum/Gallery','Sports/Esports','Tourism/Theme Park','Events/Exhibition','Creative Products','Other Culture'],
-  'Other': ['Comprehensive/Diversified','Other']
+  '餐饮': ['中餐', '西餐', '火锅烧烤', '快餐', '咖啡茶饮', '烘焙甜品', '日韩料理', '其他餐饮'],
+  '零售': ['超市', '便利店', '服装鞋帽', '美妆日化', '家居家具', '数码电器', '母婴用品', '其他零售'],
+  '制造': ['精密机械', '重型设备', '汽车零部件', '电子电路', '家用电器', '化工材料', '食品加工', '纺织服装', '金属制品', '医疗器械', '新能源', '其他制造'],
+  'IT互联网': ['SaaS/ERP', '移动应用', '网站开发', '物联网/嵌入式', '电商平台', '社群社区', '教育科技', '金融科技', '人工智能', '大数据', '云服务/运维', '网络安全', '游戏', '区块链', 'VR/AR', 'IT外包', '其他IT'],
+  '生活服务': ['美容美发', '家政服务', '婚庆摄影', '汽车维修', '宠物服务', '洗衣洗护', '家电维修', '搬家配送', '其他服务'],
+  '建筑工程': ['房屋建筑', '市政工程', '装修装饰', '园林绿化', '钢结构工程', '其他工程'],
+  '贸易批发': ['进出口贸易', '服装批发', '食品批发', '工业品批发', '跨境电商', '其他贸易'],
+  '物流运输': ['快递配送', '货运运输', '冷链物流', '仓储服务', '国际货代', '其他物流'],
+  '教育培训': ['幼儿托育', 'K12学校', '高等教育', '考试培训', 'IT培训', '职业培训', '语言培训', '艺术体育', '在线教育', '驾校', '其他教育'],
+  '医疗健康': ['综合医院', '社区诊所', '口腔医疗', '医美整形', '眼科', '妇产儿科', '骨科康复', '中医针灸', '体检中心', '养老护理', '药房', '医疗器械', '互联网医疗', '心理健康', '其他医疗'],
+  '金融服务': ['银行服务', '保险服务', '证券服务', '基金管理', '信托服务', '小额贷款', '支付金融科技', '财务顾问', '财富管理', '其他金融'],
+  '农业': ['种植业', '蔬果基地', '中药材', '林业', '家禽养殖', '畜牧养殖', '水产养殖', '休闲农业', '农产品加工', '其他农业'],
+  '文化传媒': ['广告营销', '影视制作', '短视频/MCN', '动漫游戏', '出版发行', '印刷包装', '娱乐演艺', '艺人经纪', '展馆画廊', '体育电竞', '文旅景区', '会展活动', '文创产品', '其他文化'],
+  '其他': ['综合多元', '其他'],
 };
 
 export const regionData: Record<string, string[]> = {
-  'Beijing': ['Dongcheng','Xicheng','Chaoyang','Haidian','Fengtai','Tongzhou','Daxing','Shunyi','Changping','Fangshan','Other'],
-  'Shanghai': ['Pudong','Huangpu','Xuhui','Jing\'an','Changning','Hongkou','Minhang','Yangpu','Putuo','Baoshan','Other'],
-  'Guangdong': ['Guangzhou','Shenzhen','Dongguan','Foshan','Zhuhai','Huizhou','Zhongshan','Jiangmen','Shantou','Other'],
-  'Zhejiang': ['Hangzhou','Ningbo','Wenzhou','Jiaxing','Shaoxing','Jinhua','Taizhou','Huzhou','Other'],
-  'Jiangsu': ['Nanjing','Suzhou','Wuxi','Changzhou','Nantong','Xuzhou','Yangzhou','Zhenjiang','Yancheng','Other'],
-  'Sichuan': ['Chengdu','Mianyang','Deyang','Yibin','Nanchong','Luzhou','Leshan','Other'],
-  'Hubei': ['Wuhan','Yichang','Xiangyang','Jingzhou','Huanggang','Shiyan','Other'],
-  'Shandong': ['Qingdao','Jinan','Yantai','Weifang','Linyi','Weihai','Zibo','Jining','Other'],
-  'Fujian': ['Xiamen','Fuzhou','Quanzhou','Zhangzhou','Putian','Longyan','Other'],
-  'Henan': ['Zhengzhou','Luoyang','Kaifeng','Nanyang','Xuchang','Xinxiang','Other'],
-  'Hunan': ['Changsha','Zhuzhou','Xiangtan','Yueyang','Hengyang','Changde','Other'],
-  'Shaanxi': ['Xi\'an','Xianyang','Baoji','Weinan','Yan\'an','Other'],
-  'Anhui': ['Hefei','Wuhu','Bengbu','Anqing','Ma\'anshan','Other'],
-  'Liaoning': ['Dalian','Shenyang','Anshan','Jinzhou','Yingkou','Other'],
-  'Chongqing': ['Yuzhong','Jiangbei','Nan\'an','Jiulongpo','Shapingba','Yubei','Banan','Other'],
-  'Tianjin': ['Heping','Hexi','Nankai','Hedong','Hebei','Binhai','Xiqing','Other'],
-  'Other': ['Other City']
+  '北京': ['东城', '西城', '朝阳', '海淀', '丰台', '通州', '大兴', '顺义', '昌平', '房山', '其他'],
+  '上海': ['浦东', '黄浦', '徐汇', '静安', '长宁', '虹口', '闵行', '杨浦', '普陀', '宝山', '其他'],
+  '广东': ['广州', '深圳', '东莞', '佛山', '珠海', '惠州', '中山', '江门', '汕头', '其他'],
+  '浙江': ['杭州', '宁波', '温州', '嘉兴', '绍兴', '金华', '台州', '湖州', '其他'],
+  '江苏': ['南京', '苏州', '无锡', '常州', '南通', '徐州', '扬州', '镇江', '盐城', '其他'],
+  '四川': ['成都', '绵阳', '德阳', '宜宾', '南充', '泸州', '乐山', '其他'],
+  '湖北': ['武汉', '宜昌', '襄阳', '荆州', '黄冈', '十堰', '其他'],
+  '山东': ['青岛', '济南', '烟台', '潍坊', '临沂', '威海', '淄博', '济宁', '其他'],
+  '福建': ['厦门', '福州', '泉州', '漳州', '莆田', '龙岩', '其他'],
+  '河南': ['郑州', '洛阳', '开封', '南阳', '许昌', '新乡', '其他'],
+  '湖南': ['长沙', '株洲', '湘潭', '岳阳', '衡阳', '常德', '其他'],
+  '陕西': ['西安', '咸阳', '宝鸡', '渭南', '延安', '其他'],
+  '安徽': ['合肥', '芜湖', '蚌埠', '安庆', '马鞍山', '其他'],
+  '辽宁': ['大连', '沈阳', '鞍山', '锦州', '营口', '其他'],
+  '重庆': ['渝中', '江北', '南岸', '九龙坡', '沙坪坝', '渝北', '巴南', '其他'],
+  '天津': ['和平', '河西', '南开', '河东', '河北', '滨海', '西青', '其他'],
+  '其他': ['其他城市'],
 };
 
 export const dealStages = [
-  { id: 'matching', label: 'Matching', icon: '🤝' },
-  { id: 'nda', label: 'NDA', icon: '🔒' },
-  { id: 'due_diligence', label: 'Due Diligence', icon: '🔍' },
-  { id: 'contract', label: 'Contract', icon: '📝' },
-  { id: 'payment', label: 'Payment', icon: '💰' },
-  { id: 'handover', label: 'Handover', icon: '📦' },
-  { id: 'complete', label: 'Complete', icon: '✅' },
+  { id: 'matching', label: '匹配沟通', icon: '🤝' },
+  { id: 'nda', label: '保密协议', icon: '🔒' },
+  { id: 'due_diligence', label: '尽职调查', icon: '🔎' },
+  { id: 'contract', label: '合同签署', icon: '📋' },
+  { id: 'payment', label: '付款托管', icon: '💰' },
+  { id: 'handover', label: '交割移交', icon: '📦' },
+  { id: 'complete', label: '交易完成', icon: '✅' },
 ];

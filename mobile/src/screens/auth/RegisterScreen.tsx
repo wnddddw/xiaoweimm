@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuth } from '../../store/AuthContext';
-import { authApi } from '../../api';
+import { authApi, getApiErrorMessage } from '../../api';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
 
@@ -47,7 +47,7 @@ export default function RegisterScreen({ navigation }: any) {
         setToast({ visible: true, message: res.data.error || '发送失败', type: 'error' });
       }
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || '网络错误', type: 'error' });
+      setToast({ visible: true, message: getApiErrorMessage(e, '网络错误'), type: 'error' });
     }
   };
 
@@ -65,7 +65,7 @@ export default function RegisterScreen({ navigation }: any) {
     try {
       await register(phone, code, password, name, role);
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || '注册失败', type: 'error' });
+      setToast({ visible: true, message: getApiErrorMessage(e, '注册失败'), type: 'error' });
     } finally { setLoading(false); }
   };
 

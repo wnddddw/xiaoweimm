@@ -17,7 +17,6 @@ export default function PaymentWebView({
 }: PaymentWebViewProps) {
   const handleNavigationChange = (navState: any) => {
     const targetUrl: string = navState.url || '';
-    // Detect return from payment (WeChat/Alipay redirect)
     if (
       targetUrl.includes('/payment-result') ||
       targetUrl.includes('/callback/wechat') ||

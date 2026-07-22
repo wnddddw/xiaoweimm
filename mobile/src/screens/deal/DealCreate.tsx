@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
+import { Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
@@ -17,32 +17,32 @@ export default function DealCreate({ navigation }: any) {
 
   const submit = async () => {
     if (!projectId || !sellerName || !buyerName || !price) {
-      setToast({ visible: true, message: 'Fill all required fields', type: 'error' }); return;
+      setToast({ visible: true, message: '请填写所有必填项', type: 'error' }); return;
     }
     setLoading(true);
     try {
-      const res = await dealsApi.create({ project_id: projectId, seller_name: sellerName, buyer_name: buyerName, price: +price, advisor: advisor || 'Auto', note: note.trim() });
+      const res = await dealsApi.create({ project_id: projectId, seller_name: sellerName, buyer_name: buyerName, price: +price, advisor: advisor || '系统分配', note: note.trim() });
       if (res.data.success) {
-        setToast({ visible: true, message: 'Deal created', type: 'success' });
+        setToast({ visible: true, message: '交易已创建', type: 'success' });
         navigation.goBack();
       }
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '创建失败', type: 'error' });
     } finally { setLoading(false); }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+      <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
       <Card>
-        <Text style={styles.section}>Create Deal</Text>
-        <TextInput style={styles.input} placeholder="Project ID *" value={projectId} onChangeText={setProjectId} />
-        <TextInput style={styles.input} placeholder="Seller Name *" value={sellerName} onChangeText={setSellerName} />
-        <TextInput style={styles.input} placeholder="Buyer Name *" value={buyerName} onChangeText={setBuyerName} />
-        <TextInput style={styles.input} placeholder="Price (10k RMB) *" value={price} onChangeText={setPrice} keyboardType="numeric" />
-        <TextInput style={styles.input} placeholder="Advisor (optional)" value={advisor} onChangeText={setAdvisor} />
-        <TextInput style={[styles.input, styles.textArea]} placeholder="Notes..." value={note} onChangeText={setNote} multiline textAlignVertical="top" />
-        <Button title="Create Deal" onPress={submit} loading={loading} size="block" />
+        <Text style={styles.section}>创建交易</Text>
+        <TextInput style={styles.input} placeholder="项目编号 *" value={projectId} onChangeText={setProjectId} />
+        <TextInput style={styles.input} placeholder="卖方名称 *" value={sellerName} onChangeText={setSellerName} />
+        <TextInput style={styles.input} placeholder="买方名称 *" value={buyerName} onChangeText={setBuyerName} />
+        <TextInput style={styles.input} placeholder="交易价格（万元） *" value={price} onChangeText={setPrice} keyboardType="numeric" />
+        <TextInput style={styles.input} placeholder="负责顾问（选填）" value={advisor} onChangeText={setAdvisor} />
+        <TextInput style={[styles.input, styles.textArea]} placeholder="备注" value={note} onChangeText={setNote} multiline textAlignVertical="top" />
+        <Button title="创建交易" onPress={submit} loading={loading} size="block" />
       </Card>
     </ScrollView>
   );

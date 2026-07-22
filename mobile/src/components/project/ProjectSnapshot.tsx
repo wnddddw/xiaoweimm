@@ -99,7 +99,6 @@ export default function ProjectSnapshot({ project, topRight, footer, note }: Pro
         <InfoItem label="行业 / 细分" value={`${project.industry || '-'} / ${project.sub_industry || '-'}`} />
         <InfoItem label="所在地区" value={`${project.province || ''} ${project.city || ''}`.trim()} />
         <InfoItem label="利润率" value={`${project.profit_rate || 0}%`} />
-        <InfoItem label="转让原因" value={project.transfer_reason || '-'} multiline />
         <InfoItem label="项目简介" value={project.description || '-'} multiline />
         {note ? <Text style={styles.note}>{note}</Text> : null}
       </Card>

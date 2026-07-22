@@ -17,7 +17,7 @@ export default function AdminDashboard({ navigation }: any) {
       const res = await adminApi.getDashboard();
       if (res.data.success && res.data.data) setData(res.data.data);
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Load failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '加载失败', type: 'error' });
     }
   }, []);
 
@@ -28,18 +28,18 @@ export default function AdminDashboard({ navigation }: any) {
     <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
       <Card>
-        <Text style={styles.title}>Admin Dashboard</Text>
+        <Text style={styles.title}>管理后台</Text>
         <View style={styles.stats}>
-          <StatItem num={data?.projectCount || 0} label="Projects" />
-          <StatItem num={data?.pendingProjects || 0} label="Pending Projects" />
-          <StatItem num={data?.pendingVerifications || 0} label="Pending KYC" />
-          <StatItem num={data?.userCount || 0} label="Users" />
+          <StatItem num={data?.projectCount || 0} label="项目总数" />
+          <StatItem num={data?.pendingProjects || 0} label="待审项目" />
+          <StatItem num={data?.pendingVerifications || 0} label="待审认证" />
+          <StatItem num={data?.userCount || 0} label="用户总数" />
         </View>
       </Card>
       <View style={styles.actions}>
-        <Button title="Review Projects" onPress={() => navigation.navigate('ProjectReview')} size="block" />
-        <Button title="Review Verifications" onPress={() => navigation.navigate('VerificationReview')} variant="outline" size="block" />
-        <Button title="Manage Users" onPress={() => navigation.navigate('UserManagement')} variant="outline" size="block" />
+        <Button title="项目审核" onPress={() => navigation.navigate('ProjectReview')} size="block" />
+        <Button title="认证审核" onPress={() => navigation.navigate('VerificationReview')} variant="outline" size="block" />
+        <Button title="用户管理" onPress={() => navigation.navigate('UserManagement')} variant="outline" size="block" />
       </View>
     </ScrollView>
   );

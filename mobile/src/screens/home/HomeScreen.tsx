@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { authApi, getApiErrorMessage } from '../../api';
 import Button from '../../components/common/Button';
@@ -53,6 +53,7 @@ export default function HomeScreen({ navigation }: any) {
   const [roleSwitchMode, setRoleSwitchMode] = useState(false);
   const [modalMode, setModalMode] = useState<AuthMode>('phoneLogin');
   const [targetRole, setTargetRole] = useState<RoleTarget>('seller');
+  const [justLogin, setJustLogin] = useState(false);
   const [pendingRole, setPendingRole] = useState<RoleTarget | null>(null);
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
@@ -72,7 +73,7 @@ export default function HomeScreen({ navigation }: any) {
     setPendingRole(null);
   }, [pendingRole, isAuthenticated, user]);
 
-  const navigateRole = (role: RoleTarget) => { navigation.navigate(role === 'seller' ? 'Seller' : 'Buyer'); };
+  const navigateRole = (role: RoleTarget) => { if (role === 'seller') navigation.navigate('Seller'); else if (role === 'buyer') navigation.navigate('Buyer'); else navigation.navigate('Admin'); };
 
   const handleRoleEntrance = (role: RoleTarget) => {
     setTargetRole(role);
@@ -81,7 +82,7 @@ export default function HomeScreen({ navigation }: any) {
     showRoleMismatch(role);
   };
 
-  const showRoleMismatch = (role: RoleTarget) => { setTargetRole(role); setRoleSwitchMode(true); setAuthModalVisible(true); };
+  const showRoleMismatch = (role: RoleTarget) => { if (user?.role === 'admin') { setRoleSwitchMode(false); setAuthModalVisible(false); setToast({ visible: true, message: '管理员账号不支持角色切换', type: 'error' }); return; } setTargetRole(role); setRoleSwitchMode(true); setAuthModalVisible(true); };
 
   const openPublicPage = (page: 'service' | 'case' | 'column' | 'company' | 'contact') => { navigation.navigate('PublicContent', { page }); };
 
@@ -96,7 +97,7 @@ export default function HomeScreen({ navigation }: any) {
         if (!password) { setToast({ visible: true, message: '请输入密码', type: 'error' }); setLoading(false); return; }
         await login(phone, password);
       }
-      setAuthModalVisible(false); setPendingRole(targetRole);
+      setAuthModalVisible(false); if (!justLogin) { setPendingRole(targetRole); } else { setJustLogin(false); }
     } catch (e: any) { setToast({ visible: true, message: getApiErrorMessage(e), type: 'error' }); }
     finally { setLoading(false); }
   };
@@ -104,7 +105,7 @@ export default function HomeScreen({ navigation }: any) {
   const handleRegister = async () => {
     if (!phone || !password || !name || !agree) { setToast({ visible: true, message: '请完善信息并同意条款', type: 'error' }); return; }
     setLoading(true);
-    try { await register(phone, password, name, targetRole); setAuthModalVisible(false); setPendingRole(targetRole); }
+    try { await register(phone, password, name, targetRole); setAuthModalVisible(false); if (!justLogin) { setPendingRole(targetRole); } else { setJustLogin(false); } }
     catch (e: any) { setToast({ visible: true, message: getApiErrorMessage(e), type: 'error' }); }
     finally { setLoading(false); }
   };
@@ -125,7 +126,7 @@ export default function HomeScreen({ navigation }: any) {
 
   const resetModal = () => {
     setAuthModalVisible(false); setRoleSwitchMode(false); setModalMode('phoneLogin');
-    setPhone(''); setCode(''); setPassword(''); setName(''); setAgree(false); setCountdown(0);
+    setJustLogin(false); setPhone(''); setCode(''); setPassword(''); setName(''); setAgree(false); setCountdown(0);
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
@@ -141,7 +142,7 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={styles.userPillText}>{user.phone || user.name}</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.loginPill} onPress={() => { setTargetRole('seller'); setAuthModalVisible(true); }}>
+            <TouchableOpacity style={styles.loginPill} onPress={() => { setJustLogin(true); setAuthModalVisible(true); }}>
               <Text style={styles.loginPillText}>登录 / 注册</Text>
             </TouchableOpacity>
           )}
@@ -241,7 +242,7 @@ export default function HomeScreen({ navigation }: any) {
             </TouchableOpacity>
             {roleSwitchMode ? (
               <View>
-                <Text style={styles.roleSwitchMsg}>{'您当前是' + (targetRole === 'seller' ? '买家' : '卖家') + '账号，要切换到' + (targetRole === 'seller' ? '卖家' : '买家') + '，请先退出当前账号'}</Text>
+                <Text style={styles.roleSwitchMsg}>{'您当前是' + (user?.role === 'admin' ? '管理员' : (targetRole === 'seller' ? '买家' : '卖家')) + '账号，要切换到' + (targetRole === 'seller' ? '卖家' : '买家') + '，请先退出当前账号'}</Text>
                 <Button title={'退出当前账号'} onPress={handleLogoutAndSwitch} size="block" />
                 <View style={{ height: 10 }} />
                 <Button title={'取消'} onPress={resetModal} size="block" />

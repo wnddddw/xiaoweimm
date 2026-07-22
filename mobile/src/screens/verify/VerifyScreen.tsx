@@ -27,76 +27,76 @@ export default function VerifyScreen() {
 
   useFocusEffect(useCallback(() => { fetchData(); }, [fetchData]));
 
-  const pickImage = async (setter: (v: string) => void) => {
+  const pickImage = async (setter: (value: string) => void) => {
     const result = await launchImageLibrary({ mediaType: 'photo', quality: 0.8 });
     if (result.assets?.[0]?.uri) setter(result.assets[0].uri);
   };
 
   const submit = async () => {
-    if (!name.trim()) { setToast({ visible: true, message: 'Enter name', type: 'error' }); return; }
-    if (type === 'personal' && !idCardImg) { setToast({ visible: true, message: 'Upload ID card', type: 'error' }); return; }
-    if (type === 'company' && !licenseImg) { setToast({ visible: true, message: 'Upload business license', type: 'error' }); return; }
+    if (!name.trim()) { setToast({ visible: true, message: '请输入名称', type: 'error' }); return; }
+    if (type === 'personal' && !idCardImg) { setToast({ visible: true, message: '请上传身份证照片', type: 'error' }); return; }
+    if (type === 'company' && !licenseImg) { setToast({ visible: true, message: '请上传营业执照', type: 'error' }); return; }
     setLoading(true);
     try {
       await verifyApi.submit(type, { name: name.trim(), id_card_url: idCardImg, license_url: licenseImg });
-      setToast({ visible: true, message: 'Verification submitted for review', type: 'success' });
+      setToast({ visible: true, message: '认证资料已提交审核', type: 'success' });
       fetchData();
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || 'Failed', type: 'error' });
+      setToast({ visible: true, message: e.message || '提交失败', type: 'error' });
     } finally { setLoading(false); }
   };
 
-  const statusBadge = (s: string) => {
-    switch (s) {
-      case 'approved': return <Badge text="Approved" variant="ok" />;
-      case 'pending': return <Badge text="Pending" variant="warn" />;
-      case 'rejected': return <Badge text="Rejected" variant="err" />;
-      default: return <Badge text={s || 'Unknown'} variant="gray" />;
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case 'approved': return <Badge text="已通过" variant="ok" />;
+      case 'pending': return <Badge text="审核中" variant="warn" />;
+      case 'rejected': return <Badge text="未通过" variant="err" />;
+      default: return <Badge text="未知状态" variant="gray" />;
     }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+      <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
 
       {verifications.length > 0 && (
         <Card>
-          <Text style={styles.sectionTitle}>Verification History</Text>
-          {verifications.map(v => (
-            <View key={v.id} style={styles.historyRow}>
+          <Text style={styles.sectionTitle}>认证记录</Text>
+          {verifications.map(item => (
+            <View key={item.id} style={styles.historyRow}>
               <View>
-                <Text style={styles.historyType}>{v.type === 'personal' ? 'Personal' : 'Company'}</Text>
-                <Text style={styles.historyTime}>{v.submit_time?.slice(0, 10)}</Text>
+                <Text style={styles.historyType}>{item.type === 'personal' ? '个人认证' : '企业认证'}</Text>
+                <Text style={styles.historyTime}>{item.submit_time?.slice(0, 10)}</Text>
               </View>
-              {statusBadge(v.status)}
-              {v.reject_reason ? <Text style={styles.reject}>{v.reject_reason}</Text> : null}
+              {statusBadge(item.status)}
+              {item.reject_reason ? <Text style={styles.reject}>{item.reject_reason}</Text> : null}
             </View>
           ))}
         </Card>
       )}
 
       <Card>
-        <Text style={styles.sectionTitle}>New Verification</Text>
+        <Text style={styles.sectionTitle}>新建认证</Text>
         <View style={styles.typeRow}>
           <TouchableOpacity style={[styles.typeBtn, type === 'personal' && styles.typeActive]} onPress={() => setType('personal')}>
-            <Text style={[styles.typeText, type === 'personal' && styles.typeActiveText]}>Personal</Text>
+            <Text style={[styles.typeText, type === 'personal' && styles.typeActiveText]}>个人认证</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.typeBtn, type === 'company' && styles.typeActive]} onPress={() => setType('company')}>
-            <Text style={[styles.typeText, type === 'company' && styles.typeActiveText]}>Company</Text>
+            <Text style={[styles.typeText, type === 'company' && styles.typeActiveText]}>企业认证</Text>
           </TouchableOpacity>
         </View>
-        <TextInput style={styles.input} placeholder={type === 'personal' ? 'Full Name *' : 'Company Name *'} value={name} onChangeText={setName} />
+        <TextInput style={styles.input} placeholder={type === 'personal' ? '真实姓名 *' : '企业名称 *'} value={name} onChangeText={setName} />
         {type === 'personal' ? (
           <TouchableOpacity style={styles.imgPicker} onPress={() => pickImage(setIdCardImg)}>
-            {idCardImg ? <Image source={{ uri: idCardImg }} style={styles.img} /> : <Text style={styles.imgPlaceholder}>Tap to upload ID Card *</Text>}
+            {idCardImg ? <Image source={{ uri: idCardImg }} style={styles.img} /> : <Text style={styles.imgPlaceholder}>点击上传身份证照片 *</Text>}
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.imgPicker} onPress={() => pickImage(setLicenseImg)}>
-            {licenseImg ? <Image source={{ uri: licenseImg }} style={styles.img} /> : <Text style={styles.imgPlaceholder}>Tap to upload Business License *</Text>}
+            {licenseImg ? <Image source={{ uri: licenseImg }} style={styles.img} /> : <Text style={styles.imgPlaceholder}>点击上传营业执照 *</Text>}
           </TouchableOpacity>
         )}
-        <Button title="Submit for Review" onPress={submit} loading={loading} size="block" />
-        <Text style={styles.hint}>Review takes 10 min ~ 2 hours</Text>
+        <Button title="提交审核" onPress={submit} loading={loading} size="block" />
+        <Text style={styles.hint}>审核通常需要 10 分钟至 2 小时</Text>
       </Card>
       <View style={{ height: 20 }} />
     </ScrollView>

@@ -1,1 +1,3 @@
-<resources><string name='app_name'>小微买卖</string></resources>
+<resources>
+    <string name="app_name">小微买卖</string>
+</resources>

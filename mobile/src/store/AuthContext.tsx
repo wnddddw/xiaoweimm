@@ -12,6 +12,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (phone: string, password: string) => Promise<void>;
+  loginSms: (phone: string, code: string) => Promise<void>;
   register: (phone: string, code: string, password: string, name?: string, role?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -41,20 +42,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (phone: string, password: string) => {
     const res = await authApi.login(phone, password);
-    if (!res.data.success || !res.data.data) throw new Error(res.data.error || 'Login failed');
-    const { token, ...user } = res.data.data;
+    if (!res.data.success || !res.data.data) throw new Error(res.data.error || '登录失败');
+    const { token, refresh_token: refreshToken, ...user } = res.data.data;
     const userObj = user as unknown as User;
     await secureStore.setToken(token);
+    await secureStore.setRefreshToken(refreshToken);
+    await secureStore.setUser(userObj);
+    setState({ user: userObj, token, isLoading: false, isAuthenticated: true });
+  }, []);
+
+  const loginSms = useCallback(async (phone: string, code: string) => {
+    const res = await authApi.loginSms(phone, code);
+    if (!res.data.success || !res.data.data) throw new Error(res.data.error || '登录失败');
+    const { token, refresh_token: refreshToken, ...user } = res.data.data;
+    const userObj = user as unknown as User;
+    await secureStore.setToken(token);
+    await secureStore.setRefreshToken(refreshToken);
     await secureStore.setUser(userObj);
     setState({ user: userObj, token, isLoading: false, isAuthenticated: true });
   }, []);
 
   const register = useCallback(async (phone: string, code: string, password: string, name?: string, role?: string) => {
     const res = await authApi.register({ phone, code, password, name, role });
-    if (!res.data.success || !res.data.data) throw new Error(res.data.error || 'Register failed');
-    const { token, ...user } = res.data.data;
+    if (!res.data.success || !res.data.data) throw new Error(res.data.error || '注册失败');
+    const { token, refresh_token: refreshToken, ...user } = res.data.data;
     const userObj = user as unknown as User;
     await secureStore.setToken(token);
+    await secureStore.setRefreshToken(refreshToken);
     await secureStore.setUser(userObj);
     setState({ user: userObj, token, isLoading: false, isAuthenticated: true });
   }, []);
@@ -65,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, loginSms, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

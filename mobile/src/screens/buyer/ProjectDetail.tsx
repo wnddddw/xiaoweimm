@@ -88,11 +88,20 @@ export default function ProjectDetail({ route }: any) {
 
       {showApply && (
         <Card>
-          <Text style={styles.sectionTitle}>申请保密资料</Text>
-          <Text style={styles.hint}>审核通过后，需要签署 NDA 才能查看更完整的项目资料。</Text>
+          <Text style={styles.sectionTitle}>申请查看机密信息</Text>
+          <Text style={styles.hint}>提交申请后卖家将审核，通过后需签署保密协议方可解锁完整信息。</Text>
+          <View style={styles.uploadRow}>
+            <Text style={styles.uploadLabel}>资金计划书</Text>
+            <Text style={styles.uploadHint}>PDF/Word，可选</Text>
+          </View>
+          <View style={styles.uploadRow}>
+            <Text style={styles.uploadLabel}>事业计划书</Text>
+            <Text style={styles.uploadHint}>PDF/Word，可选</Text>
+          </View>
+          <Text style={styles.fieldLabel}>申请备注</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="简要说明你的收购意向、行业背景和资金安排..."
+            placeholder="请简要说明收购意向和资金准备情况"
             value={applyNote}
             onChangeText={setApplyNote}
             multiline
@@ -114,6 +123,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 8 },
   hint: { fontSize: 13, color: '#555', marginBottom: 10, lineHeight: 20 },
+  fieldLabel: { fontSize: 13, fontWeight: '700', color: '#222', marginBottom: 6 },
+  uploadRow: { borderWidth: 1, borderColor: '#d8dee8', borderRadius: 10, backgroundColor: '#f9fbff', padding: 12, marginBottom: 10 },
+  uploadLabel: { fontSize: 14, fontWeight: '700', color: '#111', marginBottom: 4 },
+  uploadHint: { fontSize: 12, color: '#667085' },
   input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, color: '#222', marginBottom: 12 },
   textArea: { height: 96 },
   btnRow: { flexDirection: 'row', gap: 10, marginTop: 10 },

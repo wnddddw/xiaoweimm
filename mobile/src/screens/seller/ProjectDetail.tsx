@@ -20,7 +20,6 @@ export default function ProjectDetail({ route }: any) {
     city: '',
     revenue: '',
     employees: '',
-    transfer_reason: '',
     profit_rate: '',
     price: '',
     description: '',
@@ -41,7 +40,6 @@ export default function ProjectDetail({ route }: any) {
           city: item.city || '',
           revenue: String(item.revenue || ''),
           employees: item.employees || '',
-          transfer_reason: item.transfer_reason || '',
           profit_rate: String(item.profit_rate || ''),
           price: String(item.price || ''),
           description: item.description || '',
@@ -64,7 +62,7 @@ export default function ProjectDetail({ route }: any) {
         city: form.city,
         revenue: +form.revenue,
         employees: form.employees,
-        transfer_reason: form.transfer_reason,
+        transfer_reason: '',
         profit_rate: +form.profit_rate,
         price: +form.price,
         description: form.description,
@@ -117,7 +115,6 @@ export default function ProjectDetail({ route }: any) {
           <TextInput style={styles.input} value={form.city} onChangeText={(value) => setForm({ ...form, city: value })} placeholder="城市" />
           <TextInput style={styles.input} value={form.revenue} onChangeText={(value) => setForm({ ...form, revenue: value })} placeholder="年营收（万）" keyboardType="numeric" />
           <TextInput style={styles.input} value={form.employees} onChangeText={(value) => setForm({ ...form, employees: value })} placeholder="员工规模" />
-          <TextInput style={styles.input} value={form.transfer_reason} onChangeText={(value) => setForm({ ...form, transfer_reason: value })} placeholder="转让原因" />
           <TextInput style={styles.input} value={form.profit_rate} onChangeText={(value) => setForm({ ...form, profit_rate: value })} placeholder="利润率 %" keyboardType="numeric" />
           <TextInput style={styles.input} value={form.price} onChangeText={(value) => setForm({ ...form, price: value })} placeholder="转让价格（万）" keyboardType="numeric" />
           <TextInput
