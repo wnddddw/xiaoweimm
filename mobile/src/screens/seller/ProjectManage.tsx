@@ -8,6 +8,7 @@ import Toast from '../../components/common/Toast';
 import WorkbenchTabs, { sellerWorkbenchTabs } from '../../components/workbench/WorkbenchTabs';
 import { projectsApi } from '../../api/projects';
 import { Project } from '../../types';
+import { colors } from '../../theme';
 
 const STATUS_TABS = [
   { key: 'all', label: '全部' },
@@ -140,18 +141,18 @@ export default function ProjectManage({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   tabs: { marginBottom: 12 },
-  tab: { minHeight: 42, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8, backgroundColor: '#e5e7ea', alignItems: 'center', justifyContent: 'center' },
-  tabActive: { backgroundColor: '#1a44aa' },
-  tabText: { fontSize: 13, color: '#555', fontWeight: '500' },
-  countText: { fontSize: 11, color: '#777', fontWeight: '800', marginTop: 2 },
-  tabActiveText: { color: '#fff' },
-  empty: { textAlign: 'center', color: '#555', padding: 20 },
+  tab: { minHeight: 42, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center' },
+  tabActive: { backgroundColor: colors.primary },
+  tabText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
+  countText: { fontSize: 11, color: colors.textSecondary, fontWeight: '800', marginTop: 2 },
+  tabActiveText: { color: colors.white },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 20 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace' },
-  ind: { fontSize: 15, fontWeight: '600', color: '#111', marginBottom: 2 },
-  loc: { fontSize: 13, color: '#555', marginBottom: 4 },
-  detail: { fontSize: 12, color: '#555' },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace' },
+  ind: { fontSize: 15, fontWeight: '600', color: colors.text, marginBottom: 2 },
+  loc: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
+  detail: { fontSize: 12, color: colors.textSecondary },
   actions: { flexDirection: 'row', gap: 6, marginTop: 10, flexWrap: 'wrap' },
 });

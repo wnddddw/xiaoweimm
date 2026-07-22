@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Toast from '../../components/common/Toast';
+import { colors } from '../../theme';
 
 export type PublicPageKey = 'service' | 'case' | 'column' | 'company' | 'contact';
 
@@ -173,15 +174,15 @@ function Hero({ title, subtitle }: { title: string; subtitle: string }) {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#f7f8fb' },
+  page: { flex: 1, backgroundColor: colors.bgSoft },
   content: { paddingBottom: 28 },
-  hero: { backgroundColor: '#1a44aa', paddingHorizontal: 22, paddingVertical: 34 },
-  heroTitle: { color: '#fff', fontSize: 28, fontWeight: '800', lineHeight: 36 },
+  hero: { backgroundColor: colors.primary, paddingHorizontal: 22, paddingVertical: 34 },
+  heroTitle: { color: colors.white, fontSize: 28, fontWeight: '800', lineHeight: 36 },
   heroSubtitle: { color: 'rgba(255,255,255,0.9)', fontSize: 15, lineHeight: 23, marginTop: 10 },
   body: { paddingHorizontal: 16, paddingTop: 16 },
-  cardTitle: { fontSize: 17, color: '#111', fontWeight: '800', marginBottom: 10 },
-  cardBody: { fontSize: 14, color: '#555', lineHeight: 23 },
-  fieldLabel: { fontSize: 13, color: '#222', fontWeight: '700', marginBottom: 6 },
-  input: { borderWidth: 1, borderColor: '#c7d2e5', borderRadius: 8, padding: 13, fontSize: 15, color: '#222', backgroundColor: '#fff', marginBottom: 14 },
+  cardTitle: { fontSize: 17, color: colors.text, fontWeight: '800', marginBottom: 10 },
+  cardBody: { fontSize: 14, color: colors.textSecondary, lineHeight: 23 },
+  fieldLabel: { fontSize: 13, color: colors.text, fontWeight: '700', marginBottom: 6 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, color: colors.text, backgroundColor: colors.white, marginBottom: 14 },
   textArea: { height: 110 },
 });

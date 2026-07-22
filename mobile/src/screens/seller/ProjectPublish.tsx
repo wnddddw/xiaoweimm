@@ -7,6 +7,7 @@ import Toast from '../../components/common/Toast';
 import WorkbenchTabs, { sellerWorkbenchTabs } from '../../components/workbench/WorkbenchTabs';
 import { projectsApi } from '../../api/projects';
 import { industryData, regionData } from '../../utils/constants';
+import { colors } from '../../theme';
 
 type AssetRow = { name: string; spec: string; qty: string; unitOrYear: string; value: string };
 
@@ -179,32 +180,32 @@ function PrivacyRow({ label, value, onChange }: { label: string; value: boolean;
   return (
     <View style={styles.privacyRow}>
       <Text style={styles.privacyLabel}>{label}</Text>
-      <Switch value={value} onValueChange={onChange} trackColor={{ false: '#ccc', true: '#1a44aa' }} />
+      <Switch value={value} onValueChange={onChange} trackColor={{ false: colors.border, true: colors.primary }} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
-  addText: { color: '#1a44aa', fontSize: 14, fontWeight: '700' },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: '#222', backgroundColor: '#fff' },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
+  addText: { color: colors.primary, fontSize: 14, fontWeight: '700' },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: colors.text, backgroundColor: colors.white },
   textArea: { height: 120 },
-  label: { fontSize: 13, fontWeight: '600', color: '#222', marginBottom: 6 },
-  pickerBtn: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, marginBottom: 12, backgroundColor: '#fff' },
-  pickerVal: { fontSize: 15, color: '#111', fontWeight: '500' },
-  pickerPlace: { fontSize: 15, color: '#888' },
+  label: { fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 },
+  pickerBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, marginBottom: 12, backgroundColor: colors.white },
+  pickerVal: { fontSize: 15, color: colors.text, fontWeight: '500' },
+  pickerPlace: { fontSize: 15, color: colors.textTertiary },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#bbb', backgroundColor: '#fff' },
-  chipActive: { backgroundColor: '#d4e4fd', borderColor: '#1a44aa' },
-  chipText: { fontSize: 13, color: '#555' },
-  chipActiveText: { color: '#1a44aa', fontWeight: '600' },
-  assetRow: { padding: 12, borderWidth: 1, borderColor: '#d8dee8', borderRadius: 12, backgroundColor: '#f9fbff', marginBottom: 12 },
-  assetTitle: { fontSize: 13, fontWeight: '700', color: '#1a44aa', marginBottom: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
+  chipActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  chipText: { fontSize: 13, color: colors.textSecondary },
+  chipActiveText: { color: colors.primary, fontWeight: '600' },
+  assetRow: { padding: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.bgSoft, marginBottom: 12 },
+  assetTitle: { fontSize: 13, fontWeight: '700', color: colors.primary, marginBottom: 8 },
   twoCol: { flexDirection: 'row', gap: 10 },
   flexInput: { flex: 1 },
-  privacyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  privacyLabel: { fontSize: 14, color: '#333' },
-  hint: { textAlign: 'center', fontSize: 12, color: '#555', marginTop: 8 },
+  privacyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  privacyLabel: { fontSize: 14, color: colors.text },
+  hint: { textAlign: 'center', fontSize: 12, color: colors.textSecondary, marginTop: 8 },
 });

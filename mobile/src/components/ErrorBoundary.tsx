@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors } from '../theme';
 
 type Props = {
   children: React.ReactNode;
@@ -45,17 +46,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: colors.bgSoft,
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1F2933',
+    color: colors.text,
     marginBottom: 8,
   },
   message: {
     fontSize: 14,
-    color: '#52606D',
+    color: colors.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
     marginBottom: 20,
@@ -66,11 +67,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: colors.primary,
   },
   buttonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.white,
   },
 });

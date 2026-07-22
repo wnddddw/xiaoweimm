@@ -3,6 +3,7 @@ import { ActivityIndicator, Text, View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAuth } from '../store/AuthContext';
 import MainNavigator from './MainNavigator';
+import { colors } from '../theme';
 
 export default function RootNavigator() {
   const { isLoading } = useAuth();
@@ -12,7 +13,7 @@ export default function RootNavigator() {
       <View style={styles.loading}>
         <Text style={styles.loadingLogo}>xiaoweimm</Text>
         <Text style={styles.loadingText}>姝ｅ湪鍚姩</Text>
-        <ActivityIndicator size="large" color="#ffffff" />
+        <ActivityIndicator size="large" color={colors.white} />
       </View>
     );
   }
@@ -29,11 +30,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a44aa',
+    backgroundColor: colors.primary,
     gap: 12,
   },
   loadingLogo: {
-    color: '#ffffff',
+    color: colors.white,
     fontSize: 28,
     fontWeight: '800',
   },

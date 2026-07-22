@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function AdminDashboard({ navigation }: any) {
   const [data, setData] = useState<any>(null);
@@ -55,11 +56,11 @@ function StatItem({ num, label }: { num: number; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  title: { fontSize: 18, fontWeight: '700', color: '#111', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  title: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 12 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' },
   stat: { alignItems: 'center', marginBottom: 12, width: '45%' },
-  num: { fontSize: 28, fontWeight: '700', color: '#1a44aa' },
-  label: { fontSize: 12, color: '#555', marginTop: 2, textAlign: 'center' },
+  num: { fontSize: 28, fontWeight: '700', color: colors.primary },
+  label: { fontSize: 12, color: colors.textSecondary, marginTop: 2, textAlign: 'center' },
   actions: { gap: 10 },
 });

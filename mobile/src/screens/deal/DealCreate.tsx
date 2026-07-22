@@ -4,6 +4,7 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
 import { dealsApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function DealCreate({ navigation }: any) {
   const [projectId, setProjectId] = useState('');
@@ -49,8 +50,8 @@ export default function DealCreate({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  section: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 14 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: '#222' },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  section: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 14 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: colors.text },
   textArea: { height: 80 },
 });

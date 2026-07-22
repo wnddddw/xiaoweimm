@@ -3,6 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Card from '../common/Card';
 import { Project } from '../../types';
 import { formatWan, getProjectAssetGroups, getProjectGallery, ProjectAssetItem } from '../../utils/projectAssets';
+import { colors } from '../../theme';
 
 interface ProjectSnapshotProps {
   project: Project;
@@ -130,7 +131,7 @@ export default function ProjectSnapshot({ project, topRight, footer, note }: Pro
 
 const styles = StyleSheet.create({
   heroCard: {
-    backgroundColor: '#12306B',
+    backgroundColor: colors.primaryDark,
     paddingTop: 18,
     paddingBottom: 18,
   },
@@ -149,13 +150,13 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.14)',
-    color: '#E8EFFD',
+    color: colors.primarySoft,
     fontSize: 11,
     fontWeight: '700',
     marginBottom: 10,
   },
   heroTitle: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 22,
     fontWeight: '800',
     lineHeight: 28,
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.10)',
   },
   metricValue: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '800',
     lineHeight: 20,
@@ -197,10 +198,10 @@ const styles = StyleSheet.create({
     height: 5,
     marginHorizontal: -20,
     marginBottom: 16,
-    backgroundColor: '#1A44AA',
+    backgroundColor: colors.primary,
   },
   sectionTitle: {
-    color: '#0F172A',
+    color: colors.text,
     fontSize: 17,
     fontWeight: '800',
     marginBottom: 12,
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8EDF6',
+    borderBottomColor: colors.borderLight,
   },
   infoRowBlock: {
     flexDirection: 'column',
@@ -218,8 +219,8 @@ const styles = StyleSheet.create({
     width: 96,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    backgroundColor: '#EEF3FF',
-    color: '#1A44AA',
+    backgroundColor: colors.primarySoft,
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: '#1F2937',
+    color: colors.text,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -237,12 +238,12 @@ const styles = StyleSheet.create({
   },
   note: {
     marginTop: 12,
-    color: '#64748B',
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 18,
   },
   emptyText: {
-    color: '#64748B',
+    color: colors.textSecondary,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -254,22 +255,22 @@ const styles = StyleSheet.create({
     width: 180,
     height: 120,
     borderRadius: 14,
-    backgroundColor: '#D8E0EE',
+    backgroundColor: colors.muted,
   },
   assetGroup: {
     marginTop: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E6EBF3',
+    borderColor: colors.borderLight,
     borderRadius: 14,
     overflow: 'hidden',
-    backgroundColor: '#FBFCFF',
+    backgroundColor: colors.bgSoft,
   },
   assetGroupTitle: {
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: '#F3F6FB',
-    color: '#1B2638',
+    backgroundColor: colors.bgSoft,
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -277,12 +278,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E8EDF6',
+    borderTopColor: colors.borderLight,
   },
   assetEmpty: {
     paddingHorizontal: 14,
     paddingVertical: 14,
-    color: '#64748B',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   assetItemTop: {
@@ -293,17 +294,17 @@ const styles = StyleSheet.create({
   },
   assetName: {
     flex: 1,
-    color: '#0F172A',
+    color: colors.text,
     fontSize: 14,
     fontWeight: '700',
   },
   assetValue: {
-    color: '#1A44AA',
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '800',
   },
   assetMeta: {
-    color: '#64748B',
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 18,
     marginTop: 4,
@@ -314,8 +315,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#EEF3FF',
-    color: '#1A44AA',
+    backgroundColor: colors.primarySoft,
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '700',
   },

@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function UserManagement({ navigation }: any) {
   const [users, setUsers] = useState<any[]>([]);
@@ -63,9 +64,9 @@ export default function UserManagement({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   row: { flexDirection: 'row', alignItems: 'center' },
-  name: { fontSize: 15, fontWeight: '600', color: '#111' },
-  phone: { fontSize: 13, color: '#555', marginTop: 2 },
+  name: { fontSize: 15, fontWeight: '600', color: colors.text },
+  phone: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   badges: { flexDirection: 'row', gap: 6, marginTop: 6 },
 });

@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
+import { colors } from './theme';
 
 const LOCAL_WEB_URL = Platform.select({
   android: 'http://127.0.0.1:3001/index.html',
@@ -52,7 +53,7 @@ export default function WebApp() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a44aa" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       <View style={styles.header}>
         <View>
           <Text style={styles.brand}>xiaoweimm</Text>
@@ -95,7 +96,7 @@ export default function WebApp() {
           }}
           renderLoading={() => (
             <View style={styles.loading}>
-              <ActivityIndicator color="#1a44aa" size="large" />
+              <ActivityIndicator color={colors.primary} size="large" />
               <Text style={styles.loadingText}>正在加载 xiaoweimm</Text>
             </View>
           )}
@@ -108,13 +109,13 @@ export default function WebApp() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
   },
   header: {
     minHeight: 64,
     paddingHorizontal: 18,
     paddingVertical: 10,
-    backgroundColor: '#1a44aa',
+    backgroundColor: colors.primary,
     borderBottomWidth: 1,
     borderBottomColor: '#002FA7',
     flexDirection: 'row',
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brand: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 20,
     lineHeight: 24,
     fontWeight: '800',
@@ -144,23 +145,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerButtonText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 13,
     fontWeight: '600',
   },
   webView: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
   },
   loading: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
     marginTop: 14,
-    color: '#555',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   errorPanel: {
@@ -168,17 +169,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     alignItems: 'flex-start',
     justifyContent: 'center',
-    backgroundColor: '#F7F7F8',
+    backgroundColor: colors.bgSoft,
   },
   errorTitle: {
-    color: '#111',
+    color: colors.text,
     fontSize: 24,
     lineHeight: 32,
     fontWeight: '800',
     marginBottom: 12,
   },
   errorText: {
-    color: '#555',
+    color: colors.textSecondary,
     fontSize: 15,
     lineHeight: 24,
     marginBottom: 24,
@@ -186,12 +187,12 @@ const styles = StyleSheet.create({
   primaryButton: {
     minHeight: 44,
     paddingHorizontal: 18,
-    backgroundColor: '#1a44aa',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 15,
     fontWeight: '700',
   },

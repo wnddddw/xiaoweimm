@@ -4,6 +4,7 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../store/AuthContext';
+import { colors } from '../../theme';
 
 const roleLabel = (role?: string) => {
   switch (role) {
@@ -129,15 +130,15 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#1a44aa', justifyContent: 'center', alignItems: 'center', alignSelf: 'center', marginBottom: 12 },
-  avatarText: { fontSize: 24, fontWeight: '700', color: '#fff' },
-  name: { fontSize: 20, fontWeight: '700', color: '#111', textAlign: 'center' },
-  editHint: { fontSize: 11, color: '#1a44aa', textAlign: 'center', marginTop: 2 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', alignSelf: 'center', marginBottom: 12 },
+  avatarText: { fontSize: 24, fontWeight: '700', color: colors.white },
+  name: { fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  editHint: { fontSize: 11, color: colors.primary, textAlign: 'center', marginTop: 2 },
   editRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  row: { flexDirection: 'row', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  label: { width: 80, fontSize: 13, fontWeight: '600', color: '#555' },
-  value: { fontSize: 14, color: '#111' },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: '#222' },
+  row: { flexDirection: 'row', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  label: { width: 80, fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+  value: { fontSize: 14, color: colors.text },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: colors.text },
 });

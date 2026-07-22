@@ -8,6 +8,7 @@ import Toast from '../../components/common/Toast';
 import ProjectSnapshot from '../../components/project/ProjectSnapshot';
 import { demandsApi, projectsApi } from '../../api';
 import { Project } from '../../types';
+import { colors } from '../../theme';
 
 export default function ProjectDetail({ route }: any) {
   const { projectId } = route.params || {};
@@ -120,14 +121,14 @@ export default function ProjectDetail({ route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 8 },
-  hint: { fontSize: 13, color: '#555', marginBottom: 10, lineHeight: 20 },
-  fieldLabel: { fontSize: 13, fontWeight: '700', color: '#222', marginBottom: 6 },
-  uploadRow: { borderWidth: 1, borderColor: '#d8dee8', borderRadius: 10, backgroundColor: '#f9fbff', padding: 12, marginBottom: 10 },
-  uploadLabel: { fontSize: 14, fontWeight: '700', color: '#111', marginBottom: 4 },
-  uploadHint: { fontSize: 12, color: '#667085' },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, color: '#222', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 8 },
+  hint: { fontSize: 13, color: colors.textSecondary, marginBottom: 10, lineHeight: 20 },
+  fieldLabel: { fontSize: 13, fontWeight: '700', color: colors.text, marginBottom: 6 },
+  uploadRow: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, backgroundColor: colors.bgSoft, padding: 12, marginBottom: 10 },
+  uploadLabel: { fontSize: 14, fontWeight: '700', color: colors.text, marginBottom: 4 },
+  uploadHint: { fontSize: 12, color: colors.textSecondary },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, color: colors.text, marginBottom: 12 },
   textArea: { height: 96 },
   btnRow: { flexDirection: 'row', gap: 10, marginTop: 10 },
   spacer: { height: 20 },

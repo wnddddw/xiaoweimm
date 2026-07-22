@@ -10,6 +10,7 @@ import WorkbenchTabs, { buyerWorkbenchTabs } from '../../components/workbench/Wo
 import { projectsApi, demandsApi } from '../../api';
 import { Project } from '../../types';
 import { industryData, regionData } from '../../utils/constants';
+import { colors } from '../../theme';
 
 const SORT_OPTS = [
   { key: '', label: '最新' },
@@ -157,26 +158,26 @@ export default function ProjectBrowse({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  filterTitle: { fontSize: 16, fontWeight: '800', color: '#111', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  filterTitle: { fontSize: 16, fontWeight: '800', color: colors.text, marginBottom: 12 },
   filterSelectors: { flexDirection: 'row', gap: 10, marginBottom: 12 },
-  selector: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: '#c7d2e5', borderRadius: 8, backgroundColor: '#fff', justifyContent: 'center', paddingHorizontal: 12 },
-  selectorValue: { color: '#111', fontSize: 13, fontWeight: '700' },
-  selectorPlaceholder: { color: '#555', fontSize: 13, fontWeight: '700' },
+  selector: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: colors.border, borderRadius: 8, backgroundColor: colors.white, justifyContent: 'center', paddingHorizontal: 12 },
+  selectorValue: { color: colors.text, fontSize: 13, fontWeight: '700' },
+  selectorPlaceholder: { color: colors.textSecondary, fontSize: 13, fontWeight: '700' },
   filterRow: { marginBottom: 4 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 6, backgroundColor: '#e5e7ea' },
-  chipActive: { backgroundColor: '#1a44aa' },
-  chipText: { fontSize: 12, color: '#555' },
-  chipActiveText: { color: '#fff' },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 6, backgroundColor: colors.muted },
+  chipActive: { backgroundColor: colors.primary },
+  chipText: { fontSize: 12, color: colors.textSecondary },
+  chipActiveText: { color: colors.white },
   clearButton: { alignSelf: 'flex-start', minHeight: 36, justifyContent: 'center', marginTop: 10 },
-  clearText: { color: '#1a44aa', fontSize: 13, fontWeight: '800' },
-  count: { fontSize: 13, color: '#555', marginBottom: 8, marginTop: 4 },
-  empty: { textAlign: 'center', color: '#555', padding: 20 },
+  clearText: { color: colors.primary, fontSize: 13, fontWeight: '800' },
+  count: { fontSize: 13, color: colors.textSecondary, marginBottom: 8, marginTop: 4 },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 20 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  pid: { fontSize: 11, color: '#888', fontFamily: 'monospace' },
-  title: { fontSize: 15, fontWeight: '600', color: '#111', marginBottom: 2 },
-  loc: { fontSize: 13, color: '#555', marginBottom: 4 },
-  detail: { fontSize: 12, color: '#555' },
-  price: { fontSize: 15, fontWeight: '700', color: '#c0392b' },
+  pid: { fontSize: 11, color: colors.textTertiary, fontFamily: 'monospace' },
+  title: { fontSize: 15, fontWeight: '600', color: colors.text, marginBottom: 2 },
+  loc: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
+  detail: { fontSize: 12, color: colors.textSecondary },
+  price: { fontSize: 15, fontWeight: '700', color: colors.danger },
   actions: { flexDirection: 'row', gap: 6, marginTop: 10 },
 });

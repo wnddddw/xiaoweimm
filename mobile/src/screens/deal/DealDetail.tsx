@@ -7,6 +7,7 @@ import Toast from '../../components/common/Toast';
 import Pipeline from '../../components/deal/Pipeline';
 import { dealsApi } from '../../api';
 import { dealStages } from '../../utils/constants';
+import { colors } from '../../theme';
 
 export default function DealDetail({ route }: any) {
   const { dealId } = route.params || {};
@@ -91,18 +92,18 @@ export default function DealDetail({ route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace', marginBottom: 4 },
-  title: { fontSize: 18, fontWeight: '700', color: '#111', marginBottom: 6 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace', marginBottom: 4 },
+  title: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 6 },
   row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  price: { fontSize: 18, fontWeight: '700', color: '#c0392b' },
-  advisor: { fontSize: 13, color: '#555' },
-  note: { fontSize: 13, color: '#555', marginTop: 4 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 10 },
-  empty: { textAlign: 'center', color: '#555', padding: 16 },
-  event: { flexDirection: 'row', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  eventDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#1a44aa', marginTop: 4 },
-  eventAction: { fontSize: 14, fontWeight: '600', color: '#111' },
-  eventDetail: { fontSize: 13, color: '#555', marginTop: 2 },
-  eventTime: { fontSize: 11, color: '#999', marginTop: 2 },
+  price: { fontSize: 18, fontWeight: '700', color: colors.danger },
+  advisor: { fontSize: 13, color: colors.textSecondary },
+  note: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 16 },
+  event: { flexDirection: 'row', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  eventDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary, marginTop: 4 },
+  eventAction: { fontSize: 14, fontWeight: '600', color: colors.text },
+  eventDetail: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+  eventTime: { fontSize: 11, color: colors.textTertiary, marginTop: 2 },
 });

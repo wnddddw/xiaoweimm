@@ -7,6 +7,7 @@ import Toast from '../../components/common/Toast';
 import Button from '../../components/common/Button';
 import WorkbenchTabs, { buyerWorkbenchTabs } from '../../components/workbench/WorkbenchTabs';
 import { demandsApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function MyApplications({ navigation }: any) {
   const [apps, setApps] = useState<any[]>([]);
@@ -77,16 +78,16 @@ export default function MyApplications({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: '#111', marginBottom: 6 },
-  sectionHint: { fontSize: 12, color: '#667085', lineHeight: 18 },
-  empty: { textAlign: 'center', color: '#555', padding: 20 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: colors.text, marginBottom: 6 },
+  sectionHint: { fontSize: 12, color: colors.textSecondary, lineHeight: 18 },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 20 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  label: { fontSize: 11, color: '#667085', fontWeight: '700', marginBottom: 4 },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace' },
-  info: { fontSize: 14, color: '#111', fontWeight: '500', marginBottom: 2 },
-  note: { fontSize: 13, color: '#555', marginBottom: 2 },
+  label: { fontSize: 11, color: colors.textSecondary, fontWeight: '700', marginBottom: 4 },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace' },
+  info: { fontSize: 14, color: colors.text, fontWeight: '500', marginBottom: 2 },
+  note: { fontSize: 13, color: colors.textSecondary, marginBottom: 2 },
   metaRow: { flexDirection: 'row', gap: 12, marginTop: 10, marginBottom: 10 },
   metaCell: { flex: 1 },
-  time: { fontSize: 11, color: '#999' },
+  time: { fontSize: 11, color: colors.textTertiary },
 });

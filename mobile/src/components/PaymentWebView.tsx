@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, View, TouchableOpacity, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { colors } from '../theme';
 
 interface PaymentWebViewProps {
   visible: boolean;
@@ -50,7 +51,7 @@ export default function PaymentWebView({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.white },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,12 +59,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
-    backgroundColor: '#f4f6fa',
+    borderBottomColor: colors.borderLight,
+    backgroundColor: colors.bg,
   },
   closeBtn: { padding: 4 },
-  closeText: { color: '#1a44aa', fontSize: 16 },
-  title: { fontSize: 16, fontWeight: '600', color: '#111' },
+  closeText: { color: colors.primary, fontSize: 16 },
+  title: { fontSize: 16, fontWeight: '600', color: colors.text },
   placeholder: { width: 40 },
   webview: { flex: 1 },
 });

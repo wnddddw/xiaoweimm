@@ -5,6 +5,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function UserDetailScreen({ route }: any) {
   const { user } = route.params;
@@ -69,12 +70,12 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   hr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace' },
-  st: { fontSize: 15, fontWeight: '700', color: '#111', marginBottom: 10 },
-  ir: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e8e8e8' },
-  il: { width: 80, fontSize: 13, color: '#888' },
-  iv: { flex: 1, fontSize: 13, color: '#222' },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace' },
+  st: { fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  ir: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderLight },
+  il: { width: 80, fontSize: 13, color: colors.textTertiary },
+  iv: { flex: 1, fontSize: 13, color: colors.text },
   btnRow: { marginTop: 16 },
 });

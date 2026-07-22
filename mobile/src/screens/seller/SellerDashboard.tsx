@@ -8,6 +8,7 @@ import Toast from '../../components/common/Toast';
 import WorkbenchTabs, { sellerWorkbenchTabs } from '../../components/workbench/WorkbenchTabs';
 import { projectsApi } from '../../api/projects';
 import { Project } from '../../types';
+import { colors } from '../../theme';
 
 export default function SellerDashboard({ navigation }: any) {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -69,11 +70,11 @@ export default function SellerDashboard({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   stats: { flexDirection: 'row', justifyContent: 'space-around' },
   stat: { alignItems: 'center', flex: 1 },
-  num: { fontSize: 24, fontWeight: '700', color: '#1a44aa' },
-  label: { fontSize: 12, color: '#555', marginTop: 2 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#111', marginBottom: 10 },
+  num: { fontSize: 24, fontWeight: '700', color: colors.primary },
+  label: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 10 },
   statusRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
 });

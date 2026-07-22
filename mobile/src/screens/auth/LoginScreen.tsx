@@ -4,6 +4,7 @@ import { authApi, getApiErrorMessage } from '../../api';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../store/AuthContext';
+import { colors } from '../../theme';
 
 type LoginMode = 'password' | 'sms';
 
@@ -129,21 +130,21 @@ export default function LoginScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', backgroundColor: '#f4f6fa', padding: 24 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 28, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 5 },
-  logo: { fontSize: 32, fontWeight: '700', color: '#1a44aa', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#555', textAlign: 'center', marginBottom: 24, marginTop: 4 },
-  modeRow: { flexDirection: 'row', backgroundColor: '#eef2f8', borderRadius: 10, padding: 4, marginBottom: 16 },
+  container: { flex: 1, justifyContent: 'center', backgroundColor: colors.bg, padding: 24 },
+  card: { backgroundColor: colors.white, borderRadius: 16, padding: 28, shadowColor: colors.primaryDark, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 5 },
+  logo: { fontSize: 32, fontWeight: '700', color: colors.primary, textAlign: 'center' },
+  subtitle: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 24, marginTop: 4 },
+  modeRow: { flexDirection: 'row', backgroundColor: colors.bgSoft, borderRadius: 10, padding: 4, marginBottom: 16 },
   modeBtn: { flex: 1, borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  modeActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
-  modeText: { color: '#667085', fontSize: 14, fontWeight: '600' },
-  modeTextActive: { color: '#1a44aa' },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 14, fontSize: 16, marginBottom: 14, color: '#222' },
+  modeActive: { backgroundColor: colors.white, shadowColor: colors.black, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
+  modeText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
+  modeTextActive: { color: colors.primary },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 14, fontSize: 16, marginBottom: 14, color: colors.text },
   smsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   smsInput: { flex: 1, marginBottom: 0 },
-  smsBtn: { backgroundColor: '#1a44aa', paddingHorizontal: 14, borderRadius: 8, justifyContent: 'center', minWidth: 106 },
-  smsBtnDisabled: { backgroundColor: '#999' },
-  smsBtnText: { color: '#fff', fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  smsBtn: { backgroundColor: colors.primary, paddingHorizontal: 14, borderRadius: 8, justifyContent: 'center', minWidth: 106 },
+  smsBtnDisabled: { backgroundColor: colors.textTertiary },
+  smsBtnText: { color: colors.white, fontSize: 13, fontWeight: '600', textAlign: 'center' },
   link: { marginTop: 16, alignItems: 'center' },
-  linkText: { color: '#1a44aa', fontSize: 14 },
+  linkText: { color: colors.primary, fontSize: 14 },
 });

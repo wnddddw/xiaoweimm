@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { colors, radius, shadows } from '../../theme';
 
 export type WorkbenchTab = {
   key: string;
@@ -46,8 +47,8 @@ export default function WorkbenchTabs({
 const styles = StyleSheet.create({
   wrap: { marginBottom: 12 },
   content: { gap: 8, paddingRight: 8 },
-  tab: { minHeight: 42, paddingHorizontal: 16, borderRadius: 22, borderWidth: 1, borderColor: '#c7d2e5', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  tabActive: { backgroundColor: '#1a44aa', borderColor: '#1a44aa' },
-  tabText: { fontSize: 14, fontWeight: '700', color: '#34405a' },
-  tabTextActive: { color: '#fff' },
+  tab: { minHeight: 42, paddingHorizontal: 18, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  tabActive: { backgroundColor: colors.primary, borderColor: colors.primary, ...shadows.subtle },
+  tabText: { fontSize: 14, fontWeight: '600', color: colors.textSecondary },
+  tabTextActive: { color: colors.white, fontWeight: '700' },
 });

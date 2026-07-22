@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function VerificationReview({ navigation }: any) {
   const [verifications, setVerifications] = useState<any[]>([]);
@@ -85,13 +86,13 @@ export default function VerificationReview({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  empty: { textAlign: 'center', color: '#555', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 16 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-  name: { fontSize: 15, fontWeight: '600', color: '#111' },
-  phone: { fontSize: 12, color: '#888', marginTop: 1 },
-  type: { fontSize: 13, color: '#1a44aa', marginTop: 3 },
-  reason: { fontSize: 12, color: '#d00', marginTop: 3 },
-  time: { fontSize: 11, color: '#999', marginTop: 2 },
+  name: { fontSize: 15, fontWeight: '600', color: colors.text },
+  phone: { fontSize: 12, color: colors.textTertiary, marginTop: 1 },
+  type: { fontSize: 13, color: colors.primary, marginTop: 3 },
+  reason: { fontSize: 12, color: colors.danger, marginTop: 3 },
+  time: { fontSize: 11, color: colors.textTertiary, marginTop: 2 },
   btnRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
 });

@@ -7,6 +7,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import PaymentWebView from '../../components/PaymentWebView';
 import { paymentsApi } from '../../api';
+import { colors } from '../../theme';
 
 const QUICK_AMOUNTS = [100, 300, 600, 1800, 5000];
 
@@ -237,26 +238,26 @@ export default function PaymentScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  balanceLabel: { fontSize: 14, color: '#555', textAlign: 'center' },
-  balanceNum: { fontSize: 36, fontWeight: '700', color: '#1a44aa', textAlign: 'center', marginTop: 4 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  balanceLabel: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
+  balanceNum: { fontSize: 36, fontWeight: '700', color: colors.primary, textAlign: 'center', marginTop: 4 },
   tabs: { flexDirection: 'row', gap: 8, marginVertical: 12 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 16, marginBottom: 12, color: '#222' },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 16, marginBottom: 12, color: colors.text },
   quickAmts: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
   payMethods: { flexDirection: 'row', gap: 12, marginBottom: 4 },
   payMethodBtn: {
-    flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: '#ddd',
-    alignItems: 'center', backgroundColor: '#fafafa',
+    flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: colors.border,
+    alignItems: 'center', backgroundColor: colors.bgSoft,
   },
-  payMethodActive: { borderColor: '#1a44aa', backgroundColor: '#e8f0fe' },
-  payMethodText: { fontSize: 15, fontWeight: '600', color: '#555' },
-  payMethodActiveText: { color: '#1a44aa' },
-  empty: { textAlign: 'center', color: '#555', padding: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  green: { fontSize: 14, fontWeight: '600', color: '#1e8449' },
-  red: { fontSize: 14, fontWeight: '600', color: '#c0392b' },
-  time: { fontSize: 11, color: '#999' },
-  billItem: { fontSize: 13, color: '#111' },
-  billAmt: { fontSize: 14, fontWeight: '600', color: '#111' },
+  payMethodActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  payMethodText: { fontSize: 15, fontWeight: '600', color: colors.textSecondary },
+  payMethodActiveText: { color: colors.primary },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 16 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  green: { fontSize: 14, fontWeight: '600', color: colors.success },
+  red: { fontSize: 14, fontWeight: '600', color: colors.danger },
+  time: { fontSize: 11, color: colors.textTertiary },
+  billItem: { fontSize: 13, color: colors.text },
+  billAmt: { fontSize: 14, fontWeight: '600', color: colors.text },
 });

@@ -6,6 +6,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { dealsApi, getApiErrorMessage } from '../../api';
 import { dealStages } from '../../utils/constants';
+import { colors } from '../../theme';
 
 export default function DealList({ navigation }: any) {
   const [deals, setDeals] = useState<any[]>([]);
@@ -62,12 +63,12 @@ export default function DealList({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  empty: { textAlign: 'center', color: '#555', padding: 20 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 20 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace' },
-  title: { fontSize: 15, fontWeight: '600', color: '#111', marginBottom: 4 },
-  price: { fontSize: 16, fontWeight: '700', color: '#c0392b' },
-  advisor: { fontSize: 12, color: '#555' },
-  time: { fontSize: 11, color: '#999', marginTop: 4 },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace' },
+  title: { fontSize: 15, fontWeight: '600', color: colors.text, marginBottom: 4 },
+  price: { fontSize: 16, fontWeight: '700', color: colors.danger },
+  advisor: { fontSize: 12, color: colors.textSecondary },
+  time: { fontSize: 11, color: colors.textTertiary, marginTop: 4 },
 });

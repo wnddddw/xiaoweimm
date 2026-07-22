@@ -7,6 +7,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { membershipsApi, paymentsApi } from '../../api';
 import { useAuth } from '../../store/AuthContext';
+import { colors } from '../../theme';
 
 const PLANS = [
   { key: 'personal', name: '个人会员', price: 300, features: ['查看非公开项目', '提前 1 小时接收提醒', '直连卖方沟通', '可报名线下活动'] },
@@ -97,7 +98,7 @@ export default function MembershipScreen() {
           <Switch
             value={!!memberInfo?.auto_renew}
             onValueChange={toggleAutoRenew}
-            trackColor={{ false: '#ccc', true: '#1a44aa' }}
+            trackColor={{ false: colors.border, true: colors.primary }}
           />
         </View>
       </Card>
@@ -142,19 +143,19 @@ export default function MembershipScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  balance: { fontSize: 15, fontWeight: '700', color: '#1a44aa' },
-  expire: { fontSize: 12, color: '#888', marginTop: 4 },
-  autoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#eee' },
-  autoLabel: { fontSize: 14, color: '#333' },
-  planCard: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 16, marginBottom: 12 },
+  balance: { fontSize: 15, fontWeight: '700', color: colors.primary },
+  expire: { fontSize: 12, color: colors.textTertiary, marginTop: 4 },
+  autoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderLight },
+  autoLabel: { fontSize: 14, color: colors.text },
+  planCard: { borderWidth: 1, borderColor: colors.borderLight, borderRadius: 12, padding: 16, marginBottom: 12, backgroundColor: colors.bgSoft },
   planHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  planName: { fontSize: 16, fontWeight: '700', color: '#111' },
-  planPrice: { fontSize: 18, fontWeight: '700', color: '#c0392b' },
-  feature: { fontSize: 13, color: '#555', paddingVertical: 3 },
-  orderRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  orderAmt: { fontSize: 13, fontWeight: '600', color: '#111' },
-  orderTime: { fontSize: 11, color: '#999', marginLeft: 'auto' },
+  planName: { fontSize: 16, fontWeight: '700', color: colors.text },
+  planPrice: { fontSize: 18, fontWeight: '800', color: colors.accent },
+  feature: { fontSize: 13, color: colors.textSecondary, paddingVertical: 3 },
+  orderRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  orderAmt: { fontSize: 13, fontWeight: '600', color: colors.text },
+  orderTime: { fontSize: 11, color: colors.textTertiary, marginLeft: 'auto' },
 });

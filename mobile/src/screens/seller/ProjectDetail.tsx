@@ -8,6 +8,7 @@ import Toast from '../../components/common/Toast';
 import ProjectSnapshot from '../../components/project/ProjectSnapshot';
 import { projectsApi } from '../../api/projects';
 import { Project } from '../../types';
+import { colors } from '../../theme';
 
 export default function ProjectDetail({ route }: any) {
   const { projectId } = route.params || {};
@@ -156,11 +157,11 @@ export default function ProjectDetail({ route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
   stats: { flexDirection: 'row', gap: 16, paddingTop: 4 },
-  statText: { fontSize: 13, color: '#555' },
+  statText: { fontSize: 13, color: colors.textSecondary },
   btnRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 12, fontSize: 14, marginBottom: 10, color: '#222' },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, fontSize: 14, marginBottom: 10, color: colors.text },
   textArea: { height: 96 },
 });

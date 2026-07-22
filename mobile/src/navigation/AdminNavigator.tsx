@@ -7,11 +7,12 @@ import UserManagement from '../screens/admin/UserManagement';
 import ProjectDetailScreen from '../screens/admin/ProjectDetailScreen';
 import VerificationDetailScreen from '../screens/admin/VerificationDetailScreen';
 import UserDetailScreen from '../screens/admin/UserDetailScreen';
+import { headerOptions } from '../theme';
 
 const Stack = createNativeStackNavigator();
 export default function AdminNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff' }}>
+    <Stack.Navigator screenOptions={headerOptions}>
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} options={{ title: '管理后台' }} />
       <Stack.Screen name="ProjectReview" component={ProjectReview} options={{ title: '项目审核' }} />
       <Stack.Screen name="VerificationReview" component={VerificationReview} options={{ title: '认证审核' }} />

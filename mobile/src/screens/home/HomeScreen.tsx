@@ -5,6 +5,7 @@ import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../store/AuthContext';
+import { colors } from '../../theme';
 
 type AuthMode = 'phoneLogin' | 'passwordLogin' | 'register';
 type RoleTarget = 'seller' | 'buyer';
@@ -157,14 +158,14 @@ export default function HomeScreen({ navigation }: any) {
         </ScrollView>
 
         <View style={styles.navRoleStrip}>
-          <TouchableOpacity style={[styles.navRoleButton, { backgroundColor: '#1a44aa', borderColor: '#1a44aa' }]} onPress={() => handleRoleEntrance('seller')}>
-            <Text style={[styles.navRoleButtonText, { color: '#fff' }]}>我是卖家</Text>
+          <TouchableOpacity style={[styles.navRoleButton, { backgroundColor: colors.primary, borderColor: colors.primary }]} onPress={() => handleRoleEntrance('seller')}>
+            <Text style={[styles.navRoleButtonText, { color: colors.white }]}>我是卖家</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.navRoleButton, { borderColor: '#1a44aa' }]} onPress={() => handleRoleEntrance('buyer')}>
-            <Text style={[styles.navRoleButtonText, { color: '#1a44aa' }]}>我是买家</Text>
+          <TouchableOpacity style={[styles.navRoleButton, { borderColor: colors.primary }]} onPress={() => handleRoleEntrance('buyer')}>
+            <Text style={[styles.navRoleButtonText, { color: colors.primary }]}>我是买家</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.navRoleButton, { borderColor: '#1a44aa' }]} onPress={() => openPublicPage('contact')}>
-            <Text style={[styles.navRoleButtonText, { color: '#1a44aa' }]}>免费咨询</Text>
+          <TouchableOpacity style={[styles.navRoleButton, { borderColor: colors.primary }]} onPress={() => openPublicPage('contact')}>
+            <Text style={[styles.navRoleButtonText, { color: colors.primary }]}>免费咨询</Text>
           </TouchableOpacity>
         </View>
 
@@ -306,76 +307,76 @@ function SectionTitle({ title, subtitle }: { title: string; subtitle?: string })
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#fff' },
+  root: { flex: 1, backgroundColor: colors.white },
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 20 },
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eef0f3' },
-  logo: { fontSize: 20, fontWeight: '800', color: '#1a44aa' },
-  userPill: { minHeight: 36, paddingHorizontal: 14, borderRadius: 8, backgroundColor: '#f4f6fa', justifyContent: 'center' },
-  userPillText: { color: '#1a44aa', fontSize: 13, fontWeight: '700' },
-  loginPill: { minHeight: 40, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: '#1a44aa', justifyContent: 'center' },
-  loginPillText: { color: '#1a44aa', fontSize: 13, fontWeight: '700' },
-  navMenu: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eef0f3' },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  logo: { fontSize: 20, fontWeight: '800', color: colors.primary },
+  userPill: { minHeight: 36, paddingHorizontal: 14, borderRadius: 8, backgroundColor: colors.bg, justifyContent: 'center' },
+  userPillText: { color: colors.primary, fontSize: 13, fontWeight: '700' },
+  loginPill: { minHeight: 40, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: colors.primary, justifyContent: 'center' },
+  loginPillText: { color: colors.primary, fontSize: 13, fontWeight: '700' },
+  navMenu: { backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
   navMenuContent: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
-  navMenuItem: { minHeight: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: '#f4f6fa', alignItems: 'center', justifyContent: 'center' },
-  navMenuText: { fontSize: 13, color: '#333', fontWeight: '600' },
-  navRoleStrip: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff' },
+  navMenuItem: { minHeight: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+  navMenuText: { fontSize: 13, color: colors.text, fontWeight: '600' },
+  navRoleStrip: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.white },
   navRoleButton: { flex: 1, minHeight: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   navRoleButtonText: { fontSize: 14, fontWeight: '800' },
   hero: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10, alignItems: 'center' },
-  heroTitle: { fontSize: 26, fontWeight: '800', color: '#111', lineHeight: 34 },
-  heroSubtitle: { fontSize: 14, color: '#666', marginTop: 8, marginBottom: 16 },
-  heroImage: { width: '100%', height: 180, borderRadius: 12, backgroundColor: '#e5e7ea' },
-  dataGrid: { backgroundColor: '#f4f6fa', padding: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  dataItem: { width: '47%', backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center' },
-  dataValue: { fontSize: 22, fontWeight: '800', color: '#1a44aa' },
-  dataLabel: { fontSize: 12, color: '#555', marginTop: 6 },
+  heroTitle: { fontSize: 26, fontWeight: '800', color: colors.text, lineHeight: 34 },
+  heroSubtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 8, marginBottom: 16 },
+  heroImage: { width: '100%', height: 180, borderRadius: 12, backgroundColor: colors.muted },
+  dataGrid: { backgroundColor: colors.bg, padding: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  dataItem: { width: '47%', backgroundColor: colors.white, borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.borderLight },
+  dataValue: { fontSize: 22, fontWeight: '800', color: colors.primary },
+  dataLabel: { fontSize: 12, color: colors.textSecondary, marginTop: 6 },
   sectionTitleWrap: { paddingHorizontal: 16, paddingTop: 30, paddingBottom: 10, alignItems: 'center' },
-  sectionTitle: { fontSize: 22, fontWeight: '800', color: '#111' },
-  sectionSubtitle: { marginTop: 6, fontSize: 13, color: '#666', textAlign: 'center' },
+  sectionTitle: { fontSize: 22, fontWeight: '800', color: colors.text },
+  sectionSubtitle: { marginTop: 6, fontSize: 13, color: colors.textSecondary, textAlign: 'center' },
   serviceScroll: { paddingHorizontal: 16, gap: 12 },
   serviceCard: { width: 260 },
-  cardTitle: { fontSize: 17, fontWeight: '800', color: '#111', marginBottom: 10 },
-  cardBody: { fontSize: 14, color: '#555', lineHeight: 22 },
-  caseImage: { width: '100%', height: 172, borderRadius: 10, backgroundColor: '#e5e7ea', marginBottom: 14 },
+  cardTitle: { fontSize: 17, fontWeight: '800', color: colors.text, marginBottom: 10 },
+  cardBody: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
+  caseImage: { width: '100%', height: 172, borderRadius: 10, backgroundColor: colors.muted, marginBottom: 14 },
   caseHead: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  caseTag: { color: '#1a44aa', backgroundColor: '#d4e4fd', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3, fontSize: 12, fontWeight: '700' },
-  caseDone: { color: '#145a32', backgroundColor: '#d5f5e3', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3, fontSize: 12, fontWeight: '700' },
-  caseMetrics: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#eef0f3', paddingTop: 12, marginTop: 4 },
+  caseTag: { color: colors.primary, backgroundColor: colors.primarySoft, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3, fontSize: 12, fontWeight: '700' },
+  caseDone: { color: colors.successDark, backgroundColor: colors.successSoft, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3, fontSize: 12, fontWeight: '700' },
+  caseMetrics: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.borderLight, paddingTop: 12, marginTop: 4 },
   caseMetric: { flex: 1 },
-  caseMetricValue: { color: '#1a44aa', fontSize: 14, fontWeight: '800' },
-  caseMetricLabel: { color: '#555', fontSize: 11, marginTop: 2 },
-  caseDescription: { color: '#555', fontSize: 13, lineHeight: 21, marginTop: 12 },
-  allCasesButton: { alignSelf: 'center', minHeight: 44, paddingHorizontal: 28, borderRadius: 8, borderWidth: 1, borderColor: '#1a44aa', alignItems: 'center', justifyContent: 'center', marginTop: 4, marginBottom: 8 },
-  allCasesText: { color: '#1a44aa', fontSize: 14, fontWeight: '800' },
-  cta: { margin: 16, padding: 22, borderRadius: 14, backgroundColor: '#f4f6fa' },
-  ctaTitle: { fontSize: 22, fontWeight: '800', color: '#111', marginBottom: 10 },
-  ctaBody: { color: '#555', fontSize: 14, lineHeight: 22, marginBottom: 18 },
-  footer: { backgroundColor: '#151d2b', paddingHorizontal: 18, paddingVertical: 28, marginTop: 12 },
+  caseMetricValue: { color: colors.primary, fontSize: 14, fontWeight: '800' },
+  caseMetricLabel: { color: colors.textSecondary, fontSize: 11, marginTop: 2 },
+  caseDescription: { color: colors.textSecondary, fontSize: 13, lineHeight: 21, marginTop: 12 },
+  allCasesButton: { alignSelf: 'center', minHeight: 44, paddingHorizontal: 28, borderRadius: 8, borderWidth: 1, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 4, marginBottom: 8 },
+  allCasesText: { color: colors.primary, fontSize: 14, fontWeight: '800' },
+  cta: { margin: 16, padding: 24, borderRadius: 16, backgroundColor: colors.primaryDark },
+  ctaTitle: { fontSize: 22, fontWeight: '800', color: colors.white, marginBottom: 10 },
+  ctaBody: { color: 'rgba(255,255,255,0.82)', fontSize: 14, lineHeight: 22, marginBottom: 18 },
+  footer: { backgroundColor: colors.dark, paddingHorizontal: 18, paddingVertical: 28, marginTop: 12 },
   footerGroup: { marginBottom: 16 },
-  footerTitle: { color: '#fff', fontSize: 15, fontWeight: '800', marginBottom: 4 },
-  footerText: { color: '#ccc', fontSize: 13, lineHeight: 20 },
-  copyright: { color: '#888', fontSize: 12, textAlign: 'center', marginTop: 8 },
+  footerTitle: { color: colors.white, fontSize: 15, fontWeight: '800', marginBottom: 4 },
+  footerText: { color: colors.border, fontSize: 13, lineHeight: 20 },
+  copyright: { color: colors.textTertiary, fontSize: 12, textAlign: 'center', marginTop: 8 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 18 },
-  modalBox: { backgroundColor: '#fff', borderRadius: 14, padding: 20 },
-  roleSwitchMsg: { color: '#222', fontSize: 15, fontWeight: '600', lineHeight: 22, marginBottom: 18, textAlign: 'center' },
+  modalBox: { backgroundColor: colors.white, borderRadius: 14, padding: 20 },
+  roleSwitchMsg: { color: colors.text, fontSize: 15, fontWeight: '600', lineHeight: 22, marginBottom: 18, textAlign: 'center' },
   modalClose: { position: 'absolute', top: 8, right: 12, zIndex: 2, width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  modalCloseText: { fontSize: 26, color: '#999' },
-  modalTabs: { flexDirection: 'row', borderBottomWidth: 2, borderBottomColor: '#eee', marginBottom: 20, marginTop: 8 },
+  modalCloseText: { fontSize: 26, color: colors.textTertiary },
+  modalTabs: { flexDirection: 'row', borderBottomWidth: 2, borderBottomColor: colors.borderLight, marginBottom: 20, marginTop: 8 },
   authTab: { flex: 1, alignItems: 'center', paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent', marginBottom: -2 },
-  authTabActive: { borderBottomColor: '#1a44aa' },
-  authTabText: { color: '#999', fontSize: 15, fontWeight: '700' },
-  authTabTextActive: { color: '#1a44aa' },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: '#222', backgroundColor: '#fff' },
+  authTabActive: { borderBottomColor: colors.primary },
+  authTabText: { color: colors.textTertiary, fontSize: 15, fontWeight: '700' },
+  authTabTextActive: { color: colors.primary },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: colors.text, backgroundColor: colors.white },
   smsRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   smsInput: { flex: 1, marginBottom: 0 },
-  smsBtn: { minWidth: 104, borderRadius: 8, backgroundColor: '#1a44aa', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 },
-  smsBtnDisabled: { backgroundColor: '#999' },
-  smsBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  smsBtn: { minWidth: 104, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 },
+  smsBtnDisabled: { backgroundColor: colors.textTertiary },
+  smsBtnText: { color: colors.white, fontSize: 13, fontWeight: '700' },
   modalExtra: { alignItems: 'center', paddingTop: 14 },
-  modalExtraText: { color: '#1a44aa', fontSize: 13, fontWeight: '700' },
+  modalExtraText: { color: colors.primary, fontSize: 13, fontWeight: '700' },
   agreeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 1, borderColor: '#bbb', textAlign: 'center', lineHeight: 18, color: '#fff' },
-  checkboxChecked: { backgroundColor: '#1a44aa', borderColor: '#1a44aa' },
-  agreeText: { color: '#555', fontSize: 13 },
+  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 1, borderColor: colors.border, textAlign: 'center', lineHeight: 18, color: colors.white },
+  checkboxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
+  agreeText: { color: colors.textSecondary, fontSize: 13 },
 });

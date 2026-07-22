@@ -4,6 +4,7 @@ import { useAuth } from '../../store/AuthContext';
 import { authApi, getApiErrorMessage } from '../../api';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
+import { colors } from '../../theme';
 
 export default function RegisterScreen({ navigation }: any) {
   const [phone, setPhone] = useState('');
@@ -108,20 +109,20 @@ export default function RegisterScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', backgroundColor: '#f4f6fa', padding: 24 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 32 },
-  logo: { fontSize: 32, fontWeight: '700', color: '#1a44aa', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#555', textAlign: 'center', marginBottom: 28, marginTop: 4 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 14, fontSize: 16, marginBottom: 14, color: '#222' },
+  container: { flex: 1, justifyContent: 'center', backgroundColor: colors.bg, padding: 24 },
+  card: { backgroundColor: colors.white, borderRadius: 16, padding: 28, shadowColor: colors.primaryDark, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 5 },
+  logo: { fontSize: 32, fontWeight: '700', color: colors.primary, textAlign: 'center' },
+  subtitle: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 28, marginTop: 4 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 14, fontSize: 16, marginBottom: 14, color: colors.text },
   smsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  smsBtn: { backgroundColor: '#1a44aa', paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center', height: 50 },
-  smsBtnDisabled: { backgroundColor: '#999' },
-  smsBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  smsBtn: { backgroundColor: colors.primary, paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center', height: 50 },
+  smsBtnDisabled: { backgroundColor: colors.textTertiary },
+  smsBtnText: { color: colors.white, fontSize: 13, fontWeight: '600' },
   roleRow: { flexDirection: 'row', gap: 12, marginBottom: 14 },
-  roleBtn: { flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: '#ddd', alignItems: 'center' },
-  roleActive: { borderColor: '#1a44aa', backgroundColor: '#e8f0fe' },
-  roleText: { fontSize: 14, color: '#555' },
-  roleActiveText: { color: '#1a44aa', fontWeight: '600' },
+  roleBtn: { flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: colors.border, alignItems: 'center' },
+  roleActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  roleText: { fontSize: 14, color: colors.textSecondary },
+  roleActiveText: { color: colors.primary, fontWeight: '600' },
   link: { marginTop: 16, alignItems: 'center' },
-  linkText: { color: '#1a44aa', fontSize: 14 },
+  linkText: { color: colors.primary, fontSize: 14 },
 });

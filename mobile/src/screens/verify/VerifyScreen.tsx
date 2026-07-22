@@ -8,6 +8,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { verifyApi } from '../../api';
 import { Verification } from '../../types';
+import { colors } from '../../theme';
 
 export default function VerifyScreen() {
   const [verifications, setVerifications] = useState<Verification[]>([]);
@@ -104,20 +105,20 @@ export default function VerifyScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
   typeRow: { flexDirection: 'row', gap: 12, marginBottom: 14 },
-  typeBtn: { flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: '#ddd', alignItems: 'center' },
-  typeActive: { borderColor: '#1a44aa', backgroundColor: '#e8f0fe' },
-  typeText: { fontSize: 14, color: '#555' },
-  typeActiveText: { color: '#1a44aa', fontWeight: '600' },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: '#222' },
-  imgPicker: { borderWidth: 2, borderColor: '#ddd', borderStyle: 'dashed', borderRadius: 8, height: 160, justifyContent: 'center', alignItems: 'center', marginBottom: 14, overflow: 'hidden', backgroundColor: '#fafbfc' },
-  imgPlaceholder: { color: '#999', fontSize: 14 },
+  typeBtn: { flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: colors.border, alignItems: 'center' },
+  typeActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  typeText: { fontSize: 14, color: colors.textSecondary },
+  typeActiveText: { color: colors.primary, fontWeight: '600' },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: colors.text },
+  imgPicker: { borderWidth: 2, borderColor: colors.border, borderStyle: 'dashed', borderRadius: 8, height: 160, justifyContent: 'center', alignItems: 'center', marginBottom: 14, overflow: 'hidden', backgroundColor: colors.bgSoft },
+  imgPlaceholder: { color: colors.textTertiary, fontSize: 14 },
   img: { width: '100%', height: '100%', resizeMode: 'cover' },
-  hint: { textAlign: 'center', fontSize: 12, color: '#555', marginTop: 8 },
-  historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f0f0', flexWrap: 'wrap' },
-  historyType: { fontSize: 14, fontWeight: '600', color: '#111' },
-  historyTime: { fontSize: 11, color: '#999' },
-  reject: { width: '100%', fontSize: 12, color: '#c0392b', marginTop: 4 },
+  hint: { textAlign: 'center', fontSize: 12, color: colors.textSecondary, marginTop: 8 },
+  historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.borderLight, flexWrap: 'wrap' },
+  historyType: { fontSize: 14, fontWeight: '600', color: colors.text },
+  historyTime: { fontSize: 11, color: colors.textTertiary },
+  reject: { width: '100%', fontSize: 12, color: colors.danger, marginTop: 4 },
 });

@@ -8,6 +8,7 @@ import Card from '../../components/common/Card';
 import Toast from '../../components/common/Toast';
 import WorkbenchTabs, { buyerWorkbenchTabs } from '../../components/workbench/WorkbenchTabs';
 import { Project } from '../../types';
+import { colors } from '../../theme';
 
 export default function BuyerDashboard({ navigation }: any) {
   const [demand, setDemand] = useState<any>(null);
@@ -81,11 +82,11 @@ export default function BuyerDashboard({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 10 },
-  detail: { fontSize: 13, color: '#555', marginBottom: 3 },
-  empty: { textAlign: 'center', color: '#555', marginBottom: 12 },
-  recItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  recTitle: { fontSize: 14, fontWeight: '600', color: '#111' },
-  recLoc: { fontSize: 13, color: '#555', marginBottom: 4 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  detail: { fontSize: 13, color: colors.textSecondary, marginBottom: 3 },
+  empty: { textAlign: 'center', color: colors.textSecondary, marginBottom: 12 },
+  recItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  recTitle: { fontSize: 14, fontWeight: '600', color: colors.text },
+  recLoc: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
 });

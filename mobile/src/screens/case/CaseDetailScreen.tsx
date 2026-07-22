@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { colors } from '../../theme';
 
 export interface CaseData {
   id?: number;
@@ -69,39 +70,39 @@ export default function CaseDetailScreen({ route }: any) {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#fff' },
+  page: { flex: 1, backgroundColor: colors.white },
   content: { paddingBottom: 40 },
-  coverImage: { width: '100%', height: 220, backgroundColor: '#e5e7ea' },
+  coverImage: { width: '100%', height: 220, backgroundColor: colors.muted },
   body: { paddingHorizontal: 18, paddingTop: 20 },
   tags: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   industryTag: {
-    color: '#1a44aa', backgroundColor: '#d4e4fd',
+    color: colors.primary, backgroundColor: colors.primarySoft,
     borderRadius: 10, paddingHorizontal: 12, paddingVertical: 4,
     fontSize: 13, fontWeight: '700',
   },
   doneTag: {
-    color: '#145a32', backgroundColor: '#d5f5e3',
+    color: colors.successDark, backgroundColor: colors.successSoft,
     borderRadius: 10, paddingHorizontal: 12, paddingVertical: 4,
     fontSize: 13, fontWeight: '700',
   },
-  title: { fontSize: 22, fontWeight: '800', color: '#111', lineHeight: 30, marginBottom: 18 },
+  title: { fontSize: 22, fontWeight: '800', color: colors.text, lineHeight: 30, marginBottom: 18 },
   metrics: {
     flexDirection: 'row',
-    backgroundColor: '#f4f6fa', borderRadius: 12,
+    backgroundColor: colors.bg, borderRadius: 12,
     padding: 16, gap: 8,
   },
   metricItem: { flex: 1, alignItems: 'center' },
-  metricValue: { fontSize: 18, fontWeight: '800', color: '#1a44aa' },
-  metricLabel: { fontSize: 12, color: '#555', marginTop: 4 },
-  divider: { height: 1, backgroundColor: '#eef0f3', marginVertical: 22 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: '#111', marginBottom: 10 },
-  description: { fontSize: 15, color: '#444', lineHeight: 26 },
+  metricValue: { fontSize: 18, fontWeight: '800', color: colors.primary },
+  metricLabel: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
+  divider: { height: 1, backgroundColor: colors.borderLight, marginVertical: 22 },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: colors.text, marginBottom: 10 },
+  description: { fontSize: 15, color: colors.textSecondary, lineHeight: 26 },
   ctaButton: {
     marginTop: 30, alignSelf: 'stretch',
-    backgroundColor: '#1a44aa', borderRadius: 12,
+    backgroundColor: colors.primary, borderRadius: 12,
     minHeight: 50, alignItems: 'center', justifyContent: 'center',
   },
-  ctaText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  ctaText: { color: colors.white, fontSize: 16, fontWeight: '800' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { color: '#999', fontSize: 15 },
+  emptyText: { color: colors.textTertiary, fontSize: 15 },
 });

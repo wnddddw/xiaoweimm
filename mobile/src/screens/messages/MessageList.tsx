@@ -6,6 +6,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { getApiErrorMessage, messagesApi } from '../../api';
 import { Message } from '../../types';
+import { colors } from '../../theme';
 
 const CATEGORIES = [
   { key: 'all', label: '全部' },
@@ -87,7 +88,7 @@ export function MessagesScreen() {
       ) : (
         messages.map(message => (
           <TouchableOpacity key={message.id} onPress={() => markRead(message.id)}>
-            <Card style={message.is_read === 0 ? { borderLeftWidth: 3, borderLeftColor: '#1a44aa' } : undefined}>
+            <Card style={message.is_read === 0 ? { borderLeftWidth: 3, borderLeftColor: colors.primary } : undefined}>
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
                   <View style={styles.titleRow}>
@@ -109,20 +110,20 @@ export function MessagesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   tabs: { marginBottom: 10 },
-  tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8, backgroundColor: '#e5e7ea' },
-  tabActive: { backgroundColor: '#1a44aa' },
-  tabText: { fontSize: 12, color: '#555' },
-  tabActiveText: { color: '#fff', fontWeight: '600' },
+  tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8, backgroundColor: colors.muted },
+  tabActive: { backgroundColor: colors.primary },
+  tabText: { fontSize: 12, color: colors.textSecondary },
+  tabActiveText: { color: colors.white, fontWeight: '600' },
   markAll: { alignItems: 'flex-end', marginBottom: 6 },
-  markAllText: { fontSize: 12, color: '#1a44aa' },
-  empty: { textAlign: 'center', color: '#555', padding: 20 },
+  markAllText: { fontSize: 12, color: colors.primary },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 20 },
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  subject: { fontSize: 14, color: '#111', flex: 1 },
+  subject: { fontSize: 14, color: colors.text, flex: 1 },
   bold: { fontWeight: '700' },
-  body: { fontSize: 13, color: '#555', marginBottom: 4 },
-  time: { fontSize: 11, color: '#999' },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#1a44aa', marginTop: 4 },
+  body: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
+  time: { fontSize: 11, color: colors.textTertiary },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary, marginTop: 4 },
 });

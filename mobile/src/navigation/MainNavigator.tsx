@@ -15,22 +15,23 @@ import PublicContentScreen, { getPublicPageTitle } from '../screens/public/Publi
 import CaseDetailScreen from '../screens/case/CaseDetailScreen';
 import VerifyScreen from '../screens/verify/VerifyScreen';
 import { useAuth } from '../store/AuthContext';
+import { colors, headerOptions } from '../theme';
 
 const Tab = createBottomTabNavigator();
 const AppStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 
-function TabIcon({ label }: { label: string; focused: boolean }) {
+function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Home: '🏠', Seller: '💵', Buyer: '🔍',
     Deals: '🤝', Messages: '💬', Member: '👥', Profile: '⚙️',
   };
-  return <Text style={{ fontSize: 20 }}>{icons[label] || '🌐'}</Text>;
+  return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.55 }}>{icons[label] || '🌐'}</Text>;
 }
 
 function ProfileNavigator() {
   return (
-    <ProfileStack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff' }}>
+    <ProfileStack.Navigator screenOptions={headerOptions}>
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: '我的' }} />
       <ProfileStack.Screen name="Verify" component={VerifyScreen} options={{ title: '企业认证' }} />
       <ProfileStack.Screen name="Payment" component={PaymentScreen} options={{ title: '钱包' }} />
@@ -47,14 +48,22 @@ function MainTabs() {
     <Tab.Navigator
       initialRouteName="Home"
       detachInactiveScreens={false}
-      sceneContainerStyle={{ backgroundColor: '#fff' }}
+      sceneContainerStyle={{ backgroundColor: colors.white }}
       screenOptions={({ route }) => ({
-        headerStyle: { backgroundColor: '#1a44aa' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
-        tabBarActiveTintColor: '#1a44aa',
+        ...headerOptions,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textTertiary,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' as const },
+        tabBarStyle: {
+          backgroundColor: colors.white,
+          borderTopColor: colors.borderLight,
+          borderTopWidth: 1,
+          height: 60,
+          paddingBottom: 6,
+          paddingTop: 4,
+        },
         freezeOnBlur: false,
-        tabBarIcon: ({ focused }) => <TabIcon label={route.name} focused={focused} />,
+        tabBarIcon: ({ focused }: { focused: boolean }) => <TabIcon label={route.name} focused={focused} />,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: '首页' }} />
@@ -71,7 +80,7 @@ function MainTabs() {
 
 export default function MainNavigator() {
   return (
-    <AppStack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '700' } }}>
+    <AppStack.Navigator screenOptions={headerOptions}>
       <AppStack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <AppStack.Screen name="PublicContent" component={PublicContentScreen} options={({ route }: any) => ({ title: getPublicPageTitle(route.params?.page) })} />
       <AppStack.Screen name="CaseDetail" component={CaseDetailScreen} options={{ title: '案例详情' }} />

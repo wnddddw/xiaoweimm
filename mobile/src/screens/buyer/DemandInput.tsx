@@ -8,6 +8,7 @@ import Card from '../../components/common/Card';
 import Toast from '../../components/common/Toast';
 import WorkbenchTabs, { buyerWorkbenchTabs } from '../../components/workbench/WorkbenchTabs';
 import { industryData, regionData } from '../../utils/constants';
+import { colors } from '../../theme';
 
 const scaleOptions = ['1-5', '6-20', '21-50', '51-100', '101-300', '300+'];
 const purposeOptions = ['创业接手', '业务扩张', '上下游整合', '投资收益', '多元布局', '其他'];
@@ -156,21 +157,21 @@ function ChipGroup({ values, selected, onSelect }: { values: string[]; selected:
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  section: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: '#222', backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  section: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 15, marginBottom: 12, color: colors.text, backgroundColor: colors.white },
   textArea: { height: 80 },
-  label: { fontSize: 13, fontWeight: '600', color: '#222', marginTop: 4, marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: '600', color: colors.text, marginTop: 4, marginBottom: 6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  dash: { fontSize: 18, color: '#888' },
-  picker: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, marginBottom: 12, backgroundColor: '#fff' },
-  pickerVal: { fontSize: 15, color: '#111', fontWeight: '500' },
-  pickerPlace: { fontSize: 15, color: '#888' },
+  dash: { fontSize: 18, color: colors.textTertiary },
+  picker: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, marginBottom: 12, backgroundColor: colors.white },
+  pickerVal: { fontSize: 15, color: colors.text, fontWeight: '500' },
+  pickerPlace: { fontSize: 15, color: colors.textTertiary },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#bbb', backgroundColor: '#fff' },
-  chipActive: { backgroundColor: '#d4e4fd', borderColor: '#1a44aa' },
-  chipText: { fontSize: 13, color: '#555' },
-  chipActiveText: { color: '#1a44aa', fontWeight: '600' },
-  savedDemand: { borderTopWidth: 1, borderTopColor: '#eef0f3', paddingTop: 10 },
-  savedLine: { fontSize: 13, color: '#555', lineHeight: 22 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
+  chipActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  chipText: { fontSize: 13, color: colors.textSecondary },
+  chipActiveText: { color: colors.primary, fontWeight: '600' },
+  savedDemand: { borderTopWidth: 1, borderTopColor: colors.borderLight, paddingTop: 10 },
+  savedLine: { fontSize: 13, color: colors.textSecondary, lineHeight: 22 },
 });

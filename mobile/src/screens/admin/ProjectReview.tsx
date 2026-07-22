@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function ProjectReview({ navigation }: any) {
   const [projects, setProjects] = useState<any[]>([]);
@@ -87,13 +88,13 @@ export default function ProjectReview({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   filterRow: { flexDirection: 'row', gap: 6, marginBottom: 12, flexWrap: 'wrap' },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace' },
-  title: { fontSize: 15, fontWeight: '600', color: '#111', marginBottom: 2 },
-  loc: { fontSize: 13, color: '#555' },
-  detail: { fontSize: 12, color: '#555', marginTop: 4 },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace' },
+  title: { fontSize: 15, fontWeight: '600', color: colors.text, marginBottom: 2 },
+  loc: { fontSize: 13, color: colors.textSecondary },
+  detail: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
   btnRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  tapHint: { fontSize: 12, color: '#1a44aa', marginTop: 6 },
+  tapHint: { fontSize: 12, color: colors.primary, marginTop: 6 },
 });

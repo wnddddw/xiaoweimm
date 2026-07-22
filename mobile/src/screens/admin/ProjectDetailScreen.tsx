@@ -5,6 +5,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi, projectsApi } from '../../api';
+import { colors } from '../../theme';
 
 export default function ProjectDetailScreen({ route, navigation }: any) {
   const { projectId } = route.params;
@@ -55,7 +56,7 @@ export default function ProjectDetailScreen({ route, navigation }: any) {
     return <Text key={i} style={styles.listItem}>• {parts.join(' | ')}</Text>;
   };
 
-  if (loading) return <View style={styles.loading}><ActivityIndicator size="large" color="#1a44aa" /></View>;
+  if (loading) return <View style={styles.loading}><ActivityIndicator size="large" color={colors.primary} /></View>;
 
   if (!project) return <View style={styles.loading}><Text>项目不存在</Text></View>;
 
@@ -137,15 +138,15 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f4f6fa' },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pid: { fontSize: 12, color: '#888', fontFamily: 'monospace' },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#111', marginBottom: 10 },
-  infoRow: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e8e8e8' },
-  infoLabel: { width: 80, fontSize: 13, color: '#888' },
-  infoValue: { flex: 1, fontSize: 13, color: '#222' },
-  desc: { fontSize: 13, color: '#444', lineHeight: 20 },
-  listItem: { fontSize: 13, color: '#444', paddingVertical: 3 },
+  pid: { fontSize: 12, color: colors.textTertiary, fontFamily: 'monospace' },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  infoRow: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderLight },
+  infoLabel: { width: 80, fontSize: 13, color: colors.textTertiary },
+  infoValue: { flex: 1, fontSize: 13, color: colors.text },
+  desc: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  listItem: { fontSize: 13, color: colors.textSecondary, paddingVertical: 3 },
   btnRow: { flexDirection: 'row', gap: 12, marginTop: 16 },
 });
