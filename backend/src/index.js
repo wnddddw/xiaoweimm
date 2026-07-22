@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const config = require('./config');
@@ -6,10 +6,10 @@ const { getDb, run, get, all } = require('./db/init');
 
 const app = express();
 
-// CORS 鈥?validate origin, reject '*' in production
+// CORS —validate origin, reject '*' in production
 const corsOrigin = config.corsOrigin;
 if (corsOrigin === '*') {
-  console.warn('[SECURITY] CORS_ORIGIN is set to "*" 鈥?restrict to specific origin in production!');
+  console.warn('[SECURITY] CORS_ORIGIN is set to "*" —restrict to specific origin in production!');
 }
 app.use(cors({
   origin: corsOrigin === '*' ? true : corsOrigin,
@@ -87,7 +87,7 @@ function runAutoRenewal() {
           [amount, expire.toISOString(), now, u.id]);
         run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',
           [require('uuid').v4(), u.id, 'membership_renew', amount, u.balance, u.balance - amount, 'Auto', now]);
-        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} renewed ${u.member_level} for 楼${amount}`);
+        console.log(`[AUTO-RENEW] ${u.phone.slice(-4)} renewed ${u.member_level} for ¥${amount}`);
       } else {
         // Insufficient balance: downgrade to free
         run("UPDATE users SET member_level='free', member_expire=NULL, auto_renew=0, updated_at=? WHERE id=?",

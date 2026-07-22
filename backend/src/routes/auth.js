@@ -15,7 +15,7 @@ const router = express.Router();
 const resetPwdSendLimiter = createRateLimit({ windowMs: 60000, max: 1, keyBy: 'ip+phone' });
 const resetPwdVerifyLimiter = createRateLimit({ windowMs: 300000, max: 5, keyBy: 'ip+phone' });
 
-// POST /auth/sms-code 鈥?send verification code via Aliyun SMS
+// POST /auth/sms-code —send verification code via Aliyun SMS
 router.post('/sms-code', smsLimiter, async (req, res) => {
   const { phone } = req.body;
   if (!phone || !/^1[3-9]\d{9}$/.test(phone))
@@ -29,7 +29,7 @@ router.post('/sms-code', smsLimiter, async (req, res) => {
   }
 });
 
-// POST /auth/register 鈥?register with SMS code verification
+// POST /auth/register —register with SMS code verification
 router.post('/register', validateMiddleware(schemas.register), async (req, res) => {
   const { phone, code, name, role, password } = req.body;
   if (!phone || !code || !password)
@@ -54,7 +54,7 @@ router.post('/register', validateMiddleware(schemas.register), async (req, res) 
   res.json({ success: true, data: { id, phone, name: name || '', role: r, token, refresh_token: refreshToken } });
 });
 
-// POST /auth/login 鈥?password login
+// POST /auth/login —password login
 router.post('/login', loginLimiter, validateMiddleware(schemas.login), (req, res) => {
   const { phone, password } = req.body;
   if (!phone || !password) return res.status(400).json({ success: false, error: '请输入手机号和密码' });
@@ -67,7 +67,7 @@ router.post('/login', loginLimiter, validateMiddleware(schemas.login), (req, res
   res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token, refresh_token: refreshToken } });
 });
 
-// POST /auth/login-sms 鈥?SMS code login (no password needed)
+// POST /auth/login-sms —SMS code login (no password needed)
 router.post('/login-sms', loginLimiter, validateMiddleware(schemas.loginSms), (req, res) => {
   const { phone, code } = req.body;
   if (!phone || !code) return res.status(400).json({ success: false, error: '请输入手机号和验证码' });
