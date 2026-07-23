@@ -1,5 +1,9 @@
 /**
  * Payment Service — WeChat H5 + Alipay H5 with dev fallback
+ *
+ * 【已禁用】平台已转为免费审核制：所有支付下单/回调入口已在
+ * routes/payments.js 统一返回 410，本模块不再被任何路由引用，
+ * 仅保留作历史参考，切勿重新挂载。
  */
 const crypto = require('crypto');
 const axios = require('axios');

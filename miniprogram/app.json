@@ -1,0 +1,9 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "小微买卖",
+    "navigationBarBackgroundColor": "#1a73e8",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6fa"
+  }
+}

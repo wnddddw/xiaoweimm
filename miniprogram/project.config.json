@@ -1,0 +1,14 @@
+{
+  "description": "小微买卖微信小程序（web-view 壳，承载 H5 站点）",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "libVersion": "latest",
+  "projectname": "xiaoweimm-miniprogram",
+  "setting": {
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": false
+  },
+  "condition": {}
+}

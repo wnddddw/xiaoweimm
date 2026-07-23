@@ -1,21 +1,7 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
-const { run, get, all, transaction } = require('../db/init');
+const { get, all } = require('../db/init');
 const { auth } = require('../middleware/auth');
-const { adminAuth } = require('../middleware/adminAuth');
-const { createRateLimit } = require('../middleware/rateLimit');
-const paymentService = require('../services/payment');
 const router = express.Router();
-
-const MAX_RECHARGE_AMOUNT = 500000; // ¥500,000 max per recharge
-const isProduction = () => process.env.NODE_ENV === 'production';
-
-// Rate limiter for recharge — 5 per hour per user
-const rechargeLimiter = createRateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  keyBy: 'ip',
-});
 
 // ── Balance & History ──────────────────────────────────────────────
 
@@ -33,25 +19,9 @@ router.get('/bills', auth, (req, res) => {
 
 // ── Payment Order ──────────────────────────────────────────────────
 
-// POST /payments/order — Create a payment order (WeChat H5 / Alipay H5)
-router.post('/order', auth, async (req, res) => {
-  const { amount, channel, subject } = req.body;
-  if (!amount || amount <= 0) return res.status(400).json({ success: false, error: '无效的金额' });
-  if (amount > MAX_RECHARGE_AMOUNT) return res.status(400).json({ success: false, error: `单笔上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
-  if (!['wechat_h5', 'alipay_h5'].includes(channel))
-    return res.status(400).json({ success: false, error: '无效的支付渠道' });
-
-  const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
-  const result = await paymentService.createPaymentOrder(
-    req.user.id, Number(amount), channel, ip, subject || 'Balance Recharge'
-  );
-
-  if (!result.success) return res.status(500).json({ success: false, error: result.error });
-  res.json({ success: true, data: {
-    order_id: result.orderId,
-    payment_url: result.paymentUrl,
-    dev_paid: result.devPaid || false,
-  }});
+// POST /payments/order — 已禁用：平台已转为免费审核制，不再提供充值/支付下单
+router.post('/order', auth, (req, res) => {
+  res.status(410).json({ success: false, error: '平台已转为免费审核制，支付功能已下线' });
 });
 
 // GET /payments/order/:id — Query order status
@@ -64,90 +34,29 @@ router.get('/order/:id', auth, (req, res) => {
   res.json({ success: true, data: order });
 });
 
-// ── Payment Callbacks (public — no auth, called by gateways) ───────
+// ── Payment Callbacks (已禁用：平台已转为免费审核制) ─────────────────
 
-// WeChat async notify — receives raw XML body
-router.post('/callback/wechat', createRateLimit({ windowMs: 60_000, max: 30, keyBy: 'ip' }), (req, res) => {
-  let rawBody;
-  if (Buffer.isBuffer(req.body)) {
-    rawBody = req.body.toString('utf8');
-  } else {
-    rawBody = req.body;
-  }
-
-  // Basic size check for raw XML body
-  if (Buffer.byteLength(rawBody || '', 'utf8') > 128 * 1024) {
-    console.error('[WECHAT CB] Payload too large, rejected');
-    res.set('Content-Type', 'text/xml');
-    return res.send('<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[Payload too large]]></return_msg></xml>');
-  }
-
-  console.log('[WECHAT CB] callback received, length=' + (rawBody ? rawBody.length : 0));
-  const result = paymentService.processPaymentCallback('wechat_h5', rawBody);
-
-  const resp = result.success
-    ? '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>'
-    : '<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[' + result.message + ']]></return_msg></xml>';
+router.post('/callback/wechat', (req, res) => {
   res.set('Content-Type', 'text/xml');
-  res.send(resp);
+  res.status(410).send('<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[平台已转为免费审核制，支付功能已下线]]></return_msg></xml>');
 });
 
-// Alipay async notify — receives URL-encoded form data
-router.post('/callback/alipay', createRateLimit({ windowMs: 60_000, max: 30, keyBy: 'ip' }), (req, res) => {
-  // Log minimal info — do NOT log full body which may contain PII
-  console.log('[ALIPAY CB] callback received');
-  const result = paymentService.processPaymentCallback('alipay_h5', req.body);
-  res.send(result.success ? 'success' : 'fail');
+router.post('/callback/alipay', (req, res) => {
+  res.status(410).send('fail');
 });
 
-// WeChat return URL — redirect user back to app/result page
+// WeChat/Alipay return URL — 支付已下线，直接返回说明
 router.get('/callback/wechat', (req, res) => {
-  const { out_trade_no } = req.query;
-  res.redirect(`/payment-result.html?order_id=${out_trade_no || ''}&channel=wechat`);
+  res.status(410).json({ success: false, error: '平台已转为免费审核制，支付功能已下线' });
 });
 
-// Alipay return URL — redirect user back to app/result page
 router.get('/callback/alipay', (req, res) => {
-  const { out_trade_no } = req.query;
-  res.redirect(`/payment-result.html?order_id=${out_trade_no || ''}&channel=alipay`);
+  res.status(410).json({ success: false, error: '平台已转为免费审核制，支付功能已下线' });
 });
 
-// ── Recharge (DEV ONLY — requires admin in production) ─────────────
-
-// POST /payments/recharge — manual balance recharge
-// Always requires admin unless ALLOW_USER_RECHARGE=true AND NODE_ENV is not production.
-router.post('/recharge', auth, rechargeLimiter, (req, res) => {
-  // Always require admin for manual recharge
-  if (!req.user || req.user.role !== 'admin') {
-    // Allow non-admin only if explicitly enabled for dev testing
-    const allowUserRecharge = process.env.ALLOW_USER_RECHARGE === 'true' && process.env.NODE_ENV !== 'production';
-    if (!allowUserRecharge) {
-      return res.status(403).json({ success: false, error: '仅管理员可充值' });
-    }
-    console.warn('[DEV RECHARGE] Non-admin user ' + (req.user.phone || req.user.id) + ' recharging (ALLOW_USER_RECHARGE enabled)');
-  }
-
-  const { amount, pay_method } = req.body;
-  if (!amount || amount <= 0) return res.status(400).json({ success: false, error: '无效的金额' });
-  if (amount > MAX_RECHARGE_AMOUNT) return res.status(400).json({ success: false, error: `单笔充值上限 ¥${MAX_RECHARGE_AMOUNT.toLocaleString()}` });
-
-  const now = new Date().toISOString();
-
-  try {
-    transaction(() => {
-      const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
-      if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
-
-      run('UPDATE users SET balance=balance+?,updated_at=? WHERE id=?', [amount, now, req.user.id]);
-      run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,created_at) VALUES (?,?,?,?,?,?,?,?)',
-        [uuidv4(), req.user.id, 'recharge', amount, u.balance, u.balance + amount, pay_method || 'Admin', now]);
-    });
-
-    if (!isProduction()) console.log(`[DEV RECHARGE] User ${req.user.phone?.slice(-4)} +¥${amount}`);
-    res.json({ success: true, data: { balance: get('SELECT balance FROM users WHERE id=?', [req.user.id]).balance } });
-  } catch (e) {
-    res.status(500).json({ success: false, error: '充值失败，请重试' });
-  }
+// POST /payments/recharge — 已禁用
+router.post('/recharge', auth, (req, res) => {
+  res.status(410).json({ success: false, error: '平台已转为免费审核制，充值功能已下线' });
 });
 
 module.exports = router;

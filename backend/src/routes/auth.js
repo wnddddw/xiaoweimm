@@ -50,7 +50,7 @@ router.post('/register', validateMiddleware(schemas.register), async (req, res) 
   const id = uuidv4(), hash = bcrypt.hashSync(password, 10),
     now = new Date().toISOString(), r = role || 'buyer';
   run('INSERT INTO users (id,phone,password_hash,name,role,member_level,member_expire,auto_renew,avatar_url,verify_status,status,balance,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-    [id, phone, hash, name || '', r, 'free', null, 0, null, 'none', 'active', 0, now, now]);
+    [id, phone, hash, name || '', r, 'basic', null, 0, null, 'none', 'active', 0, now, now]);
 
   // Note: user must explicitly agree to agreements via POST /api/agreements/agree
   const token = jwt.sign({ id, phone, role: r }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
@@ -192,7 +192,7 @@ async function handleOAuthCallback(provider, providerUserId, userInfo) {
     const nickname = userInfo.nickname || userInfo.nick_name || (provider === 'wechat' ? '微信用户' : '支付宝用户');
 
     run('INSERT INTO users (id,phone,password_hash,name,role,member_level,member_expire,auto_renew,avatar_url,verify_status,status,balance,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [userId, placeholderPhone + Date.now(), hash, nickname, 'buyer', 'free', null, 0, userInfo.avatar || userInfo.headimgurl || '', 'none', 'active', 0, now, now]);
+      [userId, placeholderPhone + Date.now(), hash, nickname, 'buyer', 'basic', null, 0, userInfo.avatar || userInfo.headimgurl || '', 'none', 'active', 0, now, now]);
 
     // Note: user must explicitly agree to agreements via POST /api/agreements/agree
   }

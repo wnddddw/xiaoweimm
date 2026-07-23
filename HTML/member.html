@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会员中心｜xiaoweimm</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        button,input,select,textarea,.btn,a.nav-btn{min-height:44px;min-width:44px;touch-action:manipulation;}
+        body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.7;background:#f7f9fc;min-height:100vh;}
+        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;--green:#1e8449;--red:#c0392b;--orange:#d68910;}
+        a{text-decoration:none;color:inherit;}
+
+        .top-nav{background:#fff;border-bottom:2px solid #ddd;position:sticky;top:0;z-index:99;}
+        .nav-inner{width:92%;max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;height:65px;}
+        .logo{font-size:26px;font-weight:700;color:var(--main);}
+        .nav-menu{display:flex;gap:28px;font-size:14px;}
+        .nav-menu a:hover{color:var(--main);}
+        .user-info{display:flex;align-items:center;gap:10px;font-size:14px;}
+        .user-info .avatar{width:34px;height:34px;border-radius:50%;background:var(--main);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;}
+
+        .container{width:92%;max-width:1100px;margin:0 auto;padding:32px 0 50px;}
+        .page-title{font-size:26px;font-weight:700;color:#222;margin-bottom:28px;}
+
+        .member-card{background:linear-gradient(135deg,var(--main),#1838a0);border-radius:12px;padding:32px 36px;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;box-shadow:0 6px 20px rgba(34,85,204,0.25);}
+        .member-card .level-tag{display:inline-block;background:rgba(255,255,255,0.2);padding:4px 14px;border-radius:12px;font-size:13px;margin-bottom:10px;}
+        .member-card .level-tag.premium{background:linear-gradient(135deg,#d4a017,#f0c040);color:#333;}
+        .member-card h2{font-size:24px;margin-bottom:6px;}
+        .member-card .expiry{font-size:13px;opacity:0.85;}
+        .member-card .card-right{text-align:right;}
+        .member-card .free-tag{font-size:30px;font-weight:700;}
+
+        .btn{padding:10px 24px;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:0.3s;display:inline-flex;align-items:center;gap:6px;}
+        .btn-white{background:#fff;color:var(--main);}
+        .btn-main{background:var(--main);color:#fff;}
+        .btn-main:hover{opacity:0.85;}
+        .btn-block{width:100%;justify-content:center;}
+
+        .section-card{background:#fff;border-radius:10px;padding:28px 32px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:24px;}
+        .section-card h3{font-size:18px;margin-bottom:18px;color:#222;padding-bottom:12px;border-bottom:2px solid #ddd;}
+
+        .benefit-list{list-style:none;}
+        .benefit-list li{padding:8px 0;font-size:14px;color:var(--gray);border-bottom:1px solid #eef0f3;}
+        .benefit-list li:before{content:"✓";color:var(--green);margin-right:8px;font-weight:600;}
+        .benefit-list li.no{color:#bbb;}
+        .benefit-list li.no:before{content:"✕";color:#ccc;}
+
+        .form-group{margin-bottom:16px;}
+        .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#222;}
+        .form-group input,.form-group textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:6px;font-size:14px;font-family:inherit;}
+        .form-group textarea{height:90px;resize:vertical;}
+
+        .status-box{border-radius:10px;padding:20px 24px;font-size:14px;line-height:1.9;}
+        .status-pending{background:#fef5e7;color:#8a5a00;}
+        .status-approved{background:#e8f8f0;color:var(--green);}
+        .status-rejected{background:#fdecea;color:var(--red);}
+        .status-box .note{margin-top:8px;font-size:13px;opacity:0.9;}
+
+        .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 24px;border-radius:6px;font-size:14px;z-index:9999;opacity:0;transform:translateX(20px);transition:0.3s;pointer-events:none;}
+        .toast.show{opacity:1;transform:translateX(0);}
+        .toast.success{background:var(--green);}
+        .toast.error{background:var(--red);}
+
+        .menu-icon{display:none;font-size:24px;cursor:pointer;}
+        @media(max-width:768px){
+            .nav-menu{display:none;}
+            .menu-icon{display:block;}
+            input,select,textarea,button{font-size:16px!important;}
+            .member-card{flex-direction:column;text-align:center;gap:16px;}
+            .member-card .card-right{text-align:center;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="top-nav">
+    <div class="nav-inner">
+        <a href="index.html" class="logo">xiaoweimm</a>
+        <div class="menu-icon">&#9776;</div>
+        <div class="nav-menu">
+            <a href="seller.html">企业转让</a>
+            <a href="buyer.html">企业收购</a>
+            <a href="service.html">服务介绍</a>
+            <a href="contact.html">咨询</a>
+        </div>
+        <div class="user-info">
+            <span class="avatar" id="navAvatar">用</span>
+            <span id="navPhone"></span>
+            <a href="index.html" style="color:var(--gray);font-size:13px;">退出</a>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="page-title">会员中心</div>
+
+    <!-- 当前会员卡片 -->
+    <div class="member-card">
+        <div class="card-left">
+            <div class="level-tag" id="levelTag">基础会员</div>
+            <h2 id="levelName">基础会员</h2>
+            <div class="expiry" id="levelDesc">注册即享，可浏览平台公开内容</div>
+        </div>
+        <div class="card-right">
+            <div class="free-tag">免费</div>
+            <div style="font-size:13px;opacity:0.85;">平台为免费审核制，无任何收费项目</div>
+        </div>
+    </div>
+
+    <!-- 审核状态（pending / approved / rejected 时显示） -->
+    <div class="section-card" id="statusCard" style="display:none;">
+        <h3>高级会员申请状态</h3>
+        <div class="status-box" id="statusBox"></div>
+    </div>
+
+    <!-- 申请表单（基础会员且非审核中时显示） -->
+    <div class="section-card" id="applyCard" style="display:none;">
+        <h3>申请高级会员（免费）</h3>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:18px;">高级会员免费开通，提交申请后由平台管理员审核。审核通常需要 1-2 个工作日，结果将通过站内消息通知您。</p>
+        <div class="form-group">
+            <label>申请理由 *</label>
+            <textarea id="applyReason" placeholder="请说明您申请高级会员的目的，例如：计划收购餐饮企业、拟转让名下工厂等"></textarea>
+        </div>
+        <div class="form-group">
+            <label>联系方式 *</label>
+            <input type="text" id="applyContact" placeholder="手机号 / 微信号 / 邮箱，便于审核人员与您联系">
+        </div>
+        <div class="form-group">
+            <label>身份说明 *</label>
+            <textarea id="applyIdNote" placeholder="请说明您的身份，例如：企业经营者 / 投资人 / 中介机构，以及所在行业"></textarea>
+        </div>
+        <button class="btn btn-main btn-block" onclick="submitApply()" id="btnApply">提交申请</button>
+    </div>
+
+    <!-- 权益说明 -->
+    <div class="section-card">
+        <h3>会员权益对比</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div>
+                <h4 style="margin-bottom:10px;color:var(--gray);">基础会员（注册默认）</h4>
+                <ul class="benefit-list">
+                    <li>浏览公开项目列表</li>
+                    <li>浏览成功案例与行业专栏</li>
+                    <li class="no">查看项目方联系方式</li>
+                    <li class="no">发布转让项目</li>
+                    <li class="no">发起收购意向 / 创建交易</li>
+                    <li class="no">成交顾问与专家服务</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="margin-bottom:10px;color:var(--main);">高级会员（免费申请·审核开通）</h4>
+                <ul class="benefit-list">
+                    <li>查看项目方联系方式</li>
+                    <li>免费发布转让项目</li>
+                    <li>发起收购意向、创建并推进交易</li>
+                    <li>免费估值诊断服务</li>
+                    <li>免费法律 / 会计 / 税务 / 并购咨询专家服务</li>
+                    <li>专属成交顾问全程支持</li>
+                </ul>
+            </div>
+        </div>
+        <p style="margin-top:18px;font-size:13px;color:var(--gray);">说明：平台已转为免费审核制，全部功能对高级会员免费开放，不收取会员费、成交佣金或诊断费。</p>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/auth.js"></script>
+<script>
+(function(){
+    var token = XW.Auth.getToken();
+    if(!token){
+        XW.Auth.showAuthMessage('请先登录');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    function showToast(msg, type){
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + (type || '');
+        setTimeout(function(){ t.className = 'toast'; }, 2500);
+    }
+
+    function api(path, options){
+        options = options || {};
+        return fetch('/api' + path, {
+            method: options.method || 'GET',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: options.body ? JSON.stringify(options.body) : undefined
+        }).then(function(r){ return r.json(); });
+    }
+
+    function render(d){
+        var isAdvanced = d.member_level === 'advanced';
+        document.getElementById('levelTag').textContent = isAdvanced ? '高级会员' : '基础会员';
+        document.getElementById('levelTag').className = 'level-tag' + (isAdvanced ? ' premium' : '');
+        document.getElementById('levelName').textContent = isAdvanced ? '高级会员' : '基础会员';
+        document.getElementById('levelDesc').textContent = isAdvanced
+            ? '审核通过，全部功能已解锁（平台免费）'
+            : '注册即享，可浏览平台公开内容';
+
+        var statusCard = document.getElementById('statusCard');
+        var statusBox = document.getElementById('statusBox');
+        var applyCard = document.getElementById('applyCard');
+
+        if(isAdvanced){
+            statusCard.style.display = 'block';
+            statusBox.className = 'status-box status-approved';
+            statusBox.innerHTML = '<strong>您已是高级会员</strong>，全部功能免费开放。' +
+                (d.advanced_review_time ? '<div class="note">开通时间：' + String(d.advanced_review_time).slice(0,10) + '</div>' : '');
+            applyCard.style.display = 'none';
+        } else if(d.advanced_status === 'pending'){
+            statusCard.style.display = 'block';
+            statusBox.className = 'status-box status-pending';
+            statusBox.innerHTML = '<strong>审核中</strong>：您的高级会员申请已提交，请耐心等待管理员审核。' +
+                (d.advanced_apply_time ? '<div class="note">提交时间：' + String(d.advanced_apply_time).slice(0,10) + '</div>' : '');
+            applyCard.style.display = 'none';
+        } else if(d.advanced_status === 'rejected'){
+            statusCard.style.display = 'block';
+            statusBox.className = 'status-box status-rejected';
+            statusBox.innerHTML = '<strong>已驳回</strong>：很遗憾，您的申请未通过审核。' +
+                (d.advanced_review_note ? '<div class="note">审核备注：' + d.advanced_review_note + '</div>' : '') +
+                '<div class="note">可修改申请资料后重新提交。</div>';
+            applyCard.style.display = 'block';
+        } else {
+            statusCard.style.display = 'none';
+            applyCard.style.display = 'block';
+        }
+    }
+
+    function load(){
+        api('/memberships').then(function(res){
+            if(res && res.success && res.data){ render(res.data); }
+            else { showToast('会员信息加载失败', 'error'); }
+        }).catch(function(){ showToast('网络错误，请稍后重试', 'error'); });
+    }
+
+    window.submitApply = function(){
+        var reason = document.getElementById('applyReason').value.trim();
+        var contact = document.getElementById('applyContact').value.trim();
+        var idNote = document.getElementById('applyIdNote').value.trim();
+        if(!reason || !contact || !idNote){ showToast('请完整填写申请理由、联系方式和身份说明', 'error'); return; }
+        var btn = document.getElementById('btnApply');
+        btn.disabled = true;
+        api('/memberships/apply-advanced', { method: 'POST', body: { reason: reason, contact: contact, id_note: idNote } }).then(function(res){
+            btn.disabled = false;
+            if(res && res.success){
+                showToast('申请已提交，请等待审核', 'success');
+                load();
+            } else {
+                showToast((res && res.error) || '提交失败', 'error');
+            }
+        }).catch(function(){ btn.disabled = false; showToast('网络错误，请稍后重试', 'error'); });
+    };
+
+    // 导航用户信息
+    api('/auth/me').then(function(res){
+        if(res && res.success && res.data){
+            var u = res.data;
+            document.getElementById('navPhone').textContent = u.phone || '';
+            document.getElementById('navAvatar').textContent = (u.name || u.phone || '用')[0];
+        }
+    });
+
+    load();
+})();
+</script>
+</body>
+</html>

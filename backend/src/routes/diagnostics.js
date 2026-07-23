@@ -1,14 +1,19 @@
 /**
- * Diagnostic Orders — Paid valuation diagnostic service for sellers
- * PRD: 3,000-15,000 yuan per diagnostic
+ * Diagnostic Orders — 估值诊断服务（免费，申请制）
+ * 平台已转为免费审核制：高级会员免费申请，平台线下安排专家并联系。
  */
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { run, get, all, transaction } = require('../db/init');
+const { run, get, all } = require('../db/init');
 const { auth } = require('../middleware/auth');
+const { requireAdvanced } = require('../middleware/advanced');
 const router = express.Router();
 
-const DIAGNOSTIC_PRICES = { basic: 3000, standard: 8000, premium: 15000 };
+const DIAGNOSTIC_PLANS = {
+  basic: { title: '基础诊断', includes: ['项目概要书', '参考估值区间', '行业对比数据'] },
+  standard: { title: '标准诊断', includes: ['基础诊断全部内容', '财务健康分析', '转让可行性评估', '专家一对一咨询'] },
+  premium: { title: '高级诊断', includes: ['标准诊断全部内容', '深度尽职调查', '最优转让策略', '潜在买家匹配报告'] },
+};
 
 // ── Diagnostic Order CRUD ────────────────────────────────────────────
 
@@ -18,95 +23,43 @@ router.get('/', auth, (req, res) => {
   res.json({ success: true, data: orders });
 });
 
-// GET /diagnostics/prices — available diagnostic plans
+// GET /diagnostics/prices — 诊断方案（全部免费）
 router.get('/prices', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      basic: { price: 3000, title: '基础诊断', includes: ['项目概要书', '参考估值区间', '行业对比数据'] },
-      standard: { price: 8000, title: '标准诊断', includes: ['基础诊断全部内容', '财务健康分析', '转让可行性评估', '专家一对一咨询'] },
-      premium: { price: 15000, title: '高级诊断', includes: ['标准诊断全部内容', '深度尽职调查', '最优转让策略', '潜在买家匹配报告'] },
-    },
-  });
+  res.json({ success: true, data: DIAGNOSTIC_PLANS, free: true, message: '平台已转为免费审核制，诊断服务免费申请' });
 });
 
-// POST /diagnostics — create diagnostic order
-router.post('/', auth, (req, res) => {
-  const { project_id, plan_type, pay_method } = req.body;
+// POST /diagnostics — 申请免费诊断（需高级会员）
+router.post('/', auth, requireAdvanced, (req, res) => {
+  const { project_id, plan_type } = req.body;
   if (!project_id) return res.status(400).json({ success: false, error: '请选择关联项目' });
-  if (!plan_type || !DIAGNOSTIC_PRICES[plan_type]) return res.status(400).json({ success: false, error: '请选择诊断方案' });
+  if (!plan_type || !DIAGNOSTIC_PLANS[plan_type]) return res.status(400).json({ success: false, error: '请选择诊断方案' });
 
   // Verify project belongs to user
   const project = get('SELECT id FROM projects WHERE id=? AND user_id=?', [project_id, req.user.id]);
   if (!project) return res.status(404).json({ success: false, error: '项目不存在' });
 
-  const amount = DIAGNOSTIC_PRICES[plan_type];
   const id = 'DG' + Date.now().toString(36) + require('crypto').randomBytes(2).toString('hex');
   const now = new Date().toISOString();
 
   // Check for duplicate pending
   const existing = get("SELECT id FROM diagnostic_orders WHERE user_id=? AND project_id=? AND status='pending'", [req.user.id, project_id]);
-  if (existing) return res.status(409).json({ success: false, error: '该项目已有待支付的诊断订单' });
+  if (existing) return res.status(409).json({ success: false, error: '该项目已有申请中的诊断' });
 
+  // 免费申请制：amount 恒为 0，平台审核后线下安排专家联系
   run('INSERT INTO diagnostic_orders (id,user_id,project_id,amount,status,pay_method,created_at) VALUES (?,?,?,?,?,?,?)',
-    [id, req.user.id, project_id, amount, 'pending', pay_method || 'Balance', now]);
+    [id, req.user.id, project_id, 0, 'pending', 'Free', now]);
 
-  res.json({ success: true, data: { id, amount, plan_type } });
+  res.json({ success: true, data: { id, amount: 0, plan_type }, message: '诊断申请已提交，平台将免费为您安排专家并线下联系' });
 });
 
-// POST /diagnostics/:id/pay — pay diagnostic order from balance
+// POST /diagnostics/:id/pay — 已禁用：诊断服务免费
 router.post('/:id/pay', auth, (req, res) => {
-  const order = get('SELECT * FROM diagnostic_orders WHERE id=? AND user_id=?', [req.params.id, req.user.id]);
-  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
-  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '订单状态不正确' });
-
-  const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
-  if (!u || u.balance < order.amount) {
-    return res.status(400).json({ success: false, error: '余额不足，需要 ¥' + order.amount.toFixed(2), need_amount: order.amount, balance: u ? u.balance : 0 });
-  }
-
-  const now = new Date().toISOString();
-  try {
-    transaction(() => {
-      run('UPDATE users SET balance=balance-?,updated_at=? WHERE id=?', [order.amount, now, req.user.id]);
-      run('INSERT INTO payments (id,user_id,type,amount,balance_before,balance_after,pay_method,related_type,related_id,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
-        [uuidv4(), req.user.id, 'diagnostic', order.amount, u.balance, u.balance - order.amount, 'Balance', 'diagnostic', order.id, now]);
-      run('UPDATE diagnostic_orders SET status=?,paid_at=? WHERE id=?', ['paid', now, order.id]);
-    });
-    res.json({ success: true, data: { amount: order.amount, balance_after: u.balance - order.amount } });
-  } catch (e) {
-    res.status(500).json({ success: false, error: '支付失败' });
-  }
+  res.status(410).json({ success: false, error: '平台已转为免费审核制，诊断服务免费，无需支付' });
 });
 
-// POST /diagnostics/:id/pay/order — pay via WeChat/Alipay
-router.post('/:id/pay/order', auth, async (req, res) => {
-  const order = get('SELECT * FROM diagnostic_orders WHERE id=? AND user_id=?', [req.params.id, req.user.id]);
-  if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
-  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '订单状态不正确' });
-
-  const { channel } = req.body;
-  if (!['wechat_h5', 'alipay_h5'].includes(channel))
-    return res.status(400).json({ success: false, error: '无效的支付渠道' });
-
-  const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
-  const paymentService = require('../services/payment');
-  const result = await paymentService.createPaymentOrder(
-    req.user.id,
-    order.amount,
-    channel,
-    ip,
-    '估值诊断 — ' + order.id,
-    { businessType: 'diagnostic', businessId: order.id }
-  );
-
-  if (!result.success) return res.status(500).json({ success: false, error: result.error });
-  if (result.devPaid) {
-    // Auto-complete diagnostic payment in dev mode
-    const now = new Date().toISOString();
-    run('UPDATE diagnostic_orders SET status=?,paid_at=? WHERE id=?', ['paid', now, order.id]);
-  }
-  res.json({ success: true, data: { order_id: result.orderId, payment_url: result.paymentUrl, dev_paid: result.devPaid || false } });
+// POST /diagnostics/:id/pay/order — 已禁用
+router.post('/:id/pay/order', auth, (req, res) => {
+  res.status(410).json({ success: false, error: '平台已转为免费审核制，诊断服务免费，无需支付' });
 });
 
 // Admin: GET /diagnostics/admin/all — all diagnostic orders (admin only)
@@ -134,7 +87,7 @@ router.put('/:id/assign', auth, (req, res) => {
 
   const order = get('SELECT * FROM diagnostic_orders WHERE id=?', [req.params.id]);
   if (!order) return res.status(404).json({ success: false, error: '订单不存在' });
-  if (order.status !== 'paid') return res.status(400).json({ success: false, error: '需先完成支付' });
+  if (order.status !== 'pending') return res.status(400).json({ success: false, error: '仅申请中的诊断可分配专家' });
 
   const now = new Date().toISOString();
   run('UPDATE diagnostic_orders SET expert_name=?,expert_phone=?,status=?,assigned_at=? WHERE id=?',

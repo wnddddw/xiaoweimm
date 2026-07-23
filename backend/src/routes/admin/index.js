@@ -119,4 +119,45 @@ router.get('/analytics', (req, res) => {
     industryDist: all('SELECT industry,COUNT(*) as count FROM projects GROUP BY industry ORDER BY count DESC')
   }});
 });
+
+// ── 高级会员申请审核 ──────────────────────────────────────────────────
+
+// GET /admin/advanced-applications — 申请列表（默认待审核）
+router.get('/advanced-applications', (req, res) => {
+  const { status } = req.query;
+  let sql = 'SELECT id,phone,name,role,member_level,advanced_status,advanced_reason,advanced_contact,advanced_id_note,advanced_review_note,advanced_apply_time,advanced_review_time FROM users WHERE advanced_status != ?';
+  const p = ['none'];
+  if (status) { sql = sql.replace('!= ?', '= ?'); p[0] = status; }
+  sql += ' ORDER BY advanced_apply_time DESC';
+  res.json({ success: true, data: all(sql, p) });
+});
+
+// PATCH /admin/advanced-applications/:userId/approve — 通过并开通高级会员
+router.patch('/advanced-applications/:userId/approve', (req, res) => {
+  const u = get('SELECT id, advanced_status FROM users WHERE id=?', [req.params.userId]);
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
+  if (u.advanced_status !== 'pending') return res.status(400).json({ success: false, error: '该用户没有待审核的申请' });
+  const now = new Date().toISOString();
+  const note = (req.body.note || '').trim();
+  run("UPDATE users SET member_level='advanced', advanced_status='approved', advanced_review_note=?, advanced_review_time=?, updated_at=? WHERE id=?",
+    [note, now, now, req.params.userId]);
+  run('INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)',
+    [uuidv4(), req.params.userId, 'system', '高级会员已通过', '恭喜，您的高级会员申请已通过审核，全部功能已解锁（平台免费）。' + (note ? ' 审核备注：' + note : ''), now]);
+  res.json({ success: true });
+});
+
+// PATCH /admin/advanced-applications/:userId/reject — 驳回并写审核备注
+router.patch('/advanced-applications/:userId/reject', (req, res) => {
+  const u = get('SELECT id, advanced_status FROM users WHERE id=?', [req.params.userId]);
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
+  if (u.advanced_status !== 'pending') return res.status(400).json({ success: false, error: '该用户没有待审核的申请' });
+  const note = (req.body.note || '').trim();
+  if (!note) return res.status(400).json({ success: false, error: '驳回时请填写审核备注' });
+  const now = new Date().toISOString();
+  run("UPDATE users SET advanced_status='rejected', advanced_review_note=?, advanced_review_time=?, updated_at=? WHERE id=?",
+    [note, now, now, req.params.userId]);
+  run('INSERT INTO messages (id,user_id,category,subject,body,created_at) VALUES (?,?,?,?,?,?)',
+    [uuidv4(), req.params.userId, 'system', '高级会员申请未通过', '很遗憾，您的高级会员申请未通过审核。审核备注：' + note + '。可修改资料后重新申请。', now]);
+  res.json({ success: true });
+});
 module.exports = router;

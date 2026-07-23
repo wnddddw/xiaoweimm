@@ -60,12 +60,12 @@ export const regionData: Record<string, string[]> = {
   '其他': ['其他城市'],
 };
 
+// 交易阶段（平台免费，无付款托管阶段）
 export const dealStages = [
   { id: 'matching', label: '匹配沟通', icon: '🤝' },
   { id: 'nda', label: '保密协议', icon: '🔒' },
   { id: 'due_diligence', label: '尽职调查', icon: '🔎' },
   { id: 'contract', label: '合同签署', icon: '📋' },
-  { id: 'payment', label: '付款托管', icon: '💰' },
   { id: 'handover', label: '交割移交', icon: '📦' },
   { id: 'complete', label: '交易完成', icon: '✅' },
 ];

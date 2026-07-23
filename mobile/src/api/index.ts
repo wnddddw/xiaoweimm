@@ -35,8 +35,9 @@ export const messagesApi = {
 
 export const membershipsApi = {
   get: () => api.get<ApiResponse<any>>('/memberships'),
-  upgrade: (planType: string, payMethod?: string) => api.post<ApiResponse<any>>('/memberships/upgrade', { plan_type: planType, pay_method: payMethod }),
-  toggleAutoRenew: (autoRenew: boolean) => api.put<ApiResponse<null>>('/memberships/auto-renew', { auto_renew: autoRenew }),
+  applyAdvanced: (reason: string, contact: string, idNote?: string) =>
+    api.post<ApiResponse<any>>('/memberships/apply-advanced', { reason, contact, id_note: idNote }),
+  getAdvancedStatus: () => api.get<ApiResponse<any>>('/memberships/apply-advanced/status'),
   getOrders: () => api.get<ApiResponse<any[]>>('/memberships/orders'),
 };
 
