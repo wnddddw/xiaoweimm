@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity } from 
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
+import { api } from '../../api';
 import { useAuth } from '../../store/AuthContext';
 import { colors } from '../../theme';
 
@@ -47,7 +48,6 @@ export default function ProfileScreen({ navigation }: any) {
   const updateProfile = async () => {
     setLoading(true);
     try {
-      const api = (await import('../../api')).api;
       await api.put('/users/profile', { name: name.trim() });
       setEditingName(false);
       setToast({ visible: true, message: '资料已更新', type: 'success' });
@@ -62,7 +62,6 @@ export default function ProfileScreen({ navigation }: any) {
     }
     setLoading(true);
     try {
-      const api = (await import('../../api')).api;
       await api.put('/users/password', { old_password: oldPwd, new_password: newPwd });
       setOldPwd(''); setNewPwd('');
       setToast({ visible: true, message: '密码已修改', type: 'success' });

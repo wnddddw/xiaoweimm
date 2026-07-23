@@ -51,9 +51,25 @@ export const paymentsApi = {
   getBills: () => api.get<ApiResponse<any[]>>('/payments/bills'),
 };
 
+// RN FormData 文件对象（后端 multer multipart 解析）
+export interface UploadFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 export const verifyApi = {
-  getStatus: () => api.get<ApiResponse<any[]>>('/verify/status'),
-  submit: (type: 'personal' | 'company', data: any) => api.post<ApiResponse<any>>('/verify/submit', { type, data }),
+  // 后端返回单对象（最新一条认证记录）或 { status: 'none' }
+  getStatus: () => api.get<ApiResponse<any>>('/verify/status'),
+  // multipart 提交：字段对齐后端 multer（real_name/id_number/id_card、company_name/legal_person/license）
+  submit: (formData: FormData) =>
+    api.post<ApiResponse<any>>('/verify/submit', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  resubmit: (formData: FormData) =>
+    api.post<ApiResponse<any>>('/verify/resubmit', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };
 
 export const matchingApi = {

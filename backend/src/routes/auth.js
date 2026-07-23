@@ -43,6 +43,10 @@ router.post('/register', validateMiddleware(schemas.register), async (req, res) 
   if (get('SELECT id FROM users WHERE phone = ?', [phone]))
     return res.status(409).json({ success: false, error: '该手机号已注册' });
 
+  // 角色白名单：注册只允许买家/卖家，admin 只能由后台/种子数据创建
+  if (role && !['buyer', 'seller'].includes(role))
+    return res.status(400).json({ success: false, error: '非法的账号角色' });
+
   const id = uuidv4(), hash = bcrypt.hashSync(password, 10),
     now = new Date().toISOString(), r = role || 'buyer';
   run('INSERT INTO users (id,phone,password_hash,name,role,member_level,member_expire,auto_renew,avatar_url,verify_status,status,balance,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',

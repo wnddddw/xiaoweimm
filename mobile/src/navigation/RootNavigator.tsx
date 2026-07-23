@@ -12,7 +12,7 @@ export default function RootNavigator() {
     return (
       <View style={styles.loading}>
         <Text style={styles.loadingLogo}>xiaoweimm</Text>
-        <Text style={styles.loadingText}>姝ｅ湪鍚姩</Text>
+        <Text style={styles.loadingText}>正在启动</Text>
         <ActivityIndicator size="large" color={colors.white} />
       </View>
     );

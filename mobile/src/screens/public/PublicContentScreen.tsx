@@ -141,6 +141,18 @@ function ContactPage({
   toast: { visible: boolean; message: string; type: '' | 'success' | 'error' };
   setToast: (value: { visible: boolean; message: string; type: '' | 'success' | 'error' }) => void;
 }) {
+  const [form, setForm] = useState({ name: '', phone: '', email: '', kind: '', content: '' });
+  const setField = (key: keyof typeof form) => (value: string) => setForm(f => ({ ...f, [key]: value }));
+
+  const submit = () => {
+    if (!form.name.trim() || !form.phone.trim() || !form.content.trim()) {
+      setToast({ visible: true, message: '请至少填写姓名、电话和咨询内容', type: 'error' });
+      return;
+    }
+    // TODO：在线咨询提交接口尚未接入后端；先引导电话渠道，不用假 success 误导用户
+    setToast({ visible: true, message: '在线咨询暂未开通，请拨打 400-888-6688 联系我们', type: 'error' });
+  };
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Toast {...toast} onHide={() => setToast({ ...toast, visible: false })} />
@@ -148,16 +160,16 @@ function ContactPage({
       <View style={styles.body}>
         <Card>
           <Text style={styles.fieldLabel}>姓名</Text>
-          <TextInput style={styles.input} placeholder="请输入姓名" />
+          <TextInput style={styles.input} placeholder="请输入姓名" value={form.name} onChangeText={setField('name')} />
           <Text style={styles.fieldLabel}>电话号码</Text>
-          <TextInput style={styles.input} placeholder="请输入电话号码" keyboardType="phone-pad" />
+          <TextInput style={styles.input} placeholder="请输入电话号码" keyboardType="phone-pad" value={form.phone} onChangeText={setField('phone')} />
           <Text style={styles.fieldLabel}>邮箱地址</Text>
-          <TextInput style={styles.input} placeholder="请输入邮箱地址" keyboardType="email-address" />
+          <TextInput style={styles.input} placeholder="请输入邮箱地址" keyboardType="email-address" value={form.email} onChangeText={setField('email')} />
           <Text style={styles.fieldLabel}>咨询类型</Text>
-          <TextInput style={styles.input} placeholder="企业转让 / 企业收购 / 价值评估 / 其他" />
+          <TextInput style={styles.input} placeholder="企业转让 / 企业收购 / 价值评估 / 其他" value={form.kind} onChangeText={setField('kind')} />
           <Text style={styles.fieldLabel}>咨询内容</Text>
-          <TextInput style={[styles.input, styles.textArea]} placeholder="请填写咨询内容" multiline textAlignVertical="top" />
-          <Button title="发送" onPress={() => setToast({ visible: true, message: '咨询提交接口待接入', type: 'success' })} size="block" />
+          <TextInput style={[styles.input, styles.textArea]} placeholder="请填写咨询内容" multiline textAlignVertical="top" value={form.content} onChangeText={setField('content')} />
+          <Button title="发送" onPress={submit} size="block" />
         </Card>
       </View>
     </ScrollView>

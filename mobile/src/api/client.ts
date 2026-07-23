@@ -5,6 +5,12 @@ import { API_BASE_URL } from '../utils/constants';
 // Track network state
 let isNetworkAvailable = true;
 
+// 401 强制登出回调：API 层清 token 后同步通知 AuthContext 清 React 状态
+let onUnauthorized: (() => void) | null = null;
+export function setOnUnauthorized(callback: (() => void) | null) {
+  onUnauthorized = callback;
+}
+
 const GENERIC_API_ERROR_MESSAGE = '操作失败，请稍后重试';
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -57,6 +63,8 @@ api.interceptors.response.use(
       }
 
       await secureStore.clear();
+      // 同步 AuthContext 的登录态，避免界面停留在已登录视图需重启才恢复
+      try { onUnauthorized?.(); } catch { /* ignore */ }
       (error as any).friendlyMessage = getApiErrorMessage(error, '登录已过期，请重新登录');
     }
     if ((error as any).friendlyMessage) {

@@ -14,9 +14,26 @@ router.get('/', auth, (req, res) => {
 router.post('/', auth, (req, res) => {
   const { project_id, seller_id, buyer_id, seller_name, buyer_name, price, advisor, note } = req.body;
   if (!project_id || !seller_name || !buyer_name || !price) return res.status(400).json({ success: false, error: '请填写所有字段' });
+  const priceNum = Number(price);
+  if (!Number.isFinite(priceNum) || priceNum <= 0) return res.status(400).json({ success: false, error: '交易价格无效' });
+
+  // 项目归属校验：项目必须存在，卖方默认取项目所有者
+  const project = get('SELECT id, user_id FROM projects WHERE id=?', [project_id]);
+  if (!project) return res.status(404).json({ success: false, error: '项目不存在' });
+  const sellerId = project.user_id;
+
+  // 参与方校验：创建者必须是 admin、项目所有者（卖方）或指定买方
+  const buyerId = buyer_id || '';
+  if (req.user.role !== 'admin' && req.user.id !== sellerId && (!buyerId || req.user.id !== buyerId)) {
+    return res.status(403).json({ success: false, error: '无权为该交易项目创建交易' });
+  }
+  if (buyerId && !get('SELECT id FROM users WHERE id=?', [buyerId])) {
+    return res.status(400).json({ success: false, error: '买方用户不存在' });
+  }
+
   const id = 'D' + Date.now().toString(36) + require('crypto').randomBytes(3).toString('hex'), now = new Date().toISOString(), st = JSON.stringify({ matching: now });
   run('INSERT INTO deals (id,project_id,seller_id,buyer_id,seller_name,buyer_name,price,advisor,note,stage,stage_time,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-    [id, project_id, seller_id || '', buyer_id || '', seller_name, buyer_name, price, advisor || 'Auto', note || '', 'matching', st, now, now]);
+    [id, project_id, sellerId, buyerId, seller_name, buyer_name, priceNum, advisor || 'Auto', note || '', 'matching', st, now, now]);
   run('INSERT INTO deal_events (id,deal_id,stage,action,detail,created_at) VALUES (?,?,?,?,?,?)',
     [uuidv4(), id, 'matching', 'Deal Created', seller_name + ' <-> ' + buyer_name + ', price ' + price, now]);
   res.json({ success: true, data: get('SELECT * FROM deals WHERE id=?', [id]) });

@@ -6,8 +6,6 @@ const appEntry = fs.readFileSync(path.join(mobileRoot, 'App.tsx'), 'utf8');
 const rootNavigator = fs.readFileSync(path.join(__dirname, 'navigation', 'RootNavigator.tsx'), 'utf8');
 const toastComponent = fs.readFileSync(path.join(__dirname, 'components', 'common', 'Toast.tsx'), 'utf8');
 const constants = fs.readFileSync(path.join(__dirname, 'utils', 'constants.ts'), 'utf8');
-const loginScreen = fs.readFileSync(path.join(__dirname, 'screens', 'auth', 'LoginScreen.tsx'), 'utf8');
-const registerScreen = fs.readFileSync(path.join(__dirname, 'screens', 'auth', 'RegisterScreen.tsx'), 'utf8');
 const authContext = fs.readFileSync(path.join(__dirname, 'store', 'AuthContext.tsx'), 'utf8');
 const apiClient = fs.readFileSync(path.join(__dirname, 'api', 'client.ts'), 'utf8');
 const authApi = fs.readFileSync(path.join(__dirname, 'api', 'auth.ts'), 'utf8');
@@ -52,22 +50,22 @@ assert('App entry renders RootNavigator', /<RootNavigator\s*\/>/.test(appEntry))
 assert('App entry does not render WebApp', !/<WebApp\s*\/>/.test(appEntry));
 assert('Root navigator uses main app shell as default entry', /<MainNavigator\s*\/>/.test(rootNavigator));
 assert('Root navigator does not gate the app behind auth screens', !/isAuthenticated\s*\?\s*<MainNavigator\s*\/>\s*:\s*<AuthNavigator\s*\/>/.test(rootNavigator));
-assert('Root navigator loading state shows branded startup copy', /xiaoweimm/.test(rootNavigator) && /姝ｅ湪鍚姩/.test(rootNavigator));
+assert('Root navigator loading state shows branded startup copy', /xiaoweimm/.test(rootNavigator) && /正在启动/.test(rootNavigator));
 assert('Main tabs disable native detach/freeze to avoid Android first-frame blank screen', /<Tab\.Navigator[\s\S]*detachInactiveScreens=\{false\}/.test(mainNavigator) && /freezeOnBlur:\s*false/.test(mainNavigator));
 assert('Toast avoids native-driver opacity unmount blanking on Android', !/useNativeDriver:\s*true/.test(toastComponent) && /setTimeout/.test(toastComponent));
 assert('Main tab navigator explicitly opens Home on first visit', /<Tab\.Navigator[\s\S]*initialRouteName="Home"/.test(mainNavigator));
 assert('Home screen preserves original public landing sections', /dataMetrics/.test(homeScreen) && /serviceCards/.test(homeScreen) && /caseCards/.test(homeScreen) && /footerLinks/.test(homeScreen));
 assert('Home screen mirrors index nav menu', /navMenuItems/.test(homeScreen) && /想要出售事业/.test(homeScreen) && /想要收购事业/.test(homeScreen) && /服务介绍/.test(homeScreen) && /公司简介/.test(homeScreen));
-assert('Home hero mirrors index actions', /企业转让免费诊断/.test(homeScreen) && /查看服务详情/.test(homeScreen));
+assert('Home hero mirrors index actions', /安心并购，/.test(homeScreen) && /从 xiaoweimm 开始/.test(homeScreen) && /保护中小企业，为区域经济贡献力量/.test(homeScreen));
 assert('Home success cases keep index entry and descriptions', /查看全部案例/.test(homeScreen) && /经营者因无人接班/.test(homeScreen) && /汽车零部件二级供应商/.test(homeScreen) && /金融软件外包企业/.test(homeScreen));
-assert('Home CTA and footer mirror index page', /由于人口结构变化/.test(homeScreen) && /确认出售流程/.test(homeScreen) && /TEL：400-888-6688/.test(homeScreen));
+assert('Home CTA and footer mirror index page', /开始免费咨询/.test(homeScreen) && /马上免费咨询/.test(homeScreen) && /TEL：400-888-6688/.test(homeScreen));
 assert('Home public links navigate to native public content pages', /navigation\.navigate\('PublicContent'/.test(homeScreen) && /page:\s*'service'/.test(homeScreen) && /page:\s*'case'/.test(homeScreen) && /page:\s*'column'/.test(homeScreen) && /page:\s*'company'/.test(homeScreen) && /page:\s*'contact'/.test(homeScreen));
 assert('Home screen includes auth modal tabs from original HTML', /authModalVisible/.test(homeScreen) && /modalMode/.test(homeScreen) && /phoneLogin/.test(homeScreen) && /passwordLogin/.test(homeScreen) && /register/.test(homeScreen));
 assert('Home screen keeps seller and buyer role entrances', /handleRoleEntrance\('seller'/.test(homeScreen) && /handleRoleEntrance\('buyer'/.test(homeScreen));
-assert('Home password login defers role navigation until authenticated tabs exist', /pendingRole/.test(homeScreen) && /useEffect\(\(\) => \{[\s\S]*pendingRole[\s\S]*isAuthenticated[\s\S]*user[\s\S]*navigateRole\(pendingRole\)/.test(homeScreen) && /const afterAuth = \(\) => \{[\s\S]*setPendingRole\(targetRole\);[\s\S]*\};/.test(homeScreen));
-assert('Home authenticated role switch does not navigate to unavailable tabs', /user\?\.role\s*!==\s*role/.test(homeScreen) && /当前账号/.test(homeScreen) && /return;\s*\}\s*[\s\S]*navigateRole\(role\);/.test(homeScreen));
-assert('Home validates actual user role before pending role navigation', /user\.role\s*!==\s*pendingRole/.test(homeScreen) && /setPendingRole\(null\);[\s\S]*return;[\s\S]*navigateRole\(pendingRole\)/.test(homeScreen));
-assert('Home role entrance blocks mismatched roles before auth flow', /handleRoleEntrance/.test(homeScreen) && /isAuthenticated\s*&&\s*user\?\.role\s*!==\s*role/.test(homeScreen) && /showRoleMismatch\(role\);[\s\S]*return;[\s\S]*openAuth\(role,\s*mode\)/.test(homeScreen) && /handleRoleEntrance\('seller'/.test(homeScreen));
+assert('Home password login defers role navigation until authenticated tabs exist', /pendingRole/.test(homeScreen) && /useEffect\(\(\) => \{[\s\S]*pendingRole[\s\S]*isAuthenticated[\s\S]*user[\s\S]*navigateRole\(pendingRole\)/.test(homeScreen) && /setPendingRole\(targetRole\)/.test(homeScreen));
+assert('Home authenticated role switch does not navigate to unavailable tabs', /showRoleMismatch/.test(homeScreen) && /管理员账号不支持角色切换/.test(homeScreen) && /user\?\.role\s*===\s*role/.test(homeScreen));
+assert('Home validates actual user role before pending role navigation', /user\.role\s*!==\s*pendingRole/.test(homeScreen) && /showRoleMismatch\(pendingRole\)/.test(homeScreen) && /navigateRole\(pendingRole\)/.test(homeScreen));
+assert('Home role entrance blocks mismatched roles before auth flow', /handleRoleEntrance/.test(homeScreen) && /isAuthenticated/.test(homeScreen) && /showRoleMismatch\(role\)/.test(homeScreen) && /handleRoleEntrance\('seller'/.test(homeScreen));
 assert('Main navigator hides workbench tabs before auth', /isAuthenticated\s+&&\s+isSeller/.test(mainNavigator) && /isAuthenticated\s+&&\s+<Tab\.Screen name="Deals"/.test(mainNavigator));
 
 assert('Production API has a concrete HTTPS base URL fallback', /PRODUCTION_API_BASE_URL\s*=\s*['"]https:\/\/[^'"]+\/api['"]/.test(constants));
@@ -80,19 +78,12 @@ assert('API client maps server errors to Chinese-safe user messages', /getApiErr
 assert('Secure store persists refresh token separately', /REFRESH_TOKEN_KEY/.test(secureStore) && /setRefreshToken/.test(secureStore) && /getRefreshToken/.test(secureStore) && /removeRefreshToken/.test(secureStore));
 assert('Auth API and context preserve refresh tokens', /refresh_token:\s*string/.test(authApi) && /\/auth\/refresh/.test(authApi) && /refresh_token:\s*refreshToken/.test(authContext) && /secureStore\.setRefreshToken\(refreshToken\)/.test(authContext));
 
-assert('Login screen uses Chinese phone placeholder', /placeholder="请输入手机号"/.test(loginScreen));
-assert('Login screen uses Chinese password placeholder', /placeholder="请输入登录密码"/.test(loginScreen));
-assert('Login screen uses Chinese login button', /title="登录"/.test(loginScreen));
-assert('Login screen uses Chinese register link', /没有账号/.test(loginScreen));
-assert('Login screen supports SMS login', /短信登录/.test(loginScreen) && /loginSms/.test(loginScreen));
+// 登录/注册已统一由 HomeScreen 内嵌弹窗完成（screens/auth、AuthNavigator、WebApp 死代码已删除）
+assert('Home auth modal uses Chinese login/register copy', /手机号/.test(homeScreen) && /获取验证码/.test(homeScreen) && /手机登录/.test(homeScreen) && /密码登录/.test(homeScreen));
 assert('Auth context exposes SMS login', /loginSms:\s*\(phone:\s*string,\s*code:\s*string\)\s*=>\s*Promise<void>/.test(authContext));
-assert(
-  'Login screen has no English validation copy',
-  !/Please enter|Login failed|No account\? Register|placeholder="Phone"|placeholder="Password"|title="Login"/.test(loginScreen)
-);
-
-assert('Register screen uses Chinese subtitle', /创建账号/.test(registerScreen));
-assert('Register screen has no mojibake text', !/[锛涔骞佽鐮楠]/.test(registerScreen));
+assert('Register call passes sms code in correct argument order', /register\(phone, code, password, name, targetRole\)/.test(homeScreen));
+assert('Register modal shows sms code input like phone login', /modalMode === 'phoneLogin' \|\| modalMode === 'register'/.test(homeScreen));
+assert('Home auth screens have no mojibake text', !/[锛涔骞佽鐮楠]/.test(homeScreen));
 
 assert('Main tab navigator uses Chinese labels', /title:\s*'首页'/.test(mainNavigator) && /title:\s*'我的'/.test(mainNavigator));
 assert('Buyer navigator uses Chinese titles', /收购需求/.test(buyerNavigator) && /浏览项目/.test(buyerNavigator) && /我的申请/.test(buyerNavigator) && /项目详情/.test(buyerNavigator));

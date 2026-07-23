@@ -16,12 +16,18 @@ export default function PaymentWebView({
   onClose,
   onPaymentComplete,
 }: PaymentWebViewProps) {
+  // 支付完成判断：仅当导航 URL 的路径精确等于支付结果/回调路径时才判定完成，
+  // 避免微信支付中间跳转 URL 包含子串导致误命中提前关闭。
+  // 最终结果以后端订单状态轮询为准（见 PaymentScreen）。
   const handleNavigationChange = (navState: any) => {
     const targetUrl: string = navState.url || '';
+    // 用正则提取路径部分，避免依赖 RN 环境下不稳定的 URL 全局对象
+    const match = targetUrl.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^/]+(\/[^?#]*)?/);
+    const pathname = (match?.[1] || '/').replace(/\/+$/, '');
     if (
-      targetUrl.includes('/payment-result') ||
-      targetUrl.includes('/callback/wechat') ||
-      targetUrl.includes('/callback/alipay')
+      pathname === '/payment-result' ||
+      pathname === '/api/payments/callback/wechat' ||
+      pathname === '/api/payments/callback/alipay'
     ) {
       onClose();
       onPaymentComplete();

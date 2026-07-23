@@ -22,6 +22,7 @@ const navMenuItems = [
 
 const freeConsultTarget = { page: 'contact' };
 
+// TODO(展示数据)：以下指标为占位文案，尚未接入后台统计接口；上线前需替换为真实数据或删除
 const dataMetrics = [
   { value: '30万+', label: '注册买家企业' },
   { value: '行业No.1', label: '并购成交业绩' },
@@ -35,6 +36,7 @@ const serviceCards = [
   { title: '专业顾问陪同', body: '并购实务经验丰富的团队从评估到最终合同全程支持。' },
 ];
 
+// TODO(展示数据)：以下案例为演示示例，配图为 picsum 占位图；上线前需替换为平台真实成交案例
 const caseCards = [
   { industry: '餐饮美食', title: '北京朝阳区 · 火锅连锁店', price: '¥780万', revenue: '¥1,200万', days: '45天', image: 'https://picsum.photos/seed/hotpot/600/340', description: '经营者因无人接班欲转让经营15年的火锅店。平台匹配到餐饮集团买家，签署保密协议后2周内完成尽调，45天完成交割。原员工全员留任。' },
   { industry: '生产制造', title: '苏州工业园区 · 精密机械厂', price: '¥2,400万', revenue: '¥3,500万', days: '68天', image: 'https://picsum.photos/seed/factory/600/340', description: '汽车零部件二级供应商，创始人高龄无继承人。通过平台AI匹配推荐给国内上市集团，经3轮谈判达成全资收购，管理团队留任3年。' },
@@ -104,9 +106,13 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   const handleRegister = async () => {
-    if (!phone || !password || !name || !agree) { setToast({ visible: true, message: '请完善信息并同意条款', type: 'error' }); return; }
+    if (!phone || phone.length < 11) { setToast({ visible: true, message: '请输入手机号', type: 'error' }); return; }
+    if (!code) { setToast({ visible: true, message: '请输入短信验证码', type: 'error' }); return; }
+    if (!password || password.length < 6) { setToast({ visible: true, message: '请设置至少 6 位密码', type: 'error' }); return; }
+    if (!name || !agree) { setToast({ visible: true, message: '请完善信息并同意条款', type: 'error' }); return; }
     setLoading(true);
-    try { await register(phone, password, name, targetRole); setAuthModalVisible(false); if (!justLogin) { setPendingRole(targetRole); } else { setJustLogin(false); } }
+    // 注意参数顺序：register(phone, code, password, name, role)，与 AuthContext 签名一致
+    try { await register(phone, code, password, name, targetRole); setAuthModalVisible(false); if (!justLogin) { setPendingRole(targetRole); } else { setJustLogin(false); } }
     catch (e: any) { setToast({ visible: true, message: getApiErrorMessage(e), type: 'error' }); }
     finally { setLoading(false); }
   };
@@ -195,7 +201,7 @@ export default function HomeScreen({ navigation }: any) {
           ))}
         </ScrollView>
 
-        <SectionTitle title={'成功案例'} subtitle={'真实成交，值得信赖'} />
+        <SectionTitle title={'成功案例'} subtitle={'以下为示例案例，实际成交信息以平台公示为准'} />
         {caseCards.map((c, i) => (
           <TouchableOpacity key={i} activeOpacity={0.7} onPress={() => navigation.navigate('CaseDetail', { caseData: { id: i, ...c } })}>
             <Card>
@@ -260,7 +266,7 @@ export default function HomeScreen({ navigation }: any) {
                   ))}
                 </View>
                 <TextInput style={styles.input} placeholder={'手机号'} keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
-                {modalMode === 'phoneLogin' && (
+                {(modalMode === 'phoneLogin' || modalMode === 'register') && (
                   <View style={styles.smsRow}>
                     <TextInput style={[styles.input, styles.smsInput]} placeholder={'验证码'} keyboardType="number-pad" value={code} onChangeText={setCode} />
                     <TouchableOpacity style={[styles.smsBtn, countdown > 0 && styles.smsBtnDisabled]} onPress={handleSendCode} disabled={countdown > 0}>

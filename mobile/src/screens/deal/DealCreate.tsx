@@ -20,9 +20,13 @@ export default function DealCreate({ navigation }: any) {
     if (!projectId || !sellerName || !buyerName || !price) {
       setToast({ visible: true, message: '请填写所有必填项', type: 'error' }); return;
     }
+    const priceNum = Number(price);
+    if (!Number.isFinite(priceNum) || priceNum <= 0) {
+      setToast({ visible: true, message: '请输入有效的交易价格', type: 'error' }); return;
+    }
     setLoading(true);
     try {
-      const res = await dealsApi.create({ project_id: projectId, seller_name: sellerName, buyer_name: buyerName, price: +price, advisor: advisor || '系统分配', note: note.trim() });
+      const res = await dealsApi.create({ project_id: projectId, seller_name: sellerName, buyer_name: buyerName, price: priceNum, advisor: advisor || '系统分配', note: note.trim() });
       if (res.data.success) {
         setToast({ visible: true, message: '交易已创建', type: 'success' });
         navigation.goBack();

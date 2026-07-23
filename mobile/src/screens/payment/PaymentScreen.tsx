@@ -24,7 +24,7 @@ export default function PaymentScreen() {
   const [webViewVisible, setWebViewVisible] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState('');
   const [currentOrderId, setCurrentOrderId] = useState('');
-  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -43,33 +43,53 @@ export default function PaymentScreen() {
 
   const onRefresh = async () => { setRefreshing(true); await fetchData(); setRefreshing(false); };
 
+  // 轮询订单状态：指数退避（2s 起，逐步拉长），最长约 3 分钟，
+  // 大额支付回调慢时不再 60 秒就误报超时
   const startPollOrder = (orderId: string) => {
     let attempts = 0;
-    const maxAttempts = 30;
-    pollTimerRef.current = setInterval(async () => {
+    const maxAttempts = 40;
+    let cancelled = false;
+
+    const tick = async () => {
+      if (cancelled) return;
       attempts++;
       try {
         const res = await paymentsApi.queryOrder(orderId);
         if (res.data.success && res.data.data?.status === 'paid') {
-          clearInterval(pollTimerRef.current!);
           pollTimerRef.current = null;
           setToast({ visible: true, message: '支付成功', type: 'success' });
           fetchData();
           return;
         }
       } catch (e) { /* ignore */ }
+      if (cancelled) return;
       if (attempts >= maxAttempts) {
-        clearInterval(pollTimerRef.current!);
         pollTimerRef.current = null;
-        setToast({ visible: true, message: '支付超时，请在交易记录中查看', type: 'error' });
+        setToast({ visible: true, message: '支付结果确认中，请稍后在交易记录中查看', type: 'error' });
+        return;
       }
-    }, 2000);
+      const delay = Math.min(2000 * Math.pow(1.2, attempts), 8000);
+      pollTimerRef.current = setTimeout(tick, delay);
+    };
+
+    pollTimerRef.current = setTimeout(tick, 2000);
+  };
+
+  const stopPollOrder = () => {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current as any);
+      pollTimerRef.current = null;
+    }
   };
 
   const handleRecharge = async () => {
-    const rechargeAmount = +amount;
-    if (!rechargeAmount || rechargeAmount <= 0) {
+    const rechargeAmount = Math.round(+amount * 100) / 100;
+    if (!Number.isFinite(rechargeAmount) || rechargeAmount <= 0) {
       setToast({ visible: true, message: '请输入有效金额', type: 'error' });
+      return;
+    }
+    if (rechargeAmount > 100000) {
+      setToast({ visible: true, message: '单笔充值不能超过 100,000 元', type: 'error' });
       return;
     }
     setLoading(true);
@@ -81,6 +101,12 @@ export default function PaymentScreen() {
           setAmount('');
           setToast({ visible: true, message: `充值成功 ¥${rechargeAmount}`, type: 'success' });
           fetchData();
+          setLoading(false);
+          return;
+        }
+        // 后端未配置支付渠道时 payment_url 可能为空，此时不能进 WebView（白屏/崩溃风险）
+        if (!payment_url) {
+          setToast({ visible: true, message: '支付渠道暂不可用，请稍后再试或联系客服', type: 'error' });
           setLoading(false);
           return;
         }

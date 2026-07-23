@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import { adminApi } from '../../api';
+import { secureStore } from '../../utils/secureStore';
+import { API_BASE_URL } from '../../utils/constants';
 import { colors } from '../../theme';
 
 export default function VerificationDetailScreen({ route }: any) {
   const { verification } = route.params;
   const [data, setData] = useState<any>(verification);
+  const [authToken, setAuthToken] = useState('');
   const [toast, setToast] = useState({ visible: false, message: '', type: '' as '' | 'success' | 'error' });
+
+  // /api/uploads 静态目录需登录鉴权，RN Image 需通过 headers 携带 token
+  useEffect(() => {
+    (async () => {
+      const token = await secureStore.getToken();
+      if (token) setAuthToken(token);
+    })();
+  }, []);
 
   const approve = async () => {
     try {
@@ -67,6 +78,22 @@ export default function VerificationDetailScreen({ route }: any) {
       )}
 
       <Card>
+        <Text style={styles.st}>证件材料</Text>
+        {(() => {
+          const docUrl = isPersonal ? data.id_card_url : data.license_url;
+          if (!docUrl) return <Text style={styles.noDoc}>未上传{isPersonal ? '身份证照片' : '营业执照'}</Text>;
+          if (!authToken) return <Text style={styles.noDoc}>加载中…</Text>;
+          return (
+            <Image
+              source={{ uri: `${API_BASE_URL}${docUrl}`, headers: { Authorization: `Bearer ${authToken}` } }}
+              style={styles.docImage}
+              resizeMode="contain"
+            />
+          );
+        })()}
+      </Card>
+
+      <Card>
         <Text style={styles.st}>提交记录</Text>
         <InfoRow label="提交时间" value={data.submit_time?.slice(0, 10) || '-'} />
         <InfoRow label="审核时间" value={data.review_time?.slice(0, 10) || '-'} />
@@ -105,4 +132,6 @@ const styles = StyleSheet.create({
   il: { width: 80, fontSize: 13, color: colors.textTertiary },
   iv: { flex: 1, fontSize: 13, color: colors.text },
   btnRow: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  docImage: { width: '100%', height: 240, borderRadius: 8, backgroundColor: colors.bgSoft },
+  noDoc: { fontSize: 13, color: colors.textTertiary },
 });

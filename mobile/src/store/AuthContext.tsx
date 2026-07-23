@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi } from '../api/auth';
+import { setOnUnauthorized } from '../api/client';
 import { secureStore } from '../utils/secureStore';
 import { User } from '../types';
 
@@ -38,6 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState(s => ({ ...s, isLoading: false }));
       }
     })();
+
+    // API 层 401 清理本地 token 后，同步清 React 登录态（界面立即退回未登录视图）
+    setOnUnauthorized(() => {
+      setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+    });
+    return () => setOnUnauthorized(null);
   }, []);
 
   const login = useCallback(async (phone: string, password: string) => {

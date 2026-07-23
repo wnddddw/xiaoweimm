@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const config = require('./config');
 const { getDb, run, get, all } = require('./db/init');
 
@@ -46,8 +45,8 @@ app.use('/api/diagnostics', require('./routes/diagnostics'));
 app.use('/api/expert-services', require('./routes/expert-services'));
 app.use('/api/admin', require('./routes/admin/index'));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.resolve(config.uploadDir)));
+// Uploaded files are served only through /api/uploads (auth required).
+// 敏感文件（身份证/营业执照）不再公开可访问，见 routes/uploads.js。
 
 
 // Constants
@@ -67,7 +66,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 鈹€鈹€ Auto-Renewal Cron 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ── Auto-Renewal Cron ──
 
 function runAutoRenewal() {
   try {
