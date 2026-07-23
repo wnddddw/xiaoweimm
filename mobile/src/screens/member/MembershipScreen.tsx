@@ -1,140 +1,134 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Switch } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
-import { membershipsApi, paymentsApi } from '../../api';
+import { membershipsApi } from '../../api';
 import { useAuth } from '../../store/AuthContext';
 import { colors } from '../../theme';
 
-const PLANS = [
-  { key: 'personal', name: '个人会员', price: 300, features: ['查看非公开项目', '提前 1 小时接收提醒', '直连卖方沟通', '可报名线下活动'] },
-  { key: 'company', name: '企业会员', price: 600, features: ['包含个人会员权益', '优先智能匹配', '专属顾问跟进', '开放接口对接'] },
-  { key: 'vip', name: '企业 VIP', price: 1800, features: ['包含企业会员权益', '全流程顾问服务', '定制交易流程', '不限量使用核心权益'] },
+const ADVANCED_FEATURES = [
+  '发布出售 / 转让项目',
+  '申请查看项目详情（意向申请）',
+  '创建交易并推进全流程',
+  '申请免费诊断与专家服务',
 ];
 
-const planLabel = (level: string) => {
-  switch (level) {
-    case 'personal': return '个人会员';
-    case 'company': return '企业会员';
-    case 'vip': return '企业 VIP';
-    case 'free':
-    default: return '免费版';
+const levelBadge = (level: string) => {
+  if (level === 'advanced') return <Badge text="高级会员" variant="ok" />;
+  return <Badge text="基础会员" variant="gray" />;
+};
+
+const statusBadge = (status?: string) => {
+  switch (status) {
+    case 'pending': return <Badge text="审核中" variant="warn" />;
+    case 'approved': return <Badge text="已通过" variant="ok" />;
+    case 'rejected': return <Badge text="已驳回" variant="info" />;
+    default: return null;
   }
 };
 
 export default function MembershipScreen() {
   const { user } = useAuth();
   const [memberInfo, setMemberInfo] = useState<any>(null);
-  const [balance, setBalance] = useState(0);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [reason, setReason] = useState('');
+  const [contact, setContact] = useState('');
+  const [idNote, setIdNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: '' as '' | 'success' | 'error' });
 
   const fetchData = useCallback(async () => {
     try {
-      const [memberRes, balanceRes, orderRes] = await Promise.all([membershipsApi.get(), paymentsApi.getBalance(), membershipsApi.getOrders()]);
-      if (memberRes.data.success && memberRes.data.data) setMemberInfo(memberRes.data.data);
-      if (balanceRes.data.success && balanceRes.data.data) setBalance(balanceRes.data.data.balance || 0);
-      if (orderRes.data.success && orderRes.data.data) setOrders(orderRes.data.data);
+      const res = await membershipsApi.get();
+      if (res.data.success && res.data.data) setMemberInfo(res.data.data);
     } catch (e: any) { /* ignore */ }
   }, []);
 
   useFocusEffect(useCallback(() => { fetchData(); }, [fetchData]));
 
-  const upgrade = async (planType: string) => {
-    const plan = PLANS.find(item => item.key === planType);
-    if (!plan) return;
-    if (balance < plan.price) {
-      setToast({ visible: true, message: `余额不足，需要 ¥${plan.price}`, type: 'error' }); return;
+  const submitApply = async () => {
+    if (!reason.trim() || !contact.trim() || !idNote.trim()) {
+      setToast({ visible: true, message: '请填写申请理由、联系方式和身份说明', type: 'error' });
+      return;
     }
+    setSubmitting(true);
     try {
-      const res = await membershipsApi.upgrade(planType);
+      const res = await membershipsApi.applyAdvanced(reason.trim(), contact.trim(), idNote.trim());
       if (res.data.success) {
-        setToast({ visible: true, message: `已升级为${plan.name}`, type: 'success' });
+        setToast({ visible: true, message: '申请已提交，等待管理员审核', type: 'success' });
+        setReason(''); setContact(''); setIdNote('');
         fetchData();
       }
     } catch (e: any) {
-      setToast({ visible: true, message: e.message || '升级失败', type: 'error' });
+      setToast({ visible: true, message: e.message || '提交失败', type: 'error' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const toggleAutoRenew = async (value: boolean) => {
-    try {
-      await membershipsApi.toggleAutoRenew(value);
-      setToast({ visible: true, message: value ? '自动续费已开启' : '自动续费已关闭', type: 'success' });
-    } catch (e: any) {
-      setToast({ visible: true, message: e.message || '操作失败', type: 'error' });
-    }
-  };
-
-  const levelBadge = (level: string) => {
-    switch (level) {
-      case 'personal': return <Badge text="个人会员" variant="info" />;
-      case 'company': return <Badge text="企业会员" variant="warn" />;
-      case 'vip': return <Badge text="企业 VIP" variant="ok" />;
-      case 'free':
-      default: return <Badge text="免费版" variant="gray" />;
-    }
-  };
-
-  const currentLevel = memberInfo?.member_level || user?.member_level || 'free';
+  const currentLevel = memberInfo?.member_level || user?.member_level || 'basic';
+  const applyStatus = memberInfo?.advanced_status;
+  const isAdvanced = currentLevel === 'advanced';
 
   return (
     <ScrollView style={styles.container}>
       <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
+
       <Card>
-        <Text style={styles.sectionTitle}>当前方案</Text>
+        <Text style={styles.sectionTitle}>当前会员</Text>
         <View style={styles.row}>
           {levelBadge(currentLevel)}
-          <Text style={styles.balance}>余额：¥{balance}</Text>
+          {statusBadge(applyStatus)}
         </View>
-        {memberInfo?.member_expire && (
-          <Text style={styles.expire}>到期时间：{memberInfo.member_expire.slice(0, 10)}</Text>
-        )}
-        <View style={styles.autoRow}>
-          <Text style={styles.autoLabel}>自动续费</Text>
-          <Switch
-            value={!!memberInfo?.auto_renew}
-            onValueChange={toggleAutoRenew}
-            trackColor={{ false: colors.border, true: colors.primary }}
-          />
-        </View>
+        <Text style={styles.hint}>
+          平台已转为免费审核制：基础会员免费注册、可浏览；高级会员免费申请、管理员审核开通，不收取任何费用。
+        </Text>
+        {applyStatus === 'rejected' && memberInfo?.review_note ? (
+          <Text style={styles.rejectNote}>驳回原因：{memberInfo.review_note}</Text>
+        ) : null}
       </Card>
 
       <Card>
-        <Text style={styles.sectionTitle}>升级方案</Text>
-        {PLANS.map(plan => (
-          <View key={plan.key} style={styles.planCard}>
-            <View style={styles.planHeader}>
-              <Text style={styles.planName}>{plan.name}</Text>
-              <Text style={styles.planPrice}>¥{plan.price}/月</Text>
-            </View>
-            {plan.features.map((feature, index) => (
-              <Text key={index} style={styles.feature}>✓ {feature}</Text>
-            ))}
-            <Button
-              title={currentLevel === plan.key ? '当前方案' : '立即升级'}
-              onPress={() => upgrade(plan.key)}
-              variant={currentLevel === plan.key ? 'gray' : 'main'}
-              disabled={currentLevel === plan.key}
-              size="block"
-            />
-          </View>
+        <Text style={styles.sectionTitle}>高级会员权益（免费）</Text>
+        {ADVANCED_FEATURES.map((feature, index) => (
+          <Text key={index} style={styles.feature}>✓ {feature}</Text>
         ))}
       </Card>
 
-      {orders.length > 0 && (
+      {!isAdvanced && applyStatus !== 'pending' && (
         <Card>
-          <Text style={styles.sectionTitle}>订单记录</Text>
-          {orders.map(order => (
-            <View key={order.id} style={styles.orderRow}>
-              <Badge text={planLabel(order.plan_type || 'free')} variant="info" />
-              <Text style={styles.orderAmt}>¥{order.amount}</Text>
-              <Text style={styles.orderTime}>{order.created_at?.slice(0, 10)}</Text>
-            </View>
-          ))}
+          <Text style={styles.sectionTitle}>申请高级会员</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="申请理由（必填）"
+            placeholderTextColor={colors.textTertiary}
+            value={reason}
+            onChangeText={setReason}
+            multiline
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="联系方式（必填）"
+            placeholderTextColor={colors.textTertiary}
+            value={contact}
+            onChangeText={setContact}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="资质/身份说明（必填）"
+            placeholderTextColor={colors.textTertiary}
+            value={idNote}
+            onChangeText={setIdNote}
+          />
+          <Button title="提交申请" onPress={submitApply} loading={submitting} size="block" />
+        </Card>
+      )}
+
+      {applyStatus === 'pending' && !isAdvanced && (
+        <Card>
+          <Text style={styles.pendingText}>您的高级会员申请正在审核中，请耐心等待。</Text>
         </Card>
       )}
       <View style={{ height: 20 }} />
@@ -145,17 +139,10 @@ export default function MembershipScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  balance: { fontSize: 15, fontWeight: '700', color: colors.primary },
-  expire: { fontSize: 12, color: colors.textTertiary, marginTop: 4 },
-  autoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderLight },
-  autoLabel: { fontSize: 14, color: colors.text },
-  planCard: { borderWidth: 1, borderColor: colors.borderLight, borderRadius: 12, padding: 16, marginBottom: 12, backgroundColor: colors.bgSoft },
-  planHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  planName: { fontSize: 16, fontWeight: '700', color: colors.text },
-  planPrice: { fontSize: 18, fontWeight: '800', color: colors.accent },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  hint: { fontSize: 13, color: colors.textSecondary, marginTop: 10, lineHeight: 20 },
+  rejectNote: { fontSize: 13, color: colors.accent, marginTop: 8 },
   feature: { fontSize: 13, color: colors.textSecondary, paddingVertical: 3 },
-  orderRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
-  orderAmt: { fontSize: 13, fontWeight: '600', color: colors.text },
-  orderTime: { fontSize: 11, color: colors.textTertiary, marginLeft: 'auto' },
+  input: { borderWidth: 1, borderColor: colors.borderLight, borderRadius: 10, padding: 12, fontSize: 14, color: colors.text, marginBottom: 10, backgroundColor: colors.bgSoft },
+  pendingText: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
 });
