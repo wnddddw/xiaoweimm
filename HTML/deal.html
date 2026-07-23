@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -194,6 +194,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 
 <script src="/_cascade_data.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/membership-guard.js"></script>
 <script>
 XW.Auth.initPage();
 </script>
@@ -317,6 +318,15 @@ document.querySelectorAll("button[onclick]").forEach(function(btn){
     }
 });
 function uploadImg(btn){ alert("图片上传功能开发中。"); }
+
+// ===== 创建交易（需高级会员） =====
+function createDeal(){
+    if(window.XW && XW.Membership){
+        XW.Membership.guard('创建交易').then(function(ok){ if(ok) alert('创建交易功能开发中。'); });
+    } else {
+        alert('创建交易功能开发中。');
+    }
+}
 
 // ===== 页面通用：表单提交（如果有） =====
 document.querySelectorAll("form[onsubmit]").forEach(function(f){

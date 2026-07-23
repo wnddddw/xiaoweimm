@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
@@ -144,6 +144,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;background:
         <a class="nav-item active" data-page="dashboard"><span class="icon">📊</span> 数据总览</a>
         <a class="nav-item" data-page="review"><span class="icon">📋</span> 项目审核</a>
         <a class="nav-item" data-page="verification"><span class="icon">🛡️</span> 实名认证</a>
+        <a class="nav-item" data-page="advanced"><span class="icon">⭐</span> 会员审核</a>
         <a class="nav-item" data-page="users"><span class="icon">👥</span> 用户管理</a>
         <a class="nav-item" data-page="analytics"><span class="icon">📈</span> 数据分析</a>
         <a class="nav-item" data-page="config"><span class="icon">⚙</span> 系统配置</a>
@@ -223,6 +224,19 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;background:
             </div>
         </section>
 
+        <!-- ===== Advanced Membership Review ===== -->
+        <section class="section" id="advanced">
+            <div class="card">
+                <div class="card-header"><h3>高级会员申请审核</h3><span style="font-size:13px;color:var(--gray);">免费审核制：通过后用户即开通全部功能</span></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>手机号</th><th>姓名</th><th>申请理由</th><th>联系方式</th><th>身份说明</th><th>状态</th><th>操作/备注</th></tr></thead>
+                        <tbody id="advTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- ===== User Management ===== -->
         <section class="section" id="users">
             <div class="filter-row">
@@ -260,23 +274,9 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;background:
                     <div class="bar-chart" id="industryChart"></div>
                 </div>
                 <div class="chart-box">
-                    <h4>会员续费统计</h4>
-                    <div style="padding:20px 0;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                            <span style="font-size:14px;">个人会员续费率</span>
-                            <span style="font-weight:700;font-size:16px;color:var(--main);">68%</span>
-                        </div>
-                        <div style="background:#eee;height:10px;border-radius:5px;"><div style="background:var(--main);width:68%;height:10px;border-radius:5px;"></div></div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:20px;">
-                            <span style="font-size:14px;">企业会员续费率</span>
-                            <span style="font-weight:700;font-size:16px;color:var(--main);">72%</span>
-                        </div>
-                        <div style="background:#eee;height:10px;border-radius:5px;"><div style="background:var(--main);width:72%;height:10px;border-radius:5px;"></div></div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:20px;">
-                            <span style="font-size:14px;">企业高级会员续费率</span>
-                            <span style="font-weight:700;font-size:16px;color:var(--main);">55%</span>
-                        </div>
-                        <div style="background:#eee;height:10px;border-radius:5px;"><div style="background:var(--main);width:55%;height:10px;border-radius:5px;"></div></div>
+                    <h4>会员概况</h4>
+                    <div style="padding:20px 0;font-size:14px;color:#555;line-height:2;">
+                        平台已转为<strong style="color:var(--main);">免费审核制</strong>：基础会员免费注册、只能浏览；高级会员免费申请、管理员审核开通，不再收取会员费与续费。
                     </div>
                 </div>
             </div>
@@ -288,27 +288,9 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;background:
                 <div class="card-header"><h3>基础参数配置</h3></div>
                 <div class="card-body" style="padding:24px;">
                     <div class="config-grid">
-                        <div class="config-item">
-                            <label>成交佣金比例（%）</label>
-                            <input type="number" id="cfgCommission" value="2.0" step="0.1" min="0" max="10">
-                            <div class="hint">仅买家支付，含税</div>
-                        </div>
-                        <div class="config-item">
-                            <label>最低成交收费（元）</label>
-                            <input type="number" id="cfgMinFee" value="6000" step="1000" min="0">
-                            <div class="hint">成交价＜30万元时适用</div>
-                        </div>
-                        <div class="config-item">
-                            <label>个人会员月费（元）</label>
-                            <input type="number" id="cfgPersonalFee" value="300" step="10" min="0">
-                        </div>
-                        <div class="config-item">
-                            <label>企业会员月费（元）</label>
-                            <input type="number" id="cfgCompanyFee" value="600" step="10" min="0">
-                        </div>
-                        <div class="config-item">
-                            <label>企业高级会员月费（元）</label>
-                            <input type="number" id="cfgVipFee" value="1800" step="10" min="0">
+                        <div class="config-item" style="grid-column:1/-1;background:#f0f6ff;border-radius:8px;padding:14px;">
+                            <label style="color:var(--main);">平台已转为免费审核制</label>
+                            <div class="hint" style="font-size:13px;line-height:1.8;">高级会员免费申请、管理员审核开通；成交佣金、会员费、诊断费等收费项目已全部下线，相关配置项已移除。</div>
                         </div>
                         <div class="config-item">
                             <label>审核超时时间（分钟）</label>
@@ -322,7 +304,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;background:
                         <div class="config-item">
                             <label>新项目通知窗口（分钟）</label>
                             <input type="number" id="cfgNotifyWindow" value="60" step="5" min="5">
-                            <div class="hint">付费买家在发布后多久内收到推送</div>
+                            <div class="hint">高级会员在项目发布后多久内收到推送</div>
                         </div>
                     </div>
                     <div style="margin-top:24px;display:flex;gap:12px;">
@@ -758,11 +740,6 @@ function loadConfig(){
     apiCall("/admin/config").then(function(d){
         if(!d || !d.success) return;
         var c = d.data || {};
-        if(c.commission !== undefined) document.getElementById("cfgCommission").value = c.commission;
-        if(c.minFee !== undefined) document.getElementById("cfgMinFee").value = c.minFee;
-        if(c.personalFee !== undefined) document.getElementById("cfgPersonalFee").value = c.personalFee;
-        if(c.companyFee !== undefined) document.getElementById("cfgCompanyFee").value = c.companyFee;
-        if(c.vipFee !== undefined) document.getElementById("cfgVipFee").value = c.vipFee;
         if(c.reviewTimeout !== undefined) document.getElementById("cfgReviewTimeout").value = c.reviewTimeout;
         if(c.projectExpire !== undefined) document.getElementById("cfgProjectExpire").value = c.projectExpire;
         if(c.notifyWindow !== undefined) document.getElementById("cfgNotifyWindow").value = c.notifyWindow;
@@ -770,11 +747,6 @@ function loadConfig(){
 }
 function saveConfig(){
     var cfg = {
-        commission: parseFloat(document.getElementById("cfgCommission").value) || 0,
-        minFee: parseInt(document.getElementById("cfgMinFee").value) || 0,
-        personalFee: parseInt(document.getElementById("cfgPersonalFee").value) || 0,
-        companyFee: parseInt(document.getElementById("cfgCompanyFee").value) || 0,
-        vipFee: parseInt(document.getElementById("cfgVipFee").value) || 0,
         reviewTimeout: parseInt(document.getElementById("cfgReviewTimeout").value) || 0,
         projectExpire: parseInt(document.getElementById("cfgProjectExpire").value) || 0,
         notifyWindow: parseInt(document.getElementById("cfgNotifyWindow").value) || 0
@@ -785,6 +757,43 @@ function saveConfig(){
     });
 }
 
+// ===== 高级会员申请审核 =====
+function loadAdvancedApplications(){
+    var tbody = document.getElementById("advTable");
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray);">加载中…</td></tr>';
+    apiCall("/admin/advanced-applications").then(function(d){
+        if(!d || !d.success){ tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray);">加载失败</td></tr>'; return; }
+        var list = d.data || [];
+        if(list.length === 0){ tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray);">暂无申请</td></tr>'; return; }
+        tbody.innerHTML = list.map(function(u){
+            var statusBadge = u.advanced_status === 'approved' ? '<span class="badge badge-ok">已通过</span>'
+                : u.advanced_status === 'rejected' ? '<span class="badge badge-bad">已驳回</span>'
+                : '<span class="badge badge-warn">待审核</span>';
+            var actions = u.advanced_status === 'pending'
+                ? '<button class="btn btn-sm btn-green" onclick="reviewAdvanced(\'' + u.id + '\', true)">通过</button> '
+                  + '<button class="btn btn-sm btn-red" onclick="reviewAdvanced(\'' + u.id + '\', false)">驳回</button>'
+                : esc(u.advanced_review_note || '-');
+            return '<tr><td>' + esc(u.phone || '') + '</td><td>' + esc(u.name || '-') + '</td>'
+                + '<td>' + esc(u.advanced_reason || '') + '</td><td>' + esc(u.advanced_contact || '') + '</td>'
+                + '<td>' + esc(u.advanced_id_note || '') + '</td><td>' + statusBadge + '</td><td>' + actions + '</td></tr>';
+        }).join('');
+    });
+}
+function reviewAdvanced(userId, approve){
+    var note = '';
+    if(!approve){
+        note = prompt('请输入驳回原因（将作为审核备注展示给用户）：') || '';
+        if(!note.trim()){ alert('驳回时必须填写审核备注'); return; }
+    } else {
+        note = prompt('审核备注（可选）：') || '';
+    }
+    apiCall('/admin/advanced-applications/' + userId + (approve ? '/approve' : '/reject'), { method: 'PATCH', body: { note: note } }).then(function(d){
+        if(d && d.success){ alert(approve ? '已通过，该用户已开通高级会员' : '已驳回'); loadAdvancedApplications(); }
+        else alert('操作失败：' + (d && d.error || '未知错误'));
+    });
+}
+
 // ===== 切换 section 时加载对应数据 =====
 var __origShowSection = window.showSection;
 window.showSection = function(name){
@@ -792,6 +801,7 @@ window.showSection = function(name){
     if(name === "dashboard") loadDashboard();
     else if(name === "review") loadReview();
     else if(name === "verification") loadVerifications();
+    else if(name === "advanced") loadAdvancedApplications();
     else if(name === "users") loadUsers();
     else if(name === "analytics") loadAnalytics();
     else if(name === "config") loadConfig();

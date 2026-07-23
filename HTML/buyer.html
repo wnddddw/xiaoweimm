@@ -149,7 +149,6 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             <a href="deal.html">交易管理</a>
         <a href="messages.html">消息</a>
         <a href="member.html">会员中心</a>
-        <a href="payment.html">支付</a>
         <a href="index.html">首页</a>
     </div>
 </div>
@@ -236,6 +235,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 
 <script src="/_cascade_data.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/membership-guard.js"></script>
 <script>
 XW.Auth.initPage();
 </script>
@@ -486,6 +486,10 @@ function openDetail(id){
 
 // ===== 申请查看 =====
 function openApply(id){
+    if(!(window.XW && XW.Membership)) { openApplyModal(); return; }
+    XW.Membership.guard('申请查看').then(function(ok){ if(ok) openApplyModal(); });
+}
+function openApplyModal(){
     document.getElementById("applyNote").value = "";
     document.getElementById("fundPlan").value = "";
     document.getElementById("bizPlan").value = "";

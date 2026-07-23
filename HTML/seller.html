@@ -207,7 +207,6 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
             <a href="deal.html">交易管理</a>
         <a href="messages.html">消息</a>
         <a href="member.html">会员中心</a>
-        <a href="payment.html">支付</a>
         <a href="index.html">首页</a>
     </div>
 </div>
@@ -320,6 +319,7 @@ body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height
 
 <script src="/_cascade_data.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/membership-guard.js"></script>
 <script>
 XW.Auth.initPage();
 </script>
@@ -823,6 +823,13 @@ function validateProjectForm(){
 }
 
 function submitProject(){
+    if(window.XW && XW.Membership){
+        XW.Membership.guard('发布项目').then(function(ok){ if(ok) doSubmitProject(); });
+        return;
+    }
+    doSubmitProject();
+}
+function doSubmitProject(){
     var form = document.getElementById("publishForm");
     var btn = document.getElementById("submitProjectBtn");
     var token = getAuthToken();
