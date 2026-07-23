@@ -1,4 +1,4 @@
-const initSqlJs = require('sql.js');
+const Database = require('better-sqlite3');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
@@ -7,31 +7,45 @@ const dbPath = path.resolve(config.dbPath);
 const dbDir = path.dirname(dbPath);
 if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 
-let db = null;
+// better-sqlite3 opens synchronously — no async getDb() needed
+const db = new Database(dbPath);
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
 
-async function getDb() {
-  if (db) return db;
-  const SQL = await initSqlJs();
-  if (fs.existsSync(dbPath)) {
-    const buf = fs.readFileSync(dbPath);
-    db = new SQL.Database(buf);
-  } else {
-    db = new SQL.Database();
-  }
-  db.run('PRAGMA foreign_keys = ON');
-  createTables();
-  return db;
+createTables();
+
+// ── Route-friendly wrappers (same API signatures as before) ──────────
+
+function run(sql, params = []) {
+  return db.prepare(sql).run(...params);
 }
 
-function saveDb() {
-  if (!db) return;
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(dbPath, buffer);
+function get(sql, params = []) {
+  return db.prepare(sql).get(...params) || null;
 }
+
+function all(sql, params = []) {
+  return db.prepare(sql).all(...params);
+}
+
+/**
+ * Execute multiple run() calls inside a transaction.
+ * All statements succeed or all are rolled back.
+ * @param {Function} fn — receives ({ run, get }) helpers
+ * @returns {any} whatever fn returns
+ */
+function transaction(fn) {
+  const txn = db.transaction(() => {
+    return fn({ run, get });
+  });
+  return txn();
+}
+
+// ── Schema & Migration ───────────────────────────────────────────────
 
 function createTables() {
-  db.run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY, phone TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
       name TEXT DEFAULT '', email TEXT DEFAULT '', company_name TEXT DEFAULT '',
@@ -159,7 +173,7 @@ function createTables() {
     );
   `);
 
-  // Create indices for common query patterns (ignore errors for existing)
+  // Create indices for common query patterns
   const indices = [
     'CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status)',
     'CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)',
@@ -180,9 +194,11 @@ function createTables() {
     'CREATE INDEX IF NOT EXISTS idx_user_agreements_user ON user_agreements(user_id)',
     'CREATE INDEX IF NOT EXISTS idx_agreements_type ON agreements(type, is_active)',
   ];
-  indices.forEach(sql => { try { db.run(sql); } catch(e) { /* ignore */ } });
+  for (const sql of indices) {
+    try { db.exec(sql); } catch (e) { /* index already exists */ }
+  }
 
-  // Migrate existing databases — add columns if missing (ignore errors for existing)
+  // Migrate existing databases — add columns if missing
   const migrations = [
     "ALTER TABLE users ADD COLUMN email TEXT DEFAULT ''",
     "ALTER TABLE users ADD COLUMN company_name TEXT DEFAULT ''",
@@ -198,89 +214,38 @@ function createTables() {
     "ALTER TABLE payment_orders ADD COLUMN business_type TEXT DEFAULT 'recharge'",
     "ALTER TABLE payment_orders ADD COLUMN business_id TEXT DEFAULT ''",
   ];
-  migrations.forEach(sql => { try { db.run(sql); } catch(e) { /* column already exists */ } });
+  for (const sql of migrations) {
+    try { db.exec(sql); } catch (e) { /* column already exists */ }
+  }
 
   // Seed default agreements if none exist
   try {
-    const stmt = db.prepare('SELECT COUNT(*) as c FROM agreements');
-    let hasAgreements = false;
-    if (stmt.step()) hasAgreements = stmt.getAsObject().c > 0;
-    stmt.free();
+    const row = db.prepare('SELECT COUNT(*) as c FROM agreements').get();
+    const hasAgreements = row && row.c > 0;
     if (!hasAgreements) {
       const now = new Date().toISOString();
       const { v4: uuidv4 } = require('uuid');
       const privacyId = uuidv4(), termsId = uuidv4();
-      db.run(`INSERT INTO agreements (id,type,version,title,content,is_active,published_at,created_at)
-        VALUES (?,?,?,?,?,1,?,?)`,
-        [privacyId, 'privacy', '1.0', '隐私政策',
-         '<h2>隐私政策</h2><p>本隐私政策适用于 xiaoweimm 平台提供的产品和服务。</p><h3>1. 信息收集</h3><p>我们会收集手机号、身份信息、企业信息等必要资料，用于实名认证、项目匹配和交易撮合。</p><h3>2. 信息使用</h3><p>您的信息仅用于平台服务、合规审核、交易沟通和安全风控。</p><h3>3. 信息保护</h3><p>我们采用访问控制、加密传输和必要的安全管理措施保护您的数据。</p><h3>4. 信息共享</h3><p>未经您的明确同意，我们不会向无关第三方共享个人信息，法律法规另有规定的除外。</p>',
-         now, now]);
-      db.run(`INSERT INTO agreements (id,type,version,title,content,is_active,published_at,created_at)
-        VALUES (?,?,?,?,?,1,?,?)`,
-        [termsId, 'terms', '1.0', '用户服务协议',
-         '<h2>用户服务协议</h2><p>欢迎使用 xiaoweimm 中小企业并购与转让服务平台。</p><h3>1. 服务说明</h3><p>平台提供企业转让、收购需求发布、信息展示、匹配撮合和相关增值服务，不直接参与交易定价或资金交割。</p><h3>2. 用户义务</h3><p>用户应保证所提交的信息真实、准确、完整、合法，并对自身交易决策负责。</p><h3>3. 收费规则</h3><p>卖家可免费发布项目；涉及会员、诊断、顾问或成交服务的费用以页面展示或双方确认的规则为准。</p><h3>4. 免责声明</h3><p>平台不对交易结果作出保证，交易风险由交易各方依法自行承担。</p>',
-         now, now]);
+      db.prepare(`INSERT INTO agreements (id,type,version,title,content,is_active,published_at,created_at)
+        VALUES (?,?,?,?,?,1,?,?)`).run(privacyId, 'privacy', '1.0', '隐私政策',
+        '<h2>隐私政策</h2><p>本隐私政策适用于 xiaoweimm 平台提供的产品和服务。</p><h3>1. 信息收集</h3><p>我们会收集手机号、身份信息、企业信息等必要资料，用于实名认证、项目匹配和交易撮合。</p><h3>2. 信息使用</h3><p>您的信息仅用于平台服务、合规审核、交易沟通和安全风控。</p><h3>3. 信息保护</h3><p>我们采用访问控制、加密传输和必要的安全管理措施保护您的数据。</p><h3>4. 信息共享</h3><p>未经您的明确同意，我们不会向无关第三方共享个人信息，法律法规另有规定的除外。</p>',
+        now, now);
+      db.prepare(`INSERT INTO agreements (id,type,version,title,content,is_active,published_at,created_at)
+        VALUES (?,?,?,?,?,1,?,?)`).run(termsId, 'terms', '1.0', '用户服务协议',
+        '<h2>用户服务协议</h2><p>欢迎使用 xiaoweimm 中小企业并购与转让服务平台。</p><h3>1. 服务说明</h3><p>平台提供企业转让、收购需求发布、信息展示、匹配撮合和相关增值服务，不直接参与交易定价或资金交割。</p><h3>2. 用户义务</h3><p>用户应保证所提交的信息真实、准确、完整、合法，并对自身交易决策负责。</h3><h3>3. 收费规则</h3><p>卖家可免费发布项目；涉及会员、诊断、顾问或成交服务的费用以页面展示或双方确认的规则为准。</p><h3>4. 免责声明</h3><p>平台不对交易结果作出保证，交易风险由交易各方依法自行承担。</p>',
+        now, now);
     }
-  } catch(e) { /* ignore seed errors on first run */ }
-
-  saveDb();
+  } catch (e) { /* ignore seed errors on first run */ }
 }
 
-// Route-friendly wrappers
-let saveTimer = null;
-const SAVE_DEBOUNCE_MS = 500;
-
-function scheduleSave() {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    saveDb();
-    saveTimer = null;
-  }, SAVE_DEBOUNCE_MS);
+// getDb kept for backward compatibility — returns synchronously resolved promise
+function getDb() {
+  return Promise.resolve(db);
 }
 
-function run(sql, params = []) {
-  db.run(sql, params);
-  scheduleSave();
-}
-
-function get(sql, params = []) {
-  const stmt = db.prepare(sql);
-  if (params.length > 0) stmt.bind(params);
-  if (stmt.step()) {
-    const row = stmt.getAsObject();
-    stmt.free();
-    return row;
-  }
-  stmt.free();
-  return null;
-}
-
-function all(sql, params = []) {
-  const stmt = db.prepare(sql);
-  if (params.length > 0) stmt.bind(params);
-  const rows = [];
-  while (stmt.step()) rows.push(stmt.getAsObject());
-  stmt.free();
-  return rows;
-}
-
-/**
- * Execute multiple run() calls inside a transaction.
- * All statements succeed or all are rolled back.
- * @param {Function} fn — receives ({ run, get }) helpers (transaction-aware)
- * @returns {any} whatever fn returns
- */
-function transaction(fn) {
-  db.run('BEGIN TRANSACTION');
-  try {
-    const result = fn({ run, get });
-    db.run('COMMIT');
-    scheduleSave();
-    return result;
-  } catch (e) {
-    db.run('ROLLBACK');
-    throw e;
-  }
+// saveDb kept for backward compatibility — performs WAL checkpoint
+function saveDb() {
+  db.pragma('wal_checkpoint(RESTART)');
 }
 
 module.exports = { getDb, saveDb, run, get, all, transaction };

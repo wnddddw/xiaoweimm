@@ -15,87 +15,79 @@ const router = express.Router();
 const resetPwdSendLimiter = createRateLimit({ windowMs: 60000, max: 1, keyBy: 'ip+phone' });
 const resetPwdVerifyLimiter = createRateLimit({ windowMs: 300000, max: 5, keyBy: 'ip+phone' });
 
-// POST /auth/sms-code 鈥?send verification code via Aliyun SMS
+// POST /auth/sms-code —send verification code via Aliyun SMS
 router.post('/sms-code', smsLimiter, async (req, res) => {
   const { phone } = req.body;
   if (!phone || !/^1[3-9]\d{9}$/.test(phone))
-    return res.json({ success: false, error: 'Invalid phone' });
+    return res.status(400).json({ success: false, error: '无效的手机号' });
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   try {
     const result = await smsService.sendSmsCode(phone, ip);
     res.json(result);
   } catch (e) {
-    res.json({ success: false, error: e.message || 'SMS send failed' });
+    res.status(500).json({ success: false, error: '短信发送失败' });
   }
 });
 
-// Auto-agree to latest agreements after registration
-function autoAgreeAgreements(userId) {
-  try {
-    const agreements = all('SELECT id FROM agreements WHERE is_active=1');
-    const now = new Date().toISOString();
-    for (const a of agreements) {
-      run('INSERT OR IGNORE INTO user_agreements (id, user_id, agreement_id, agreed_at) VALUES (?,?,?,?)',
-        [uuidv4(), userId, a.id, now]);
-    }
-  } catch(e) { /* non-critical */ }
-}
-
-// POST /auth/register 鈥?register with SMS code verification
+// POST /auth/register —register with SMS code verification
 router.post('/register', validateMiddleware(schemas.register), async (req, res) => {
   const { phone, code, name, role, password } = req.body;
-  const actualPassword = password || require('crypto').randomBytes(12).toString('hex');
-  if (!phone || !code)
-    return res.json({ success: false, error: 'Phone and code required' });
+  if (!phone || !code || !password)
+    return res.status(400).json({ success: false, error: '手机号、验证码和密码不能为空' });
   if (!/^1[3-9]\d{9}$/.test(phone))
-    return res.json({ success: false, error: 'Invalid phone' });
+    return res.status(400).json({ success: false, error: '无效的手机号' });
 
   if (!smsService.verifySmsCode(phone, code))
-    return res.json({ success: false, error: 'Wrong or expired code' });
+    return res.status(400).json({ success: false, error: '验证码错误或已过期' });
 
   if (get('SELECT id FROM users WHERE phone = ?', [phone]))
-    return res.json({ success: false, error: 'Already registered' });
+    return res.status(409).json({ success: false, error: '该手机号已注册' });
 
-  const id = uuidv4(), hash = bcrypt.hashSync(actualPassword, 10),
+  // 角色白名单：注册只允许买家/卖家，admin 只能由后台/种子数据创建
+  if (role && !['buyer', 'seller'].includes(role))
+    return res.status(400).json({ success: false, error: '非法的账号角色' });
+
+  const id = uuidv4(), hash = bcrypt.hashSync(password, 10),
     now = new Date().toISOString(), r = role || 'buyer';
   run('INSERT INTO users (id,phone,password_hash,name,role,member_level,member_expire,auto_renew,avatar_url,verify_status,status,balance,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
     [id, phone, hash, name || '', r, 'free', null, 0, null, 'none', 'active', 0, now, now]);
 
-  // Auto-agree to current agreements
-  autoAgreeAgreements(id);
-
+  // Note: user must explicitly agree to agreements via POST /api/agreements/agree
   const token = jwt.sign({ id, phone, role: r }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-  res.json({ success: true, data: { id, phone, name: name || '', role: r, token } });
+  const refreshToken = jwt.sign({ id, phone, role: r }, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiresIn });
+  res.json({ success: true, data: { id, phone, name: name || '', role: r, token, refresh_token: refreshToken } });
 });
 
-// POST /auth/login 鈥?password login
+// POST /auth/login —password login
 router.post('/login', loginLimiter, validateMiddleware(schemas.login), (req, res) => {
   const { phone, password } = req.body;
-  if (!phone || !password) return res.json({ success: false, error: 'Phone and password required' });
+  if (!phone || !password) return res.status(400).json({ success: false, error: '请输入手机号和密码' });
   const u = get('SELECT * FROM users WHERE phone = ?', [phone]);
-  if (!u) return res.json({ success: false, error: 'Account not found' });
-  if (u.status === 'disabled' || u.status === 'deleted') return res.json({ success: false, error: '账号已禁用或已注销' });
-  if (!bcrypt.compareSync(password, u.password_hash)) return res.json({ success: false, error: 'Wrong password' });
+  if (!u) return res.status(404).json({ success: false, error: '账号不存在' });
+  if (u.status === 'disabled' || u.status === 'deleted') return res.status(403).json({ success: false, error: '账号已禁用或已注销' });
+  if (!bcrypt.compareSync(password, u.password_hash)) return res.status(401).json({ success: false, error: '密码错误' });
   const token = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-  res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token } });
+  const refreshToken = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiresIn });
+  res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token, refresh_token: refreshToken } });
 });
 
-// POST /auth/login-sms 鈥?SMS code login (no password needed)
+// POST /auth/login-sms —SMS code login (no password needed)
 router.post('/login-sms', loginLimiter, validateMiddleware(schemas.loginSms), (req, res) => {
   const { phone, code } = req.body;
-  if (!phone || !code) return res.json({ success: false, error: 'Phone and code required' });
-  if (!/^1[3-9]\d{9}$/.test(phone)) return res.json({ success: false, error: 'Invalid phone' });
-  if (!smsService.verifySmsCode(phone, code)) return res.json({ success: false, error: 'Wrong or expired code' });
+  if (!phone || !code) return res.status(400).json({ success: false, error: '请输入手机号和验证码' });
+  if (!/^1[3-9]\d{9}$/.test(phone)) return res.status(400).json({ success: false, error: '无效的手机号' });
+  if (!smsService.verifySmsCode(phone, code)) return res.status(400).json({ success: false, error: '验证码错误或已过期' });
   const u = get('SELECT * FROM users WHERE phone = ?', [phone]);
-  if (!u) return res.json({ success: false, error: 'Account not found' });
-  if (u.status === 'disabled' || u.status === 'deleted') return res.json({ success: false, error: '账号已禁用或已注销' });
+  if (!u) return res.status(404).json({ success: false, error: '账号不存在' });
+  if (u.status === 'disabled' || u.status === 'deleted') return res.status(403).json({ success: false, error: '账号已禁用或已注销' });
   const token = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-  res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token } });
+  const refreshToken = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiresIn });
+  res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token, refresh_token: refreshToken } });
 });
 
 router.get('/me', auth, (req, res) => {
   const u = get('SELECT id,phone,name,role,member_level,member_expire,auto_renew,verify_status,status,balance,created_at FROM users WHERE id = ?', [req.user.id]);
-  if (!u) return res.json({ success: false, error: 'Not found' });
+  if (!u) return res.status(404).json({ success: false, error: '用户不存在' });
   res.json({ success: true, data: u });
 });
 
@@ -105,7 +97,7 @@ router.get('/me', auth, (req, res) => {
 router.post('/reset-password/send-code', resetPwdSendLimiter, async (req, res) => {
   const { phone } = req.body;
   if (!phone || !/^1[3-9]\d{9}$/.test(phone))
-    return res.json({ success: false, error: '无效的手机号' });
+    return res.status(400).json({ success: false, error: '无效的手机号' });
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const u = get('SELECT id FROM users WHERE phone = ? AND status = ?', [phone, 'active']);
   // Always return success to prevent phone enumeration
@@ -118,15 +110,15 @@ router.post('/reset-password/send-code', resetPwdSendLimiter, async (req, res) =
 // POST /auth/reset-password/verify
 router.post('/reset-password/verify', resetPwdVerifyLimiter, (req, res) => {
   const { phone, code, new_password } = req.body;
-  if (!phone || !code || !new_password) return res.json({ success: false, error: '手机号、验证码和新密码不能为空' });
-  if (!/^1[3-9]\d{9}$/.test(phone)) return res.json({ success: false, error: '无效的手机号' });
-  if (new_password.length < 6) return res.json({ success: false, error: '新密码至少6位' });
+  if (!phone || !code || !new_password) return res.status(400).json({ success: false, error: '手机号、验证码和新密码不能为空' });
+  if (!/^1[3-9]\d{9}$/.test(phone)) return res.status(400).json({ success: false, error: '无效的手机号' });
+  if (new_password.length < 6) return res.status(400).json({ success: false, error: '新密码至少6位' });
 
   if (!smsService.verifySmsCode(phone, code))
-    return res.json({ success: false, error: '验证码错误或已过期' });
+    return res.status(400).json({ success: false, error: '验证码错误或已过期' });
 
   const u = get('SELECT id FROM users WHERE phone = ? AND status = ?', [phone, 'active']);
-  if (!u) return res.json({ success: false, error: '账号不存在或已注销' });
+  if (!u) return res.status(404).json({ success: false, error: '账号不存在或已注销' });
 
   const now = new Date().toISOString();
   const hash = bcrypt.hashSync(new_password, 10);
@@ -202,7 +194,7 @@ async function handleOAuthCallback(provider, providerUserId, userInfo) {
     run('INSERT INTO users (id,phone,password_hash,name,role,member_level,member_expire,auto_renew,avatar_url,verify_status,status,balance,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [userId, placeholderPhone + Date.now(), hash, nickname, 'buyer', 'free', null, 0, userInfo.avatar || userInfo.headimgurl || '', 'none', 'active', 0, now, now]);
 
-    autoAgreeAgreements(userId);
+    // Note: user must explicitly agree to agreements via POST /api/agreements/agree
   }
 
   // Upsert OAuth account
@@ -222,34 +214,54 @@ async function handleOAuthCallback(provider, providerUserId, userInfo) {
 
   const u = get('SELECT id,phone,name,role,member_level,verify_status FROM users WHERE id=?', [userId]);
   const token = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-  return { success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token, is_new: isNew } };
+  const refreshToken = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiresIn });
+  return { success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, member_level: u.member_level, verify_status: u.verify_status, token, refresh_token: refreshToken, is_new: isNew } };
 }
 
 // POST /auth/oauth/wechat/callback
 router.post('/oauth/wechat/callback', async (req, res) => {
   const { code } = req.body;
-  if (!code) return res.json({ success: false, error: '缺少授权码' });
+  if (!code) return res.status(400).json({ success: false, error: '缺少授权码' });
   try {
     const tokenData = await oauthService.wechatGetAccessToken(code);
     const userInfo = await oauthService.wechatGetUserInfo(tokenData.access_token, tokenData.openid);
     const result = await handleOAuthCallback('wechat', tokenData.openid, userInfo);
     res.json(result);
   } catch (e) {
-    res.json({ success: false, error: e.message || '微信登录失败' });
+    res.status(500).json({ success: false, error: '微信登录失败' });
   }
 });
 
 // POST /auth/oauth/alipay/callback
 router.post('/oauth/alipay/callback', async (req, res) => {
   const { code } = req.body;
-  if (!code) return res.json({ success: false, error: '缺少授权码' });
+  if (!code) return res.status(400).json({ success: false, error: '缺少授权码' });
   try {
     const tokenData = await oauthService.alipayGetAccessToken(code);
     const userInfo = await oauthService.alipayGetUserInfo(tokenData.access_token);
     const result = await handleOAuthCallback('alipay', tokenData.user_id || userInfo.user_id, userInfo);
     res.json(result);
   } catch (e) {
-    res.json({ success: false, error: e.message || '支付宝登录失败' });
+    res.status(500).json({ success: false, error: '支付宝登录失败' });
+  }
+});
+
+// POST /auth/refresh — refresh access token using refresh token
+router.post('/refresh', (req, res) => {
+  const { refresh_token } = req.body;
+  if (!refresh_token) {
+    return res.status(400).json({ success: false, error: '缺少 refresh_token' });
+  }
+  try {
+    const payload = jwt.verify(refresh_token, config.jwtRefreshSecret);
+    const accessToken = jwt.sign(
+      { id: payload.id, phone: payload.phone, role: payload.role },
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn }
+    );
+    res.json({ success: true, data: { token: accessToken } });
+  } catch (e) {
+    return res.status(401).json({ success: false, error: 'refresh_token 无效或已过期' });
   }
 });
 
@@ -262,18 +274,18 @@ module.exports = router;
 const devTokenLimiter = createRateLimit({ windowMs: 60_000, max: 3, keyBy: 'ip' });
 router.post('/dev-token', auth, devTokenLimiter, (req, res) => {
   if (process.env.NODE_ENV === 'production' || process.env.DEV_TOKEN_ENABLED !== 'true') {
-    return res.status(404).json({ success: false, error: 'Not found' });
+    return res.status(404).json({ success: false, error: '该功能未启用' });
   }
   const { phone } = req.body || {};
   if (!phone || !/^1[3-9]\d{9}$/.test(phone))
-    return res.json({ success: false, error: 'Invalid phone' });
+    return res.status(400).json({ success: false, error: '无效的手机号' });
   const u = get('SELECT id,phone,name,role,status FROM users WHERE phone = ?', [phone]);
-  if (!u) return res.json({ success: false, error: 'Account not found' });
-  // Only allow own phone number unless admin
-  if (u.id !== req.user.id && req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, error: 'Cannot issue token for another user' });
+  if (!u) return res.status(404).json({ success: false, error: '账号不存在' });
+  // Only allow own phone number — no impersonation even for admin
+  if (u.id !== req.user.id) {
+    return res.status(403).json({ success: false, error: '只能获取自己的开发令牌' });
   }
-  if (u.status === 'disabled' || u.status === 'deleted') return res.json({ success: false, error: '账号已禁用或已注销' });
+  if (u.status === 'disabled' || u.status === 'deleted') return res.status(403).json({ success: false, error: '账号已禁用或已注销' });
   const token = jwt.sign({ id: u.id, phone: u.phone, role: u.role }, config.jwtSecret, { expiresIn: '1h' });
   res.json({ success: true, data: { id: u.id, phone: u.phone, name: u.name, role: u.role, token, dev_mode: true } });
 });

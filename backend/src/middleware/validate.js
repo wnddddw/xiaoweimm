@@ -77,7 +77,7 @@ const schemas = {
   register: {
     phone: { required: true, type: 'string', pattern: PHONE_REGEX },
     code: { required: true, type: 'string', minLen: 4, maxLen: 6 },
-    password: { type: 'string', minLen: 6, maxLen: 128 },
+    password: { required: true, type: 'string', minLen: 6, maxLen: 128 },
   },
   login: {
     phone: { required: true, type: 'string', pattern: PHONE_REGEX },

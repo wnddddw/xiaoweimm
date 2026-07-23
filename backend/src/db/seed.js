@@ -2,8 +2,9 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const { getDb, run, get } = require('./init');
 
-async function seed() {
-  await getDb();
+function seed() {
+  // DB opens synchronously via better-sqlite3 — no async init needed
+  getDb();
   console.log('Seeding database...');
 
   const now = new Date().toISOString();
@@ -74,7 +75,9 @@ async function seed() {
   console.log('Seed data complete. Test accounts: 13800000000/123456, 13800138001/test123, 13800138002/123456');
 }
 
-seed().catch(error => {
+try {
+  seed();
+} catch (error) {
   console.error(error);
   process.exit(1);
-});
+}

@@ -13,10 +13,27 @@ router.get('/', auth, (req, res) => {
 
 router.post('/', auth, (req, res) => {
   const { project_id, seller_id, buyer_id, seller_name, buyer_name, price, advisor, note } = req.body;
-  if (!project_id || !seller_name || !buyer_name || !price) return res.json({ success: false, error: 'Fill all fields' });
+  if (!project_id || !seller_name || !buyer_name || !price) return res.status(400).json({ success: false, error: '请填写所有字段' });
+  const priceNum = Number(price);
+  if (!Number.isFinite(priceNum) || priceNum <= 0) return res.status(400).json({ success: false, error: '交易价格无效' });
+
+  // 项目归属校验：项目必须存在，卖方默认取项目所有者
+  const project = get('SELECT id, user_id FROM projects WHERE id=?', [project_id]);
+  if (!project) return res.status(404).json({ success: false, error: '项目不存在' });
+  const sellerId = project.user_id;
+
+  // 参与方校验：创建者必须是 admin、项目所有者（卖方）或指定买方
+  const buyerId = buyer_id || '';
+  if (req.user.role !== 'admin' && req.user.id !== sellerId && (!buyerId || req.user.id !== buyerId)) {
+    return res.status(403).json({ success: false, error: '无权为该交易项目创建交易' });
+  }
+  if (buyerId && !get('SELECT id FROM users WHERE id=?', [buyerId])) {
+    return res.status(400).json({ success: false, error: '买方用户不存在' });
+  }
+
   const id = 'D' + Date.now().toString(36) + require('crypto').randomBytes(3).toString('hex'), now = new Date().toISOString(), st = JSON.stringify({ matching: now });
   run('INSERT INTO deals (id,project_id,seller_id,buyer_id,seller_name,buyer_name,price,advisor,note,stage,stage_time,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-    [id, project_id, seller_id || '', buyer_id || '', seller_name, buyer_name, price, advisor || 'Auto', note || '', 'matching', st, now, now]);
+    [id, project_id, sellerId, buyerId, seller_name, buyer_name, priceNum, advisor || 'Auto', note || '', 'matching', st, now, now]);
   run('INSERT INTO deal_events (id,deal_id,stage,action,detail,created_at) VALUES (?,?,?,?,?,?)',
     [uuidv4(), id, 'matching', 'Deal Created', seller_name + ' <-> ' + buyer_name + ', price ' + price, now]);
   res.json({ success: true, data: get('SELECT * FROM deals WHERE id=?', [id]) });
@@ -24,13 +41,13 @@ router.post('/', auth, (req, res) => {
 
 router.get('/:id', auth, (req, res) => {
   const d = get('SELECT * FROM deals WHERE id=?', [req.params.id]);
-  if (!d) return res.json({ success: false, error: 'Not found' });
+  if (!d) return res.status(404).json({ success: false, error: '交易不存在' });
   res.json({ success: true, data: d });
 });
 
 router.patch('/:id/stage', auth, (req, res) => {
   const d = get('SELECT * FROM deals WHERE id=?', [req.params.id]);
-  if (!d) return res.json({ success: false, error: 'Not found' });
+  if (!d) return res.status(404).json({ success: false, error: '交易不存在' });
   // Authorization: only seller, buyer, or admin of this deal can advance stage
   if (d.seller_id !== req.user.id && d.buyer_id !== req.user.id && req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: '无权操作此交易' });
@@ -89,8 +106,8 @@ router.get('/:id/timeline', auth, (req, res) => {
 // POST /deals/:id/pay-commission — pay the commission bill for a completed deal
 router.post('/:id/pay-commission', auth, (req, res) => {
   const d = get('SELECT * FROM deals WHERE id=? AND (buyer_id=? OR seller_id=?)', [req.params.id, req.user.id, req.user.id]);
-  if (!d) return res.json({ success: false, error: 'Deal not found' });
-  if (d.stage !== 'complete') return res.json({ success: false, error: 'Deal not completed yet' });
+  if (!d) return res.status(404).json({ success: false, error: '交易不存在' });
+  if (d.stage !== 'complete') return res.status(400).json({ success: false, error: '交易尚未完成' });
 
   const finalPrice = d.final_price || d.price;
   const commission = Math.max(finalPrice * 0.02, 6000);
@@ -98,13 +115,13 @@ router.post('/:id/pay-commission', auth, (req, res) => {
   // Find the bill by related_type + related_id
   const bill = get("SELECT id, status FROM bills WHERE user_id=? AND type='commission' AND related_type='deal' AND related_id=? ORDER BY created_at DESC LIMIT 1",
     [d.buyer_id || req.user.id, req.params.id]);
-  if (!bill) return res.json({ success: false, error: 'No commission bill found' });
-  if (bill.status === 'paid') return res.json({ success: false, error: 'Commission already paid' });
+  if (!bill) return res.status(404).json({ success: false, error: '未找到佣金账单' });
+  if (bill.status === 'paid') return res.status(409).json({ success: false, error: '佣金已支付' });
 
   // Check balance
   const u = get('SELECT balance FROM users WHERE id=?', [req.user.id]);
   if (!u || u.balance < commission) {
-    return res.json({ success: false, error: '余额不足，需要支付 ¥' + commission.toFixed(2), need_amount: commission, balance: u ? u.balance : 0 });
+    return res.status(400).json({ success: false, error: '余额不足，需要支付 ¥' + commission.toFixed(2), need_amount: commission, balance: u ? u.balance : 0 });
   }
 
   const now = new Date().toISOString();
@@ -124,14 +141,14 @@ router.post('/:id/pay-commission', auth, (req, res) => {
 // POST /deals/:id/pay-commission/order — pay commission via WeChat/Alipay
 router.post('/:id/pay-commission/order', auth, async (req, res) => {
   const d = get('SELECT * FROM deals WHERE id=? AND (buyer_id=? OR seller_id=?)', [req.params.id, req.user.id, req.user.id]);
-  if (!d) return res.json({ success: false, error: 'Deal not found' });
-  if (d.stage !== 'complete') return res.json({ success: false, error: 'Deal not completed yet' });
+  if (!d) return res.status(404).json({ success: false, error: '交易不存在' });
+  if (d.stage !== 'complete') return res.status(400).json({ success: false, error: '交易尚未完成' });
 
   const finalPrice = d.final_price || d.price;
   const commission = Math.max(finalPrice * 0.02, 6000);
   const { channel } = req.body;
   if (!['wechat_h5', 'alipay_h5'].includes(channel))
-    return res.json({ success: false, error: 'Invalid channel' });
+    return res.status(400).json({ success: false, error: '无效的支付渠道' });
 
   const ip = req.ip || req.connection.remoteAddress || '127.0.0.1';
   const paymentService = require('../services/payment');
@@ -144,7 +161,7 @@ router.post('/:id/pay-commission/order', auth, async (req, res) => {
     { businessType: 'commission', businessId: req.params.id }
   );
 
-  if (!result.success) return res.json({ success: false, error: result.error });
+  if (!result.success) return res.status(500).json({ success: false, error: result.error });
   res.json({ success: true, data: { order_id: result.orderId, payment_url: result.paymentUrl, commission } });
 });
 

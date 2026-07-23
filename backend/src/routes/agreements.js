@@ -8,24 +8,24 @@ const router = express.Router();
 router.get('/current', (req, res) => {
   const { type } = req.query;
   if (!type || !['privacy', 'terms'].includes(type)) {
-    return res.json({ success: false, error: '类型参数无效，请使用 privacy 或 terms' });
+    return res.status(400).json({ success: false, error: '类型参数无效，请使用 privacy 或 terms' });
   }
   const agreement = get(
     'SELECT id, type, version, title, content, published_at FROM agreements WHERE type=? AND is_active=1 ORDER BY published_at DESC LIMIT 1',
     [type]
   );
-  if (!agreement) return res.json({ success: false, error: '未找到相关协议' });
+  if (!agreement) return res.status(404).json({ success: false, error: '未找到相关协议' });
   res.json({ success: true, data: agreement });
 });
 
 // POST /agreements/agree — record user consent
 router.post('/agree', auth, (req, res) => {
   const { agreement_id } = req.body;
-  if (!agreement_id) return res.json({ success: false, error: '缺少协议ID' });
+  if (!agreement_id) return res.status(400).json({ success: false, error: '缺少协议ID' });
 
   const agreement = get('SELECT id, is_active FROM agreements WHERE id=?', [agreement_id]);
-  if (!agreement) return res.json({ success: false, error: '协议不存在' });
-  if (!agreement.is_active) return res.json({ success: false, error: '协议已失效' });
+  if (!agreement) return res.status(404).json({ success: false, error: '协议不存在' });
+  if (!agreement.is_active) return res.status(400).json({ success: false, error: '协议已失效' });
 
   const now = new Date().toISOString();
   try {
@@ -35,7 +35,7 @@ router.post('/agree', auth, (req, res) => {
     );
     res.json({ success: true, message: '已同意' });
   } catch (e) {
-    res.json({ success: false, error: '操作失败，请重试' });
+    res.status(500).json({ success: false, error: '操作失败，请重试' });
   }
 });
 

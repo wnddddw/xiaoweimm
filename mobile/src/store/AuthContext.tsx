@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi } from '../api/auth';
+import { setOnUnauthorized } from '../api/client';
 import { secureStore } from '../utils/secureStore';
 import { User } from '../types';
 
@@ -12,6 +13,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (phone: string, password: string) => Promise<void>;
+  loginSms: (phone: string, code: string) => Promise<void>;
   register: (phone: string, code: string, password: string, name?: string, role?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -37,24 +39,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState(s => ({ ...s, isLoading: false }));
       }
     })();
+
+    // API 层 401 清理本地 token 后，同步清 React 登录态（界面立即退回未登录视图）
+    setOnUnauthorized(() => {
+      setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+    });
+    return () => setOnUnauthorized(null);
   }, []);
 
   const login = useCallback(async (phone: string, password: string) => {
     const res = await authApi.login(phone, password);
-    if (!res.data.success || !res.data.data) throw new Error(res.data.error || 'Login failed');
-    const { token, ...user } = res.data.data;
+    if (!res.data.success || !res.data.data) throw new Error(res.data.error || '登录失败');
+    const { token, refresh_token: refreshToken, ...user } = res.data.data;
     const userObj = user as unknown as User;
     await secureStore.setToken(token);
+    await secureStore.setRefreshToken(refreshToken);
+    await secureStore.setUser(userObj);
+    setState({ user: userObj, token, isLoading: false, isAuthenticated: true });
+  }, []);
+
+  const loginSms = useCallback(async (phone: string, code: string) => {
+    const res = await authApi.loginSms(phone, code);
+    if (!res.data.success || !res.data.data) throw new Error(res.data.error || '登录失败');
+    const { token, refresh_token: refreshToken, ...user } = res.data.data;
+    const userObj = user as unknown as User;
+    await secureStore.setToken(token);
+    await secureStore.setRefreshToken(refreshToken);
     await secureStore.setUser(userObj);
     setState({ user: userObj, token, isLoading: false, isAuthenticated: true });
   }, []);
 
   const register = useCallback(async (phone: string, code: string, password: string, name?: string, role?: string) => {
     const res = await authApi.register({ phone, code, password, name, role });
-    if (!res.data.success || !res.data.data) throw new Error(res.data.error || 'Register failed');
-    const { token, ...user } = res.data.data;
+    if (!res.data.success || !res.data.data) throw new Error(res.data.error || '注册失败');
+    const { token, refresh_token: refreshToken, ...user } = res.data.data;
     const userObj = user as unknown as User;
     await secureStore.setToken(token);
+    await secureStore.setRefreshToken(refreshToken);
     await secureStore.setUser(userObj);
     setState({ user: userObj, token, isLoading: false, isAuthenticated: true });
   }, []);
@@ -65,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, loginSms, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,18 +1,47 @@
+# 依赖
 node_modules/
+
+# 构建产物
+build/
+.gradle/
+.cxx/
+
+# 日志与进程文件
 *.log
 *.pid
+
+# 备份与临时
 _backup_*/
 *.zip
-caigou.db
-mumu-screen.png
-screenshot_latest.jpg
 *.docx
 .DS_Store
-backend/.pid
+mumu-screen.png
+screenshot_latest.jpg
+screenshot*
+window_*.xml
+
+# 数据库（SQLite 主库及 WAL/SHM 临时文件）
+*.db
+*.db-wal
+*.db-shm
+
+# 环境变量与密钥
+.env
 backend/.env
-backend/data/*.db
+backend/.pid
+mobile/**/keystore.properties
+# 密钥库包含密码，不应入库
+*.keystore
+*.jks
+
+# 用户上传文件（保留 .gitkeep 占位）
+uploads/
 backend/uploads/*
 !backend/uploads/.gitkeep
-mobile/**/keystore.properties
 
+# 调试与测试临时目录
+pw-tmp/
 docs/pw-tmp/
+
+# 内置 JS bundle 为构建产物，构建时生成
+index.android.bundle

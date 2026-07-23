@@ -1,6 +1,6 @@
-ï»¿# xin é¡¹ç›®æ¸…ç†è„šæœ¬
-# åˆ é™¤åºŸå¼ƒ/é‡å¤çš„é¡¹ç›®ç›®å½•ï¼Œä¿ç•™ä¸»åŠ›ç‰ˆæœ¬
-# ä¿ç•™: backend\, HTML\, mobile\
+# xin ÏîÄ¿ÇåÀí½Å±¾
+# É¾³ı·ÏÆú/ÖØ¸´µÄÏîÄ¿Ä¿Â¼£¬±£ÁôÖ÷Á¦°æ±¾
+# ±£Áô: backend\, mobile\
 
 $targets = @(
     'test-results',
@@ -13,13 +13,13 @@ $targets = @(
 )
 
 $optional = @{
-    'fullstack-app' = 'æ— å…³çš„ Todo ä»»åŠ¡ç®¡ç†å™¨é¡¹ç›®'
+    'fullstack-app' = 'ÎŞ¹ØµÄ Todo ÈÎÎñ¹ÜÀíÆ÷ÏîÄ¿'
 }
 
-Write-Host "=== xin é¡¹ç›®æ¸…ç† ===" -ForegroundColor Cyan
-Write-Host "ä¿ç•™: backend\, HTML\, mobile\"
+Write-Host "=== xin ÏîÄ¿ÇåÀí ===" -ForegroundColor Cyan
+Write-Host "±£Áô: backend\, mobile\"
 Write-Host ""
-Write-Host "å¿…åˆ ç›®å½•:" -ForegroundColor Yellow
+Write-Host "±ØÉ¾Ä¿Â¼:" -ForegroundColor Yellow
 foreach ($t in $targets) {
     $path = Join-Path 'd:\xin' $t
     if (Test-Path $path) {
@@ -27,12 +27,12 @@ foreach ($t in $targets) {
         $sizeMB = if ($size) { [math]::Round($size / 1MB, 1) } else { 0 }
         Write-Host "  - $t ($sizeMB MB)"
     } else {
-        Write-Host "  - $t (ä¸å­˜åœ¨ï¼Œè·³è¿‡)" -ForegroundColor DarkGray
+        Write-Host "  - $t (²»´æÔÚ£¬Ìø¹ı)" -ForegroundColor DarkGray
     }
 }
 
 Write-Host ""
-Write-Host "å¯é€‰åˆ é™¤:" -ForegroundColor Magenta
+Write-Host "¿ÉÑ¡É¾³ı:" -ForegroundColor Magenta
 foreach ($k in $optional.Keys) {
     $path = Join-Path 'd:\xin' $k
     if (Test-Path $path) {
@@ -40,32 +40,32 @@ foreach ($k in $optional.Keys) {
         $sizeMB = if ($size) { [math]::Round($size / 1MB, 1) } else { 0 }
         Write-Host "  - $k ($sizeMB MB) -- $($optional[$k])"
     } else {
-        Write-Host "  - $k (ä¸å­˜åœ¨ï¼Œè·³è¿‡)" -ForegroundColor DarkGray
+        Write-Host "  - $k (²»´æÔÚ£¬Ìø¹ı)" -ForegroundColor DarkGray
     }
 }
 
 Write-Host ""
-$delOptional = Read-Host "åŒæ—¶åˆ é™¤å¯é€‰ç›®å½•? (è¾“å…¥ yes ä¸€å¹¶åˆ é™¤ï¼Œå›è½¦è·³è¿‡)"
+$delOptional = Read-Host "Í¬Ê±É¾³ı¿ÉÑ¡Ä¿Â¼? (ÊäÈë yes Ò»²¢É¾³ı£¬»Ø³µÌø¹ı)"
 if ($delOptional -eq 'yes') {
     $targets += $optional.Keys
 }
 
 Write-Host ""
-$confirm = Read-Host "ç¡®è®¤åˆ é™¤ $($targets.Count) ä¸ªç›®å½•? (è¾“å…¥ yes ç»§ç»­)"
+$confirm = Read-Host "È·ÈÏÉ¾³ı $($targets.Count) ¸öÄ¿Â¼? (ÊäÈë yes ¼ÌĞø)"
 if ($confirm -ne 'yes') {
-    Write-Host "å·²å–æ¶ˆ" -ForegroundColor Red
+    Write-Host "ÒÑÈ¡Ïû" -ForegroundColor Red
     exit
 }
 
 foreach ($t in $targets) {
     $path = Join-Path 'd:\xin' $t
     if (Test-Path $path) {
-        Write-Host "åˆ é™¤ $t ..." -NoNewline
+        Write-Host "É¾³ı $t ..." -NoNewline
         Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction Stop
-        Write-Host " å®Œæˆ" -ForegroundColor Green
+        Write-Host " Íê³É" -ForegroundColor Green
     }
 }
 
 Write-Host ""
-Write-Host "æ¸…ç†å®Œæˆ! å½“å‰é¡¹ç›®ç»“æ„:" -ForegroundColor Cyan
+Write-Host "ÇåÀíÍê³É! µ±Ç°ÏîÄ¿½á¹¹:" -ForegroundColor Cyan
 Get-ChildItem d:\xin -Directory | Where-Object { $_.Name -notmatch '^\.' -and $_.Name -ne 'node_modules' } | ForEach-Object { Write-Host "  - $($_.Name)" }

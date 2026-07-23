@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Platform, Linking } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
@@ -7,6 +7,7 @@ import Badge from '../../components/common/Badge';
 import Toast from '../../components/common/Toast';
 import PaymentWebView from '../../components/PaymentWebView';
 import { paymentsApi } from '../../api';
+import { colors } from '../../theme';
 
 const QUICK_AMOUNTS = [100, 300, 600, 1800, 5000];
 
@@ -20,23 +21,21 @@ export default function PaymentScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<'recharge' | 'history' | 'bills'>('recharge');
   const [toast, setToast] = useState({ visible: false, message: '', type: '' as '' | 'success' | 'error' });
-
-  // Payment WebView state
   const [webViewVisible, setWebViewVisible] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState('');
   const [currentOrderId, setCurrentOrderId] = useState('');
-  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      const [bRes, hRes, blRes] = await Promise.all([
+      const [balanceRes, historyRes, billsRes] = await Promise.all([
         paymentsApi.getBalance(),
         paymentsApi.getHistory(),
         paymentsApi.getBills(),
       ]);
-      if (bRes.data.success && bRes.data.data) setBalance(bRes.data.data.balance || 0);
-      if (hRes.data.success && hRes.data.data) setHistory(hRes.data.data);
-      if (blRes.data.success && blRes.data.data) setBills(blRes.data.data);
+      if (balanceRes.data.success && balanceRes.data.data) setBalance(balanceRes.data.data.balance || 0);
+      if (historyRes.data.success && historyRes.data.data) setHistory(historyRes.data.data);
+      if (billsRes.data.success && billsRes.data.data) setBills(billsRes.data.data);
     } catch (e: any) { /* ignore */ }
   }, []);
 
@@ -44,50 +43,73 @@ export default function PaymentScreen() {
 
   const onRefresh = async () => { setRefreshing(true); await fetchData(); setRefreshing(false); };
 
-  // Poll order status after WebView closes
+  // 轮询订单状态：指数退避（2s 起，逐步拉长），最长约 3 分钟，
+  // 大额支付回调慢时不再 60 秒就误报超时
   const startPollOrder = (orderId: string) => {
     let attempts = 0;
-    const maxAttempts = 30; // 30 * 2s = 60s timeout
-    pollTimerRef.current = setInterval(async () => {
+    const maxAttempts = 40;
+    let cancelled = false;
+
+    const tick = async () => {
+      if (cancelled) return;
       attempts++;
       try {
         const res = await paymentsApi.queryOrder(orderId);
         if (res.data.success && res.data.data?.status === 'paid') {
-          clearInterval(pollTimerRef.current!);
           pollTimerRef.current = null;
-          setToast({ visible: true, message: '支付成功！', type: 'success' });
+          setToast({ visible: true, message: '支付成功', type: 'success' });
           fetchData();
           return;
         }
       } catch (e) { /* ignore */ }
+      if (cancelled) return;
       if (attempts >= maxAttempts) {
-        clearInterval(pollTimerRef.current!);
         pollTimerRef.current = null;
-        setToast({ visible: true, message: '支付超时，请在历史记录中查看', type: 'error' });
+        setToast({ visible: true, message: '支付结果确认中，请稍后在交易记录中查看', type: 'error' });
+        return;
       }
-    }, 2000);
+      const delay = Math.min(2000 * Math.pow(1.2, attempts), 8000);
+      pollTimerRef.current = setTimeout(tick, delay);
+    };
+
+    pollTimerRef.current = setTimeout(tick, 2000);
+  };
+
+  const stopPollOrder = () => {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current as any);
+      pollTimerRef.current = null;
+    }
   };
 
   const handleRecharge = async () => {
-    const amt = +amount;
-    if (!amt || amt <= 0) {
+    const rechargeAmount = Math.round(+amount * 100) / 100;
+    if (!Number.isFinite(rechargeAmount) || rechargeAmount <= 0) {
       setToast({ visible: true, message: '请输入有效金额', type: 'error' });
+      return;
+    }
+    if (rechargeAmount > 100000) {
+      setToast({ visible: true, message: '单笔充值不能超过 100,000 元', type: 'error' });
       return;
     }
     setLoading(true);
     try {
-      const res = await paymentsApi.createOrder(amt, payMethod, '余额充值');
+      const res = await paymentsApi.createOrder(rechargeAmount, payMethod, '余额充值');
       if (res.data.success && res.data.data) {
         const { order_id, payment_url, dev_paid } = res.data.data;
-        // Dev mode: payment processed directly, no WebView needed
         if (dev_paid) {
           setAmount('');
-          setToast({ visible: true, message: `充值成功 ¥${amt}`, type: 'success' });
+          setToast({ visible: true, message: `充值成功 ¥${rechargeAmount}`, type: 'success' });
           fetchData();
           setLoading(false);
           return;
         }
-        // Production: open payment URL
+        // 后端未配置支付渠道时 payment_url 可能为空，此时不能进 WebView（白屏/崩溃风险）
+        if (!payment_url) {
+          setToast({ visible: true, message: '支付渠道暂不可用，请稍后再试或联系客服', type: 'error' });
+          setLoading(false);
+          return;
+        }
         setCurrentOrderId(order_id);
         setPaymentUrl(payment_url);
         setWebViewVisible(true);
@@ -104,7 +126,6 @@ export default function PaymentScreen() {
 
   const handleWebViewClose = () => {
     setWebViewVisible(false);
-    // Start polling for payment result
     if (currentOrderId) {
       startPollOrder(currentOrderId);
     }
@@ -123,7 +144,7 @@ export default function PaymentScreen() {
         style={styles.container}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <Toast {...toast} onHide={() => setToast(s => ({ ...s, visible: false }))} />
+        <Toast {...toast} onHide={() => setToast(current => ({ ...current, visible: false }))} />
 
         <Card>
           <Text style={styles.balanceLabel}>我的余额</Text>
@@ -131,12 +152,12 @@ export default function PaymentScreen() {
         </Card>
 
         <View style={styles.tabs}>
-          {(['recharge', 'history', 'bills'] as const).map(t => (
+          {(['recharge', 'history', 'bills'] as const).map(item => (
             <Button
-              key={t}
-              title={t === 'recharge' ? '充值' : t === 'history' ? '记录' : '账单'}
-              onPress={() => setTab(t)}
-              variant={tab === t ? 'main' : 'gray'}
+              key={item}
+              title={item === 'recharge' ? '充值' : item === 'history' ? '记录' : '账单'}
+              onPress={() => setTab(item)}
+              variant={tab === item ? 'main' : 'gray'}
               size="sm"
             />
           ))}
@@ -144,7 +165,6 @@ export default function PaymentScreen() {
 
         {tab === 'recharge' && (
           <>
-            {/* Payment method selector */}
             <Card>
               <Text style={styles.sectionTitle}>支付方式</Text>
               <View style={styles.payMethods}>
@@ -167,7 +187,6 @@ export default function PaymentScreen() {
               </View>
             </Card>
 
-            {/* Amount + quick select */}
             <Card>
               <Text style={styles.sectionTitle}>充值金额</Text>
               <TextInput
@@ -178,11 +197,11 @@ export default function PaymentScreen() {
                 keyboardType="numeric"
               />
               <View style={styles.quickAmts}>
-                {QUICK_AMOUNTS.map(a => (
+                {QUICK_AMOUNTS.map(item => (
                   <Button
-                    key={a}
-                    title={`¥${a}`}
-                    onPress={() => setAmount(String(a))}
+                    key={item}
+                    title={`¥${item}`}
+                    onPress={() => setAmount(String(item))}
                     variant="outline"
                     size="sm"
                   />
@@ -199,13 +218,13 @@ export default function PaymentScreen() {
             {history.length === 0 ? (
               <Text style={styles.empty}>暂无交易</Text>
             ) : (
-              history.map((h: any) => (
-                <View key={h.id} style={styles.row}>
-                  <Badge text={h.type === 'recharge' ? '充值' : '消费'} variant={h.type === 'recharge' ? 'ok' : 'info'} />
-                  <Text style={h.type === 'recharge' ? styles.green : styles.red}>
-                    {h.type === 'recharge' ? '+' : '-'}¥{h.amount}
+              history.map((item: any) => (
+                <View key={item.id} style={styles.row}>
+                  <Badge text={item.type === 'recharge' ? '充值' : '消费'} variant={item.type === 'recharge' ? 'ok' : 'info'} />
+                  <Text style={item.type === 'recharge' ? styles.green : styles.red}>
+                    {item.type === 'recharge' ? '+' : '-'}¥{item.amount}
                   </Text>
-                  <Text style={styles.time}>{h.created_at?.slice(0, 10)}</Text>
+                  <Text style={styles.time}>{item.created_at?.slice(0, 10)}</Text>
                 </View>
               ))
             )}
@@ -218,14 +237,14 @@ export default function PaymentScreen() {
             {bills.length === 0 ? (
               <Text style={styles.empty}>暂无账单</Text>
             ) : (
-              bills.map((b: any) => (
-                <View key={b.id} style={styles.row}>
+              bills.map((item: any) => (
+                <View key={item.id} style={styles.row}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.billItem}>{b.item || b.type}</Text>
-                    <Text style={styles.time}>{b.created_at?.slice(0, 10)}</Text>
+                    <Text style={styles.billItem}>{item.item || item.type}</Text>
+                    <Text style={styles.time}>{item.created_at?.slice(0, 10)}</Text>
                   </View>
-                  <Badge text={b.status === 'paid' ? '已付' : '未付'} variant={b.status === 'paid' ? 'ok' : 'warn'} />
-                  <Text style={styles.billAmt}>¥{b.amount}</Text>
+                  <Badge text={item.status === 'paid' ? '已付' : '未付'} variant={item.status === 'paid' ? 'ok' : 'warn'} />
+                  <Text style={styles.billAmt}>¥{item.amount}</Text>
                 </View>
               ))
             )}
@@ -234,7 +253,6 @@ export default function PaymentScreen() {
         <View style={{ height: 20 }} />
       </ScrollView>
 
-      {/* Payment WebView modal */}
       <PaymentWebView
         visible={webViewVisible}
         url={paymentUrl}
@@ -246,26 +264,26 @@ export default function PaymentScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6fa', padding: 16 },
-  balanceLabel: { fontSize: 14, color: '#555', textAlign: 'center' },
-  balanceNum: { fontSize: 36, fontWeight: '700', color: '#1a44aa', textAlign: 'center', marginTop: 4 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 16 },
+  balanceLabel: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
+  balanceNum: { fontSize: 36, fontWeight: '700', color: colors.primary, textAlign: 'center', marginTop: 4 },
   tabs: { flexDirection: 'row', gap: 8, marginVertical: 12 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111', marginBottom: 12 },
-  input: { borderWidth: 1, borderColor: '#bbb', borderRadius: 8, padding: 13, fontSize: 16, marginBottom: 12, color: '#222' },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 12 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 13, fontSize: 16, marginBottom: 12, color: colors.text },
   quickAmts: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
   payMethods: { flexDirection: 'row', gap: 12, marginBottom: 4 },
   payMethodBtn: {
-    flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: '#ddd',
-    alignItems: 'center', backgroundColor: '#fafafa',
+    flex: 1, padding: 14, borderRadius: 8, borderWidth: 2, borderColor: colors.border,
+    alignItems: 'center', backgroundColor: colors.bgSoft,
   },
-  payMethodActive: { borderColor: '#1a44aa', backgroundColor: '#e8f0fe' },
-  payMethodText: { fontSize: 15, fontWeight: '600', color: '#555' },
-  payMethodActiveText: { color: '#1a44aa' },
-  empty: { textAlign: 'center', color: '#555', padding: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  green: { fontSize: 14, fontWeight: '600', color: '#1e8449' },
-  red: { fontSize: 14, fontWeight: '600', color: '#c0392b' },
-  time: { fontSize: 11, color: '#999' },
-  billItem: { fontSize: 13, color: '#111' },
-  billAmt: { fontSize: 14, fontWeight: '600', color: '#111' },
+  payMethodActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  payMethodText: { fontSize: 15, fontWeight: '600', color: colors.textSecondary },
+  payMethodActiveText: { color: colors.primary },
+  empty: { textAlign: 'center', color: colors.textSecondary, padding: 16 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  green: { fontSize: 14, fontWeight: '600', color: colors.success },
+  red: { fontSize: 14, fontWeight: '600', color: colors.danger },
+  time: { fontSize: 11, color: colors.textTertiary },
+  billItem: { fontSize: 13, color: colors.text },
+  billAmt: { fontSize: 14, fontWeight: '600', color: colors.text },
 });

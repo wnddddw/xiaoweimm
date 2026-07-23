@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { dealStages } from '../../utils/constants';
+import { colors } from '../../theme';
 
 interface PipelineProps { currentStage: string; stageTime?: Record<string, string>; }
 
@@ -30,13 +31,13 @@ export default function Pipeline({ currentStage, stageTime }: PipelineProps) {
 const styles = StyleSheet.create({
   container: { flexDirection: 'row', paddingVertical: 8 },
   stageWrap: { flexDirection: 'row', alignItems: 'center' },
-  stage: { alignItems: 'center', padding: 10, borderRadius: 8, borderWidth: 2, borderColor: '#e0e2e6', minWidth: 80, backgroundColor: '#fff' },
-  done: { backgroundColor: '#d5f5e3', borderColor: '#1e8449' },
-  current: { backgroundColor: '#d4e4fd', borderColor: '#1a44aa' },
+  stage: { alignItems: 'center', padding: 10, borderRadius: 8, borderWidth: 2, borderColor: colors.muted, minWidth: 80, backgroundColor: colors.white },
+  done: { backgroundColor: colors.successSoft, borderColor: colors.success },
+  current: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
   icon: { fontSize: 20 },
-  label: { fontSize: 11, fontWeight: '600', color: '#555', marginTop: 4, textAlign: 'center' },
-  doneText: { color: '#1e8449' },
-  currentText: { color: '#1a44aa' },
-  date: { fontSize: 9, color: '#999', marginTop: 2 },
-  arrow: { fontSize: 20, color: '#ccc', marginHorizontal: 4 },
+  label: { fontSize: 11, fontWeight: '600', color: colors.textSecondary, marginTop: 4, textAlign: 'center' },
+  doneText: { color: colors.success },
+  currentText: { color: colors.primary },
+  date: { fontSize: 9, color: colors.textTertiary, marginTop: 2 },
+  arrow: { fontSize: 20, color: colors.border, marginHorizontal: 4 },
 });

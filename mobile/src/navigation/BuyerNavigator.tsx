@@ -5,16 +5,17 @@ import DemandInput from '../screens/buyer/DemandInput';
 import ProjectBrowse from '../screens/buyer/ProjectBrowse';
 import ProjectDetail from '../screens/buyer/ProjectDetail';
 import MyApplications from '../screens/buyer/MyApplications';
+import { headerOptions } from '../theme';
 
 const Stack = createNativeStackNavigator();
 export default function BuyerNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#1a44aa' }, headerTintColor: '#fff' }}>
-      <Stack.Screen name="BuyerDashboard" component={BuyerDashboard} options={{ title: 'Buyer Workspace' }} />
-      <Stack.Screen name="DemandInput" component={DemandInput} options={{ title: 'Acquisition Demand' }} />
-      <Stack.Screen name="ProjectBrowse" component={ProjectBrowse} options={{ title: 'Browse Projects' }} />
-      <Stack.Screen name="ProjectDetail" component={ProjectDetail} options={{ title: 'Project Detail' }} />
-      <Stack.Screen name="MyApplications" component={MyApplications} options={{ title: 'My Applications' }} />
+    <Stack.Navigator initialRouteName="DemandInput" screenOptions={headerOptions}>
+      <Stack.Screen name="DemandInput" component={DemandInput} options={{ title: '收购需求' }} />
+      <Stack.Screen name="ProjectBrowse" component={ProjectBrowse} options={{ title: '浏览项目' }} />
+      <Stack.Screen name="MyApplications" component={MyApplications} options={{ title: '我的申请' }} />
+      <Stack.Screen name="BuyerDashboard" component={BuyerDashboard} options={{ title: '买家工作台' }} />
+      <Stack.Screen name="ProjectDetail" component={ProjectDetail} options={{ title: '项目详情' }} />
     </Stack.Navigator>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { colors, radius, shadows } from '../../theme';
 
 interface ButtonProps {
   title: string;
@@ -11,25 +12,43 @@ interface ButtonProps {
 }
 
 export default function Button({ title, onPress, variant = 'main', size = 'md', loading, disabled }: ButtonProps) {
-  const bg = variant === 'main' ? '#1a44aa' : variant === 'green' ? '#1e8449' : variant === 'red' ? '#fff' : variant === 'gray' ? '#e5e7ea' : '#fff';
-  const color = variant === 'outline' || variant === 'red' ? '#1a44aa' : variant === 'gray' ? '#444' : '#fff';
-  const border = variant === 'outline' ? '#1a44aa' : variant === 'red' ? '#c0392b' : 'transparent';
+  const bg = variant === 'main' ? colors.primary : variant === 'green' ? colors.success : variant === 'red' ? colors.white : variant === 'gray' ? colors.muted : colors.white;
+  const color = variant === 'outline' ? colors.primary : variant === 'red' ? colors.danger : variant === 'gray' ? colors.textSecondary : colors.white;
+  const border = variant === 'outline' ? colors.primary : variant === 'red' ? colors.dangerSoft : 'transparent';
 
   return (
     <TouchableOpacity
-      style={[styles.btn, { backgroundColor: bg, borderColor: border, borderWidth: border !== 'transparent' ? 1 : 0 }, size === 'block' && styles.block, size === 'sm' && styles.sm]}
+      style={[
+        styles.btn,
+        variant === 'main' && styles.mainShadow,
+        { backgroundColor: bg, borderColor: border, borderWidth: border !== 'transparent' ? 1 : 0 },
+        size === 'block' && styles.block,
+        size === 'sm' && styles.sm,
+        (disabled || loading) && styles.disabled,
+      ]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.7}>
+      activeOpacity={0.75}>
       {loading ? <ActivityIndicator color={color} size="small" /> : <Text style={[styles.text, { color }, size === 'sm' && styles.textSm]}>{title}</Text>}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  btn: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 },
+  btn: {
+    minHeight: 44,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  mainShadow: { ...shadows.subtle },
   block: { width: '100%' },
-  sm: { paddingVertical: 6, paddingHorizontal: 12 },
-  text: { fontSize: 15, fontWeight: '600' },
+  sm: { minHeight: 36, paddingVertical: 7, paddingHorizontal: 14 },
+  disabled: { opacity: 0.55 },
+  text: { fontSize: 15, fontWeight: '600', letterSpacing: 0.3 },
   textSm: { fontSize: 13 },
 });

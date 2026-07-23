@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
+import { colors } from '../../theme';
 
 interface CascadePickerProps {
   visible: boolean;
@@ -46,15 +47,15 @@ export default function CascadePicker({ visible, data, onSelect, onClose, title 
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  panel: { backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '70%' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: '#ddd' },
+  panel: { backgroundColor: colors.white, borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '70%' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
   title: { fontSize: 16, fontWeight: '700' },
-  close: { fontSize: 18, color: '#999' },
+  close: { fontSize: 18, color: colors.textTertiary },
   columns: { flexDirection: 'row', height: 320 },
-  col: { flex: 1, borderRightWidth: 1, borderRightColor: '#eee' },
-  item: { padding: 14, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  selected: { backgroundColor: '#d4e4fd' },
-  itemText: { fontSize: 14, color: '#333' },
-  selectedText: { color: '#1a44aa', fontWeight: '600' },
-  empty: { padding: 20, color: '#999', textAlign: 'center' },
+  col: { flex: 1, borderRightWidth: 1, borderRightColor: colors.borderLight },
+  item: { padding: 14, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
+  selected: { backgroundColor: colors.primarySoft },
+  itemText: { fontSize: 14, color: colors.text },
+  selectedText: { color: colors.primary, fontWeight: '600' },
+  empty: { padding: 20, color: colors.textTertiary, textAlign: 'center' },
 });
