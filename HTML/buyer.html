@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>买家工作台｜xiaoweimm</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        button,input,select,textarea,.btn,a.nav-btn,[role="button"],.nav-login,.nav-btn,.menu-icon,.sidebar-toggle{min-height:44px;min-width:44px;touch-action:manipulation;}
+body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.7;background:#f4f6fa;display:flex;min-height:100vh;}
+        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;--green:#1e8449;--red:#c0392b;--orange:#d68910;}
+        a{text-decoration:none;color:inherit;}
+
+        .sidebar{width:220px;background:var(--dark);color:#ccc;display:flex;flex-direction:column;position:fixed;top:60px;left:0;bottom:0;z-index:100;}
+        .sidebar-header{padding:16px 20px;border-bottom:1px solid #2a3a4a;}
+        .sidebar-header .logo{font-size:20px;font-weight:700;color:#fff;}
+        .sidebar-header .sub{font-size:11px;color:var(--main);margin-top:2px;}
+        .sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;}
+        .sidebar-nav .nav-group{padding:0 20px;margin:12px 0 6px;font-size:11px;color:#556;letter-spacing:1px;}
+        .sidebar-nav a,.sidebar-nav .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:#aab;font-size:14px;transition:0.15s;cursor:pointer;border-left:3px solid transparent;}
+        .sidebar-nav a:hover,.sidebar-nav .nav-item:hover{background:rgba(26,68,170,0.15);color:#fff;border-left-color:var(--main);}
+        .sidebar-nav .nav-item.active{background:rgba(26,68,170,0.2);color:#fff;border-left-color:var(--main);font-weight:600;}
+        .sidebar-footer{padding:14px 20px;border-top:1px solid #2a3a4a;font-size:12px;}
+        .sidebar-footer a{color:#778;}
+
+        .main{flex:1;margin-left:220px;padding-top:60px;min-height:100vh;background:#f4f6fa;}
+        .topbar{position:fixed;top:0;left:0;right:0;height:60px;background:var(--main);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,0.1);z-index:200;}
+        .topbar .page-title{font-size:18px;font-weight:700;color:#fff;}
+        .topbar .top-nav-links{display:flex;gap:24px;font-size:14px;}
+        .topbar .top-nav-links a{color:rgba(255,255,255,0.75);transition:0.2s;}
+        .topbar .top-nav-links a:hover{color:#fff;}
+        .topbar .top-nav-links a.active{color:#fff;font-weight:600;}
+        .content{padding:24px 28px;}
+        .section{display:none;}
+        .section.active{display:block;}
+
+        .card{background:#fff;border-radius:10px;padding:24px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:20px;}
+        .card h3{font-size:17px;margin-bottom:18px;color:#111;padding-bottom:10px;border-bottom:2px solid #ddd;}
+
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+        .form-group{margin-bottom:12px;}
+        .form-group.full{grid-column:1/-1;}
+        .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#222;}
+        .form-group label .req{color:var(--red);}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #bbb;border-radius:6px;font-size:14px;outline:none;transition:border 0.2s;font-family:inherit;color:#222;}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--main);}
+        .form-group textarea{resize:vertical;min-height:70px;}
+
+        .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+        .filter-row select,.filter-row input{padding:9px 12px;border:1px solid #bbb;border-radius:6px;font-size:13px;outline:none;color:#222;}
+        .filter-row select:focus,.filter-row input:focus{border-color:var(--main);}
+
+        table{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;display:block;width:100%;border-collapse:collapse;}
+        th,td{padding:9px 12px;text-align:left;font-size:13px;}
+        th{background:#eef0f3;color:#333;font-weight:600;border-bottom:2px solid #ccc;}
+        td{border-bottom:1px solid #e0e2e6;}
+        tr:hover td{background:#f4f6fa;}
+
+        .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;}
+        .badge-ok{background:#d5f5e3;color:#145a32;}
+        .badge-warn{background:#fdebd0;color:#7d6608;}
+        .badge-info{background:#d4e4fd;color:#1a44aa;}
+
+        .btn{padding:8px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:0.2s;display:inline-flex;align-items:center;gap:5px;}
+        .btn-main{background:var(--main);color:#fff;}
+        .btn-main:hover{opacity:0.85;}
+        .btn-outline{background:#fff;color:var(--main);border:1px solid var(--main);}
+        .btn-outline:hover{background:var(--main);color:#fff;}
+        .btn-green{background:var(--green);color:#fff;}
+        .btn-red{background:#fff;color:var(--red);border:1px solid var(--red);}
+        .btn-red:hover{background:var(--red);color:#fff;}
+        .btn-gray{background:#e5e7ea;color:#444;}
+        .btn-sm{padding:4px 10px;font-size:12px;}
+
+        .empty-state{text-align:center;padding:40px;color:var(--gray);}
+
+        .cascade-picker{position:relative;user-select:none;-webkit-user-select:none;}
+        .cascade-display{width:100%;padding:10px 12px;border:1px solid #bbb;border-radius:6px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:border 0.2s;min-height:42px;}
+        .cascade-display:hover,.cascade-picker.open .cascade-display{border-color:var(--main);}
+        .cascade-display .placeholder{color:#888;}
+        .cascade-display .selected{color:#111;font-weight:500;}
+        .cascade-display .arrow{color:#777;font-size:11px;transition:0.2s;}
+        .cascade-picker.open .cascade-display .arrow{transform:rotate(180deg);}
+        .cascade-panel{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #bbb;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:300;margin-top:3px;max-height:320px;overflow:hidden;}
+        .cascade-picker.open .cascade-panel{display:flex;}
+        .cascade-col{flex:1;overflow-y:auto;max-height:320px;border-right:1px solid #ddd;}
+        .cascade-col:last-child{border-right:none;}
+        .cascade-col .cascade-item{padding:9px 12px;font-size:13px;cursor:pointer;transition:0.12s;display:flex;justify-content:space-between;align-items:center;color:#333;}
+        .cascade-col .cascade-item:hover{background:#e8f0fe;color:var(--main);}
+        .cascade-col .cascade-item.selected{background:#d4e4fd;color:var(--main);font-weight:600;}
+        .cascade-col .cascade-item .item-arrow{font-size:10px;color:#999;}
+        .cascade-col .cascade-group-label{padding:7px 12px;font-size:11px;color:#777;font-weight:600;background:#f0f2f5;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:2;}
+        .cascade-col .cascade-empty{padding:36px 12px;text-align:center;color:#999;font-size:12px;}
+        .cascade-col-left .cascade-item{border-bottom:1px solid #e9eaec;}
+        .cascade-col-right .cascade-item{border-bottom:1px solid #eef0f3;padding-left:14px;}
+
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;}
+        .modal-overlay.show{display:flex;}
+        .modal-box{background:#fff;border-radius:12px;width:680px;max-width:94vw;max-height:85vh;overflow-y:auto;padding:24px;position:relative;}
+        .modal-box .modal-close{position:absolute;top:10px;right:14px;font-size:20px;cursor:pointer;color:#999;background:none;border:none;}
+        .modal-box h3{margin-bottom:14px;font-size:17px;}
+
+        .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:12px 24px;border-radius:6px;font-size:14px;z-index:9999;opacity:0;transform:translateX(20px);transition:0.3s;pointer-events:none;}
+        .toast.show{opacity:1;transform:translateX(0);}
+        .toast.success{background:var(--green);}
+
+        
+        .sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:320;background:var(--main);color:#fff;border:none;width:42px;height:42px;border-radius:10px;font-size:20px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.18);}
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,18,32,0.48);z-index:210;}
+        .sidebar-overlay.show{display:block;}
+        @media(max-width:1024px){
+            input,select,textarea,button{font-size:16px!important;}
+            .topbar{padding-left:64px;padding-right:16px;}
+            .topbar .top-nav-links{display:none;}
+            .sidebar{width:min(82vw,280px);transform:translateX(-105%);transition:transform 0.25s ease, box-shadow 0.25s ease;z-index:300;}
+            .sidebar.open{transform:translateX(0);box-shadow:8px 0 28px rgba(0,0,0,0.32);}
+            .sidebar-toggle{display:flex;}
+            .main{margin-left:0!important;}
+            .content{padding:16px;}
+            .card{padding:18px 16px;border-radius:12px;}
+            .stat-grid{grid-template-columns:repeat(2,1fr);}
+            .form-grid{grid-template-columns:1fr;}
+            .filter-row{flex-direction:column;}
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-header"><div class="logo">xiaoweimm</div><div class="sub">买家工作台</div></div>
+    <nav class="sidebar-nav">
+        <div class="nav-group">收购管理</div>
+        <div class="nav-item active" data-page="demand">📝 收购需求</div>
+        <div class="nav-item" data-page="browse">🔍 项目浏览</div>
+        <div class="nav-item" data-page="my">📋 我的申请</div>
+        <div class="nav-group">快捷入口</div>
+        <a href="member.html">👤 会员中心</a>
+        <a href="index.html">🏠 返回首页</a>
+    </nav>
+    <div class="sidebar-footer"><span id="sidebarUser">买家用户</span></div>
+</aside>
+
+<div class="topbar">
+            <button class="sidebar-toggle">&#9776;</button>
+    <span class="page-title" id="pageTitle">收购需求</span>
+    <div class="top-nav-links">
+        <a href="buyer.html" class="active">买家工作台</a>
+            <a href="deal.html">交易管理</a>
+        <a href="messages.html">消息</a>
+        <a href="member.html">会员中心</a>
+        <a href="payment.html">支付</a>
+        <a href="index.html">首页</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="content">
+
+        <!-- Demand -->
+        <div class="section active" id="demand">
+            <div class="card"><h3>收购需求录入</h3>
+                <div class="form-grid">
+                    <div class="form-group full"><label><span class="req">*</span> 期望行业</label>
+                        <div class="cascade-picker" id="dIndustryPicker">
+                            <div class="cascade-display" id="dIndustryDisplay" onclick="togglePicker('dIndustryPicker')"><span class="placeholder">请选择行业</span><span class="arrow">▾</span></div>
+                            <div class="cascade-panel"><div class="cascade-col cascade-col-left" id="dIndustryLeft"></div><div class="cascade-col cascade-col-right" id="dIndustryRight"><div class="cascade-empty">← 请先选择一级行业</div></div></div>
+                        </div>
+                    </div>
+                    <div class="form-group full"><label><span class="req">*</span> 期望地区</label>
+                        <div class="cascade-picker" id="dRegionPicker">
+                            <div class="cascade-display" id="dRegionDisplay" onclick="togglePicker('dRegionPicker')"><span class="placeholder">请选择省份及城市</span><span class="arrow">▾</span></div>
+                            <div class="cascade-panel"><div class="cascade-col cascade-col-left" id="dRegionLeft"></div><div class="cascade-col cascade-col-right" id="dRegionRight"><div class="cascade-empty">← 请先选择省份</div></div></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>预算范围（万元）</label><input type="number" id="dBudgetMin" placeholder="最低" min="0" style="width:48%;display:inline-block;"><span style="display:inline-block;width:4%;text-align:center;">-</span><input type="number" id="dBudgetMax" placeholder="最高" min="0" style="width:48%;display:inline-block;"></div>
+                    <div class="form-group"><label>期望规模</label><select id="dScale"><option value="">不限</option><option value="1-5">1-5人</option><option value="6-20">6-20人</option><option value="21-50">21-50人</option><option value="51-100">51-100人</option><option value="101-300">101-300人</option><option value="300+">300人以上</option></select></div>
+                    <div class="form-group full"><label><span class="req">*</span> 收购目的</label><select id="dPurpose" required><option value="">请选择</option><option value="创业">创业/独立经营</option><option value="业务扩张">业务扩张/横向并购</option><option value="上下游整合">上下游整合/纵向并购</option><option value="投资">财务投资/资产管理</option><option value="多元化">多元化经营/跨行业</option><option value="其他">其他</option></select></div>
+                    <div class="form-group"><label>优先条件</label><select id="dPriority"><option value="">请选择</option><option value="盈利稳定">盈利稳定优先</option><option value="成长潜力">成长潜力优先</option><option value="管理团队">管理团队留任优先</option><option value="地理位置">地理位置优先</option><option value="价格优惠">价格优惠优先</option></select></div>
+                    <div class="form-group"><label>支付方式</label><select id="dPayMethod"><option value="">请选择</option><option value="全款现金">全款现金</option><option value="分期付款">分期付款</option><option value="股权置换">股权置换</option><option value="可协商">可协商</option></select></div>
+                    <div class="form-group full"><label>补充说明</label><textarea id="dNote" placeholder="如有其他收购条件或特殊需求请在此说明"></textarea></div>
+                </div>
+                <button class="btn btn-main" onclick="saveDemand()">保存需求</button>
+                <span style="font-size:12px;color:var(--gray);margin-left:10px;">保存后可获得精准项目匹配推送</span>
+            </div>
+            <div class="card" id="savedDemandCard" style="display:none;"><h3>已保存的收购需求</h3><div id="savedDemand"></div></div>
+        </div>
+
+        <!-- Browse -->
+        <div class="section" id="browse">
+            <div class="card">
+                <div class="filter-row">
+                    <select id="fIndustry"><option value="">全部行业</option></select>
+                    <select id="fProvince"><option value="">全部地区</option></select>
+                    <select id="fBudget"><option value="">全部预算</option><option value="0-300">0-300万</option><option value="300-1000">300-1000万</option><option value="1000-3000">1000-3000万</option><option value="3000+">3000万以上</option></select>
+                    <select id="fSort"><option value="newest">最新</option><option value="price_asc">价格↑</option><option value="price_desc">价格↓</option></select>
+                    <button class="btn btn-main btn-sm" onclick="filterBrowse()">筛选</button>
+                    <button class="btn btn-outline btn-sm" onclick="resetFilter()">重置</button>
+                    <span style="font-size:12px;color:var(--gray);margin-left:auto;" id="browseCount"></span>
+                </div>
+                <table><thead><tr><th>编号</th><th>行业</th><th>细分</th><th>地区</th><th>年营业额</th><th>期望价格</th><th>利润率</th><th>员工</th><th>浏览</th><th>操作</th></tr></thead><tbody id="browseTable"></tbody></table>
+            </div>
+        </div>
+
+        <!-- My Applications -->
+        <div class="section" id="my">
+            <div class="card"><h3>我的申请记录</h3>
+                <table><thead><tr><th>项目编号</th><th>项目信息</th><th>申请时间</th><th>状态</th><th>操作</th></tr></thead><tbody id="myTable"></tbody></table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('detailModal')">&times;</button>
+    <h3 id="detailTitle">项目详情</h3><div class="modal-body" id="detailBody"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end;"><button class="btn btn-gray" onclick="closeModal('detailModal')">关闭</button><button class="btn btn-outline btn-sm" id="btnFav" onclick="toggleFav()">收藏</button><button class="btn btn-green btn-sm" id="btnApply" onclick="openApply()">申请查看</button></div>
+</div></div>
+
+<!-- Apply Modal -->
+<div class="modal-overlay" id="applyModal"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('applyModal')">&times;</button>
+    <h3>申请查看机密信息</h3>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:12px;">提交申请后卖家将审核，通过后需签署保密协议方可解锁完整信息。</p>
+    <div class="form-group"><label>资金计划书</label><input type="file" id="fundPlan" accept=".pdf,.doc,.docx"><span style="font-size:11px;color:var(--gray);">PDF/Word，可选</span></div>
+    <div class="form-group"><label>事业计划书</label><input type="file" id="bizPlan" accept=".pdf,.doc,.docx"><span style="font-size:11px;color:var(--gray);">PDF/Word，可选</span></div>
+    <div class="form-group"><label>申请备注</label><textarea id="applyNote" rows="3" placeholder="请简要说明收购意向和资金准备情况"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;"><button class="btn btn-gray" onclick="closeModal('applyModal')">取消</button><button class="btn btn-main" onclick="submitApply()">提交申请</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+
+
+<script src="/_cascade_data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+XW.Auth.initPage();
+</script>
+<script>
+XW.Auth.requireRole(['buyer', 'admin'], 'buyer.html');
+</script>
+<script>
+// ===== 侧栏切换 =====
+function showSection(name){
+    document.querySelectorAll(".section").forEach(function(s){ s.classList.remove("active"); });
+    var sec = document.getElementById(name);
+    if(sec) sec.classList.add("active");
+    document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(n){ n.classList.remove("active"); });
+    var nav = document.querySelector(".sidebar-nav .nav-item[data-page='" + name + "']");
+    if(nav) nav.classList.add("active");
+    var title = document.getElementById("pageTitle");
+    if(title){
+        var titles = {demand:"收购需求", browse:"项目浏览", my:"我的申请"};
+        title.textContent = titles[name] || name;
+    }
+    var sidebar = document.querySelector(".sidebar");
+    var overlay = document.querySelector(".sidebar-overlay");
+    var toggle = document.querySelector(".sidebar-toggle");
+    if(sidebar && window.innerWidth <= 1024){
+        sidebar.classList.remove("open");
+        if(overlay) overlay.classList.remove("show");
+        if(toggle) toggle.textContent = "☰";
+    }
+}
+document.querySelectorAll(".sidebar-nav .nav-item").forEach(function(item){
+    item.addEventListener("click", function(){ showSection(this.getAttribute("data-page")); });
+});
+
+// ===== 移动端侧栏切换按钮 =====
+(function sidebarToggle(){
+    var btn = document.querySelector(".sidebar-toggle");
+    var sidebar = document.querySelector(".sidebar");
+    if(!btn || !sidebar) return;
+    var overlay = document.createElement("div");
+    overlay.className = "sidebar-overlay";
+    document.body.appendChild(overlay);
+    function setOpen(open){
+        sidebar.classList.toggle("open", open);
+        overlay.classList.toggle("show", open);
+        btn.textContent = open ? "×" : "☰";
+    }
+    btn.addEventListener("click", function(){ setOpen(!sidebar.classList.contains("open")); });
+    overlay.addEventListener("click", function(){ setOpen(false); });
+    window.addEventListener("resize", function(){ if(window.innerWidth > 1024) setOpen(false); });
+})();
+
+// ===== 行业/地区级联（d 前缀：demand 表单） =====
+var industryData = {}; var regionData = {};
+function loadCascadeData(){
+    Promise.all([
+        fetch("/api/constants/industry-data").then(function(r){ return r.json(); }),
+        fetch("/api/constants/region-data").then(function(r){ return r.json(); })
+    ]).then(function(results){
+        industryData = results[0].data || {};
+        regionData = results[1].data || {};
+        renderCascadeWithPrefix("dIndustry");
+        renderCascadeWithPrefix("dRegion");
+        populateFilterOptions();
+    }).catch(function(){
+        industryData = {"餐饮美食":["中式正餐","西餐"]};
+        regionData = {"北京":["朝阳区","海淀区"]};
+        renderCascadeWithPrefix("dIndustry");
+        renderCascadeWithPrefix("dRegion");
+        populateFilterOptions();
+    });
+}
+function renderCascadeWithPrefix(prefix){
+    var data = prefix.indexOf("Industry") > 0 ? industryData : regionData;
+    var left = document.getElementById(prefix + "Left");
+    var right = document.getElementById(prefix + "Right");
+    if(!left || !right) return;
+    left.innerHTML = Object.keys(data).map(function(k){
+        return '<div class="cascade-item" data-key="' + k + '">' + k + '</div>';
+    }).join("");
+    left.querySelectorAll(".cascade-item").forEach(function(it){
+        it.addEventListener("click", function(){
+            left.querySelectorAll(".cascade-item").forEach(function(x){ x.classList.remove("selected"); });
+            it.classList.add("selected");
+            var key = it.getAttribute("data-key");
+            var sub = data[key] || [];
+            right.innerHTML = sub.map(function(s){
+                return '<div class="cascade-item" data-value="' + key + '|' + s + '">' + s + '</div>';
+            }).join("");
+            right.querySelectorAll(".cascade-item").forEach(function(r){
+                r.addEventListener("click", function(){
+                    var v = r.getAttribute("data-value").split("|");
+                    var display = document.getElementById(prefix + "Display");
+                    if(display) display.innerHTML = "<span>" + v[0] + " / " + v[1] + "</span><span class=\"arrow\">▼</span>";
+                    var p = document.getElementById(prefix + "Picker");
+                    if(p) p.classList.remove("open");
+                });
+            });
+        });
+    });
+}
+function togglePicker(id){
+    document.querySelectorAll(".cascade-picker").forEach(function(p){
+        if(p.id !== id) p.classList.remove("open");
+    });
+    var p = document.getElementById(id);
+    if(p) p.classList.toggle("open");
+}
+
+// ===== 填充筛选下拉 =====
+function populateFilterOptions(){
+    var fi = document.getElementById("fIndustry");
+    if(fi){
+        fi.innerHTML = '<option value="">全部行业</option>' + Object.keys(industryData).map(function(k){
+            return '<option value="' + k + '">' + k + '</option>';
+        }).join("");
+    }
+    var fp = document.getElementById("fProvince");
+    if(fp){
+        fp.innerHTML = '<option value="">全部地区</option>' + Object.keys(regionData).map(function(k){
+            return '<option value="' + k + '">' + k + '</option>';
+        }).join("");
+    }
+}
+loadCascadeData();
+
+// ===== Toast 提示 =====
+function showToast(msg, type){
+    var t = document.getElementById("toast");
+    if(!t) return;
+    t.textContent = msg;
+    t.className = "toast show " + (type || "");
+    setTimeout(function(){ t.className = "toast"; }, 2500);
+}
+
+// ===== 收购需求：保存 =====
+function saveDemand(){
+    var industryDisplay = document.getElementById("dIndustryDisplay");
+    var regionDisplay = document.getElementById("dRegionDisplay");
+    var purpose = document.getElementById("dPurpose");
+    var industryText = industryDisplay ? industryDisplay.textContent : "";
+    var regionText = regionDisplay ? regionDisplay.textContent : "";
+    if(industryText.indexOf("选择") >= 0){ showToast("请选择行业", "error"); return; }
+    if(regionText.indexOf("选择") >= 0){ showToast("请选择地区", "error"); return; }
+    if(!purpose.value){ showToast("请选择收购目的", "error"); return; }
+    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
+    var demand = {
+        id: "D" + Date.now().toString(36),
+        user_id: user.phone,
+        industry: industryText,
+        region: regionText,
+        budget_min: Number(document.getElementById("dBudgetMin").value) || null,
+        budget_max: Number(document.getElementById("dBudgetMax").value) || null,
+        scale: document.getElementById("dScale").value,
+        purpose: purpose.value,
+        priority: document.getElementById("dPriority").value,
+        pay_method: document.getElementById("dPayMethod").value,
+        note: document.getElementById("dNote").value,
+        created_at: new Date().toISOString()
+    };
+    var demands = JSON.parse(localStorage.getItem("buyer_demands")||"[]");
+    demands.unshift(demand);
+    localStorage.setItem("buyer_demands", JSON.stringify(demands));
+    showToast("需求已保存，将为您匹配项目", "success");
+    renderSavedDemand();
+    // 重置表单
+    document.querySelectorAll("#demand .cascade-display span:first-child").forEach(function(s){});
+    document.querySelectorAll("#demand .cascade-display").forEach(function(d){ d.innerHTML = '<span class="placeholder">请选择</span><span class="arrow">▼</span>'; });
+}
+function renderSavedDemand(){
+    var box = document.getElementById("savedDemand");
+    var card = document.getElementById("savedDemandCard");
+    if(!box || !card) return;
+    var demands = JSON.parse(localStorage.getItem("buyer_demands")||"[]");
+    var user = JSON.parse(sessionStorage.getItem("xiaoweimm_user")||"null");
+    var mine = demands.filter(function(d){ return d.user_id === (user?user.phone:""); });
+    if(mine.length === 0){ card.style.display = "none"; return; }
+    card.style.display = "";
+    box.innerHTML = mine.map(function(d){
+        return '<div class="project-card"><div class="title">' + d.industry + ' / ' + d.region + '</div><div class="meta">预算：' + (d.budget_min || '不限') + '-' + (d.budget_max || '不限') + ' 万 · 目的：' + d.purpose + '</div></div>';
+    }).join("");
+}
+renderSavedDemand();
+
+// ===== 项目浏览：筛选 =====
+function filterBrowse(){
+    var params = new URLSearchParams();
+    var ind = document.getElementById("fIndustry").value;
+    var pr = document.getElementById("fProvince").value;
+    var bud = document.getElementById("fBudget").value;
+    var sort = document.getElementById("fSort").value;
+    if(ind) params.set("industry", ind);
+    if(pr) params.set("province", pr);
+    if(bud){
+        if(bud === "0-300") params.set("budget", bud);
+        else if(bud === "300-1000") params.set("budget", bud);
+        else if(bud === "1000-3000") params.set("budget", bud);
+        else if(bud === "3000+") params.set("budget", bud);
+    }
+    if(sort) params.set("sort", sort);
+    fetch("/api/projects?" + params.toString())
+        .then(function(r){ return r.json(); })
+        .then(function(json){
+            renderBrowseTable(json.data || []);
+        })
+        .catch(function(){
+            renderBrowseTable([]);
+        });
+}
+function resetFilter(){
+    ["fIndustry","fProvince","fBudget","fSort"].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.value = "";
+    });
+    filterBrowse();
+}
+function renderBrowseTable(list){
+    var tbody = document.getElementById("browseTable");
+    var count = document.getElementById("browseCount");
+    if(!tbody) return;
+    if(count) count.textContent = list.length;
+    if(list.length === 0){
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--gray);">暂无项目</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map(function(p){
+        return '<tr><td>' + (p.industry || "") + '</td><td>' + (p.city || "") + '</td><td>¥' + (p.price || 0) + '万</td><td>' + (p.status || "") + '</td><td>' + (p.views || 0) + '</td><td><button class="btn btn-sm btn-main" onclick="openDetail(\'' + p.id + '\')">查看</button></td></tr>';
+    }).join("");
+}
+// 初始加载
+setTimeout(filterBrowse, 800);
+
+// ===== 项目详情 =====
+function openDetail(id){
+    fetch("/api/projects/" + id)
+        .then(function(r){ return r.json(); })
+        .then(function(json){
+            var p = json.data;
+            if(!p){ showToast("项目不存在", "error"); return; }
+            var title = document.getElementById("detailTitle");
+            var body = document.getElementById("detailBody");
+            if(title) title.textContent = (p.industry || "") + " / " + (p.city || "");
+            if(body) body.innerHTML = '<div style="line-height:1.8;"><p><strong>行业：</strong>' + (p.industry || "") + ' / ' + (p.sub_industry || "") + '</p><p><strong>地区：</strong>' + (p.province || "") + ' / ' + (p.city || "") + '</p><p><strong>营收：</strong>' + (p.revenue || 0) + '万/年</p><p><strong>员工：</strong>' + (p.employees || "") + '</p><p><strong>价格：</strong>¥' + (p.price || 0) + '万</p><p><strong>利润率：</strong>' + (p.profit_rate || 0) + '%</p><p><strong>说明：</strong>' + (p.description || "无") + '</p></div>';
+            var m = document.getElementById("detailModal");
+            if(m) m.classList.add("show");
+        })
+        .catch(function(){ showToast("加载失败", "error"); });
+}
+
+// ===== 申请查看 =====
+function openApply(id){
+    document.getElementById("applyNote").value = "";
+    document.getElementById("fundPlan").value = "";
+    document.getElementById("bizPlan").value = "";
+    var m = document.getElementById("applyModal");
+    if(m) m.classList.add("show");
+}
+function submitApply(){
+    var note = document.getElementById("applyNote").value.trim();
+    showToast("申请已提交（演示）", "success");
+    closeModal("applyModal");
+}
+
+// ===== 收藏 =====
+function toggleFav(){
+    showToast("收藏成功（演示）", "success");
+}
+
+// ===== 关闭模态框 =====
+function closeModal(id){
+    var m = document.getElementById(id);
+    if(m) m.classList.remove("show");
+}
+
+// ===== 我的申请 =====
+(function loadMyApplications(){
+    var tbody = document.getElementById("myTable");
+    if(!tbody) return;
+    var apps = JSON.parse(localStorage.getItem("buyer_applications")||"[]");
+    if(apps.length === 0){
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--gray);">暂无申请记录</td></tr>';
+        return;
+    }
+    tbody.innerHTML = apps.map(function(a){
+        return '<tr><td>' + (a.project_id || "") + '</td><td>' + (a.info || "") + '</td><td>' + new Date(a.created_at).toLocaleDateString() + '</td><td><span class="badge badge-' + (a.status === 'approved' ? 'ok' : a.status === 'rejected' ? 'bad' : 'warn') + '">' + (a.status === 'approved' ? '已通过' : a.status === 'rejected' ? '已拒绝' : '待审核') + '</span></td><td><button class="btn btn-sm btn-outline" onclick="viewApp(\'' + (a.id || '') + '\')">查看</button></td></tr>';
+    }).join("");
+})();
+</script>
+</body>
+</html>

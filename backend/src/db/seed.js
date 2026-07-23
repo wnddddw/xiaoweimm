@@ -13,18 +13,19 @@ function seed() {
 
   const users = [
     { phone: '13800000000', passwordHash: defaultHash, name: '系统管理员', role: 'admin', balance: 0 },
-    { phone: '13800138001', passwordHash: sellerHash, name: '张建国', role: 'seller', balance: 10000 },
-    { phone: '13800138002', passwordHash: defaultHash, name: '李明远', role: 'buyer', balance: 10000 },
+    { phone: '13800138001', passwordHash: sellerHash, name: '张建国', role: 'seller', balance: 0, member: 'advanced' },
+    { phone: '13800138002', passwordHash: defaultHash, name: '李明远', role: 'buyer', balance: 0, member: 'advanced' },
   ];
 
   for (const user of users) {
     const existing = get('SELECT id FROM users WHERE phone = ?', [user.phone]);
     if (existing) {
-      run('UPDATE users SET password_hash=?, name=?, role=?, status=?, verify_status=?, updated_at=? WHERE phone=?',
-        [user.passwordHash, user.name, user.role, 'active', 'approved', now, user.phone]);
+      run('UPDATE users SET password_hash=?, name=?, role=?, status=?, verify_status=?, member_level=?, advanced_status=?, updated_at=? WHERE phone=?',
+        [user.passwordHash, user.name, user.role, 'active', 'approved', user.member || 'basic', user.member === 'advanced' ? 'approved' : 'none', now, user.phone]);
     } else {
-      run('INSERT INTO users (id, phone, password_hash, name, role, member_level, member_expire, auto_renew, avatar_url, verify_status, status, balance, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [uuidv4(), user.phone, user.passwordHash, user.name, user.role, 'free', null, 0, null, 'approved', 'active', user.balance, now, now]);
+      // 平台免费审核制：默认 basic（基础会员），演示账号预置 advanced（高级会员）
+      run('INSERT INTO users (id, phone, password_hash, name, role, member_level, member_expire, auto_renew, avatar_url, verify_status, status, balance, advanced_status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [uuidv4(), user.phone, user.passwordHash, user.name, user.role, user.member || 'basic', null, 0, null, 'approved', 'active', user.balance, user.member === 'advanced' ? 'approved' : 'none', now, now]);
     }
   }
 
@@ -65,7 +66,8 @@ function seed() {
     });
   }
 
-  const configValues = { commission: 2, minFee: 6000, personalFee: 300, companyFee: 600, vipFee: 1800, reviewTimeout: 120, projectExpire: 90, notifyWindow: 60 };
+  // 平台免费审核制：不再配置佣金/会员费等收费项
+  const configValues = { reviewTimeout: 120, projectExpire: 90, notifyWindow: 60 };
   Object.keys(configValues).forEach(key => {
     if (!get('SELECT key FROM config WHERE key = ?', [key])) {
       run('INSERT INTO config (key, value) VALUES (?,?)', [key, JSON.stringify(configValues[key])]);

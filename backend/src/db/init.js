@@ -213,10 +213,25 @@ function createTables() {
     "ALTER TABLE bills ADD COLUMN related_id TEXT DEFAULT ''",
     "ALTER TABLE payment_orders ADD COLUMN business_type TEXT DEFAULT 'recharge'",
     "ALTER TABLE payment_orders ADD COLUMN business_id TEXT DEFAULT ''",
+    // 高级会员审核制：申请状态/理由/联系方式/身份说明/审核备注
+    "ALTER TABLE users ADD COLUMN advanced_status TEXT DEFAULT 'none'",
+    "ALTER TABLE users ADD COLUMN advanced_reason TEXT DEFAULT ''",
+    "ALTER TABLE users ADD COLUMN advanced_contact TEXT DEFAULT ''",
+    "ALTER TABLE users ADD COLUMN advanced_id_note TEXT DEFAULT ''",
+    "ALTER TABLE users ADD COLUMN advanced_review_note TEXT DEFAULT ''",
+    "ALTER TABLE users ADD COLUMN advanced_apply_time TEXT",
+    "ALTER TABLE users ADD COLUMN advanced_review_time TEXT",
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch (e) { /* column already exists */ }
   }
+
+  // 会员模型迁移：平台转为免费审核制，付费等级并入高级会员
+  // 原 personal/company/vip（付费会员）→ advanced；free → basic
+  try {
+    db.exec("UPDATE users SET member_level='advanced' WHERE member_level IN ('personal','company','vip')");
+    db.exec("UPDATE users SET member_level='basic' WHERE member_level='free'");
+  } catch (e) { /* ignore */ }
 
   // Seed default agreements if none exist
   try {

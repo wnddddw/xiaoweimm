@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务介绍｜xiaoweimm</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        button,input,select,textarea,.btn,a.nav-btn,[role="button"],.nav-login,.nav-btn,.menu-icon,.sidebar-toggle{min-height:44px;min-width:44px;touch-action:manipulation;}
+body{font-family:"Noto Sans SC","Noto Sans JP",sans-serif;color:#333;line-height:1.7;background:#fff;min-height:100dvh;display:flex;flex-direction:column;} img,video,iframe{max-width:100%;height:auto;}
+        a{text-decoration:none;color:inherit;}
+        ul{list-style:none;}
+        .container{width:92%;max-width:1200px;margin:0 auto;}
+        :root{--main:#1a44aa;--light:#f4f6fa;--dark:#151d2b;--gray:#555;}
+        .top-nav{background:#fff;border-bottom:2px solid #ddd;position:sticky;top:0;z-index:999;}
+        .nav-inner{display:flex;justify-content:space-between;align-items:center;height:75px;}
+        .logo{font-size:28px;font-weight:700;color:var(--main);}
+        .nav-menu{display:flex;gap:35px;}
+        .nav-menu li a{font-size:15px;color:#333;}
+        .nav-menu li a.active{color:var(--main);font-weight:bold;}
+        .nav-right{display:flex;align-items:center;gap:12px;}
+        .nav-btn{background:var(--main);color:#fff;padding:9px 22px;border-radius:4px;font-size:14px;}
+        .nav-login{font-size:14px;color:var(--main);padding:9px 16px;border:1px solid var(--main);border-radius:4px;background:#fff;cursor:pointer;transition:0.3s;}
+        .nav-login:hover{background:var(--main);color:#fff;}
+        .menu-icon{display:none;font-size:24px;cursor:pointer;}
+        .page-banner{background:var(--main);color:#fff;padding:60px 0;text-align:center;}
+        .content-wrap{padding:60px 0;}
+        .service-block{background:#fff;padding:35px;border-radius:8px;box-shadow:0 2px 10px #eee;margin-bottom:30px;}
+        footer{background:var(--dark);color:#ccc;padding:50px 0;margin-top:auto;}
+        .footer-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;}
+        .footer-col h4{color:#fff;margin-bottom:20px;font-size:17px;}
+        .footer-col li{margin-bottom:12px;font-size:14px;}
+        .copyright{text-align:center;padding-top:40px;margin-top:30px;border-top:1px solid #333;}
+
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;}
+        .modal-overlay.show{display:flex;}
+        .modal-box{background:#fff;border-radius:12px;max-width:95vw;padding:40px 35px 30px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+        .modal-close{position:absolute;top:15px;right:20px;font-size:24px;cursor:pointer;color:#999;background:none;border:none;}
+        .modal-close:hover{color:#333;}
+        .modal-tabs{display:flex;border-bottom:2px solid #ddd;margin-bottom:30px;}
+        .modal-tab{flex:1;text-align:center;padding:12px 0;font-size:18px;font-weight:600;cursor:pointer;color:#999;border-bottom:2px solid transparent;margin-bottom:-2px;transition:0.3s;background:none;border-top:none;border-left:none;border-right:none;}
+        .modal-tab.active{color:var(--main);border-bottom-color:var(--main);}
+        .form-group{margin-bottom:18px;}
+        .form-group label{display:block;font-size:14px;font-weight:500;margin-bottom:6px;color:#333;}
+        .form-group label .required{color:#e74c3c;}
+        .form-group input,.form-group select{width:100%;padding:12px 14px;border:1px solid #bbb;border-radius:6px;font-size:15px;outline:none;transition:border 0.3s;}
+        .form-group input:focus,.form-group select:focus{border-color:var(--main);}
+        .sms-row{display:flex;gap:10px;}
+        .sms-row input{flex:1;}
+        .sms-btn{white-space:nowrap;padding:12px 16px;background:var(--main);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;}
+        .sms-btn:disabled{background:#ccc;cursor:not-allowed;}
+        .modal-submit{width:100%;padding:14px;background:var(--main);color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px;transition:0.3s;}
+        .modal-submit:hover{opacity:0.9;}
+        .form-check{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:18px;}
+        .form-check input{width:auto;}
+        .form-check a{color:var(--main);text-decoration:underline;}
+        .modal-extra{text-align:center;margin-top:15px;font-size:13px;color:#999;}
+        .modal-extra a{color:var(--main);cursor:pointer;}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;}
+        .user-greeting{display:none;align-items:center;gap:8px;font-size:14px;color:#333;}
+        .user-greeting .user-avatar{width:32px;height:32px;border-radius:50%;background:var(--main);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
+        .user-greeting .logout-link{color:var(--gray);font-size:12px;cursor:pointer;margin-left:4px;}
+        .user-greeting .logout-link:hover{color:var(--main);}
+        @media(max-width:768px){input,select,textarea,button{font-size:16px!important;}
+            .nav-menu{display:none;}.menu-icon{display:block;}
+            .footer-inner{grid-template-columns:1fr;gap:20px;text-align:center;}.footer-col h4{font-size:15px;margin-bottom:12px;}.footer-col li{font-size:13px;}.copyright{padding-top:24px;margin-top:20px;font-size:12px;}
+        }
+    </style>
+</head>
+<body>
+<header class="top-nav">
+    <div class="container nav-inner">
+        <a href="index.html" class="logo">xiaoweimm</a>
+        <ul class="nav-menu">
+            <li><a href="seller.html">想要出售事业</a></li>
+            <li><a href="buyer.html">想要收购事业</a></li>
+            <li><a href="service.html" class="active">服务介绍</a></li>
+            <li><a href="case.html">成功案例</a></li>
+            <li><a href="column.html">行业专栏</a></li>
+            <li><a href="company.html">公司简介</a></li>
+        </ul>
+        <div class="nav-right">
+            <button class="nav-login" id="btnLogin" type="button">登录 / 注册</button>
+            <div class="user-greeting" id="userGreeting">
+                <span class="user-avatar" id="userAvatar"></span>
+                <span id="userPhone"></span>
+                <span class="logout-link" id="btnLogout">[退出]</span>
+            </div>
+            <a href="contact.html" class="nav-btn">免费咨询</a>
+        </div>
+        <div class="menu-icon">≡</div>
+    </div>
+</header>
+
+<section class="page-banner">
+    <div class="container">
+        <h1>服务介绍</h1>
+        <p>xiaoweimm提供的M&A综合支援服务</p>
+    </div>
+</section>
+
+<section class="content-wrap container">
+    <div class="service-block">
+        <h3>1. 企业转让支援服务</h3>
+        <p style="margin-top:15px;line-height:2;">
+            面向中小企业经营者，从免费事业评估、匿名案件刊登、买方介绍到谈判辅助提供一站式支持。可在不泄露信息的前提下安心进行出售活动。
+        </p>
+    </div>
+    <div class="service-block">
+        <h3>2. 企业收购支援服务</h3>
+        <p style="margin-top:15px;line-height:2;">
+            可按行业・区域・预算搜索最佳转让案件。从实地调查、财务确认到签约支持，全程辅助买方各项工作。
+        </p>
+    </div>
+    <div class="service-block">
+        <h3>3. 事业价值免费评估</h3>
+        <p style="margin-top:15px;line-height:2;">
+            即使在犹豫是否出售的阶段，也可通过简单信息推算出售价格。基于市场动向为您提供合理的价格参考。
+        </p>
+    </div>
+    <div class="service-block">
+        <h3>4. 企业并购咨询</h3>
+        <p style="margin-top:15px;line-height:2;">
+            比较研究亲属继承・高管继承・第三方转让等多种继承方案，为企业提供最佳选择建议。
+        </p>
+    </div>
+</section>
+
+<footer>
+    <div class="container footer-inner">
+        <div class="footer-col"><h4>服务</h4><ul><li><a href="seller.html">企业转让</a></li><li><a href="buyer.html">企业收购</a></li></ul></div>
+        <div class="footer-col"><h4>实用信息</h4><ul><li><a href="case.html">成功案例</a></li><li><a href="column.html">行业专栏</a></li></ul></div>
+        <div class="footer-col"><h4>公司信息</h4><ul><li><a href="company.html">公司简介</a></li></ul></div>
+        <div class="footer-col"><h4>联系我们</h4><ul><li>TEL：400-888-6688</li><li><a href="contact.html">免费咨询</a></li></ul></div>
+    </div>
+    <div class="container copyright"><p>© 2026 xiaoweimm All Rights Reserved.</p></div>
+</footer>
+
+<!-- 登录/注册弹窗 -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <button class="modal-close" id="modalClose" type="button">&times;</button>
+        <div class="modal-tabs">
+            <button class="modal-tab active" id="tabPhone" type="button">手机登录</button>
+            <button class="modal-tab" id="tabPwd" type="button">密码登录</button>
+            <button class="modal-tab" id="tabReg" type="button">注册</button>
+        </div>
+        <div class="tab-content active" id="phoneForm">
+<div class="form-group">
+                <label>手机号</label>
+                <input type="tel" id="phoneLoginPhone" placeholder="请输入手机号" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label>验证码</label>
+                <div class="sms-row">
+                    <input type="text" id="phoneLoginCode" placeholder="短信验证码" maxlength="6">
+                    <button class="sms-btn" id="phoneSmsBtn" type="button">获取验证码</button>
+                </div>
+            </div>
+            <button class="modal-submit" id="phoneSubmit" type="button">登录</button>
+            <div class="modal-extra"><a id="toRegister">没有账号？立即注册</a></div>
+        </div>
+        <!-- 密码登录表单 -->
+        <div class="tab-content" id="pwdForm">
+            <div class="form-group">
+                <label>手机号</label>
+                <input type="tel" id="pwdLoginPhone" placeholder="请输入手机号" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="pwdLoginPassword" placeholder="请输入登录密码">
+            </div>
+            <button class="modal-submit" id="pwdSubmit" type="button">登录</button>
+            <div class="modal-extra"><a data-auth-switch="phone">手机验证码登录</a></div>
+        </div>
+        <div class="tab-content" id="regForm">
+            <div class="form-group">
+                <label><span class="required">*</span> 手机号</label>
+                <input type="tel" id="regPhone" placeholder="请输入手机号（必填）" maxlength="11" required>
+            </div>
+            <div class="form-group">
+                <label><span class="required">*</span> 验证码</label>
+                <div class="sms-row">
+                    <input type="text" id="regCode" placeholder="短信验证码" maxlength="6" required>
+                    <button class="sms-btn" id="regSmsBtn" type="button">获取验证码</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span class="required">*</span> 登录密码</label>
+                <input type="password" id="regPassword" placeholder="请设置登录密码（至少6位）" minlength="6" required>
+            </div>
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="regName" placeholder="请输入您的姓名">
+            </div>
+            <div class="form-group">
+                <label>使用角色</label>
+                <select id="regRole">
+                    <option value="">请选择</option>
+                    <option value="seller">我是卖家（希望转让）</option>
+                    <option value="buyer">我是买家（希望收购）</option>
+                </select>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="regAgree" required>
+                <label for="regAgree">同意 <a href="javascript:void(0)">服务协议</a> 及 <a href="javascript:void(0)">隐私政策</a></label>
+            </div>
+            <button class="modal-submit" id="regSubmit" type="button">注册</button>
+            <div class="modal-extra"><a data-auth-switch="phone">已有账号？手机登录</a></div>
+        </div>
+    </div>
+</div>
+<script src="js/auth.js"></script>
+<script>
+XW.Auth.initPage();
+</script>
+
+<script src="js/menu.js"></script>
+
+</body>
+</html>
+

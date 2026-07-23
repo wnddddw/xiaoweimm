@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { run, get, all } = require('../db/init');
 const { auth } = require('../middleware/auth');
+const { requireAdvanced } = require('../middleware/advanced');
 const router = express.Router();
 router.get('/my', auth, (req, res) => { res.json({ success: true, data: get('SELECT * FROM demands WHERE user_id=? ORDER BY updated_at DESC LIMIT 1', [req.user.id]) || null }); });
 router.post('/', auth, (req, res) => {
@@ -20,5 +21,6 @@ router.get('/favorites', auth, (req, res) => { res.json({ success: true, data: a
 router.post('/favorites/:projectId', auth, (req, res) => { try { run('INSERT INTO favorites (id,user_id,project_id,created_at) VALUES (?,?,?,?)', [uuidv4(), req.user.id, req.params.projectId, new Date().toISOString()]); res.json({ success: true }); } catch (e) { res.status(409).json({ success: false, error: '已收藏' }); } });
 router.delete('/favorites/:projectId', auth, (req, res) => { run('DELETE FROM favorites WHERE user_id=? AND project_id=?', [req.user.id, req.params.projectId]); res.json({ success: true }); });
 router.get('/applications', auth, (req, res) => { res.json({ success: true, data: all('SELECT a.*,p.industry,p.province,p.city FROM applications a JOIN projects p ON a.project_id=p.id WHERE a.user_id=? ORDER BY a.created_at DESC', [req.user.id]) }); });
-router.post('/applications', auth, (req, res) => { const { project_id, note } = req.body; if (!project_id) return res.status(400).json({ success: false, error: '请选择项目' }); run('INSERT INTO applications (id,user_id,project_id,note,created_at) VALUES (?,?,?,?,?)', [uuidv4(), req.user.id, project_id, note || '', new Date().toISOString()]); res.json({ success: true }); });
+// 申请查看/发起意向（含查看联系方式）需高级会员
+router.post('/applications', auth, requireAdvanced, (req, res) => { const { project_id, note } = req.body; if (!project_id) return res.status(400).json({ success: false, error: '请选择项目' }); run('INSERT INTO applications (id,user_id,project_id,note,created_at) VALUES (?,?,?,?,?)', [uuidv4(), req.user.id, project_id, note || '', new Date().toISOString()]); res.json({ success: true }); });
 module.exports = router;

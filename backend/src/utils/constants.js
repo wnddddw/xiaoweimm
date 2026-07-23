@@ -33,12 +33,12 @@ const regionData = {
   '其他地区': ['其他城市'],
 };
 
+// 交易阶段（平台免费，无付款托管阶段）
 const dealStages = [
   { id: 'matching', label: '匹配确认', icon: '🤝' },
   { id: 'nda', label: '保密协议', icon: '🔒' },
   { id: 'due_diligence', label: '尽职调查', icon: '🔍' },
   { id: 'contract', label: '合同谈判', icon: '📄' },
-  { id: 'payment', label: '支付', icon: '💰' },
   { id: 'handover', label: '交割', icon: '📦' },
   { id: 'complete', label: '已完成', icon: '✅' },
 ];

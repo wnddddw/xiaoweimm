@@ -1,6 +1,7 @@
 const express = require('express');
 const { run, get, all } = require('../db/init');
 const { auth, optionalAuth } = require('../middleware/auth');
+const { requireAdvanced } = require('../middleware/advanced');
 const router = express.Router();
 
 router.get('/', optionalAuth, (req, res) => {
@@ -28,7 +29,8 @@ router.get('/my', auth, (req, res) => {
   res.json({ success: true, data: all('SELECT * FROM projects WHERE user_id = ? ORDER BY is_top DESC, created_at DESC', [req.user.id]) });
 });
 
-router.post('/', auth, (req, res) => {
+// 发布项目需高级会员（免费审核制）
+router.post('/', auth, requireAdvanced, (req, res) => {
   const b = req.body;
   if (!b.industry || !b.sub_industry || !b.province || !b.city) return res.status(400).json({ success: false, error: '请填写行业和地区' });
   const id = 'P' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + require('crypto').randomBytes(3).toString('hex');
